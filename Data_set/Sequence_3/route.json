@@ -1,0 +1,1 @@
+{"topic": "/planning/mission_planning/route", "data": {"timestamp_sec": 48, "timestamp_ns": 129998924, "route_segments": [{"preferred_primitive_id": 255, "primitives": [{"id": 255, "primitive_type": "lane"}]}, {"preferred_primitive_id": 570, "primitives": [{"id": 570, "primitive_type": "lane"}]}]}}

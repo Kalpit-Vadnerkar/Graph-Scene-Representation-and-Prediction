@@ -1,0 +1,60 @@
+{"data": {"timestamp_sec": 218, "timestamp_ns": 779995109, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 219, "timestamp_ns": 109995102, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 220, "timestamp_ns": 99995080, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 221, "timestamp_ns": 89995058, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 222, "timestamp_ns": 79995036, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 223, "timestamp_ns": 69995013, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 59994991, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 49994969, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 39994947, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 29994925, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 19994903, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 9994881, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 219994854, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 99994834, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 89994812, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 79994790, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 69994768, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 59994745, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 49994723, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 39994701, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 29994679, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 19994657, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 9994635, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 109994610, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 99994588, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 89994566, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 79994544, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 69994522, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 59994500, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 49994478, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 39994455, "num_lights": 1, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9328629970550537}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 29994433, "num_lights": 1, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9326741695404053}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 19994411, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9336937665939331}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9319724440574646}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 9994389, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9346066117286682}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9081447124481201}]}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 109994364, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9322949051856995}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9291685223579407}]}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 99994342, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9325984716415405}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9210039377212524}]}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 89994320, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9326844811439514}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9231888055801392}]}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 79994298, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9324401021003723}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.8772035241127014}]}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 69994276, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.9340077638626099}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9354651570320129}]}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 59994254, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.8515906929969788}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9350764155387878}]}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 49994232, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.8660817742347717}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9207566976547241}]}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 39994210, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.8565478920936584}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9300709366798401}]}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 29994187, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.8929241895675659}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9324216246604919}]}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 19994165, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.8183436393737793}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9306371212005615}]}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 9994143, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 16, "status": 0, "confidence": 0.8187761306762695}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9339118003845215}]}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 109994119, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.8599748611450195}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.8699342608451843}]}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 99994096, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9474585056304932}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9344356060028076}]}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 89994074, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9859170317649841}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9343441724777222}]}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 79994052, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9856038689613342}, {"map_primitive_id": 1874, "color": 16, "status": 0, "confidence": 0.9246628284454346}]}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 69994030, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9661712050437927}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.9727845191955566}]}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 59994008, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9830787181854248}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.944913923740387}]}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 49993986, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9913044571876526}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.9411017298698425}]}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 39993964, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9898984432220459}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.9924092888832092}]}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 29993942, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9912925362586975}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.986585795879364}]}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 19993919, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.990088701248169}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.996045708656311}]}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 9993897, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9914770722389221}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.9967567324638367}]}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 109993873, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.995076596736908}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.9972299933433533}]}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 99993851, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 1, "status": 0, "confidence": 0.9960522055625916}, {"map_primitive_id": 1874, "color": 1, "status": 0, "confidence": 0.9952065348625183}]}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 89993828, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 3, "status": 0, "confidence": 0.9977076053619385}, {"map_primitive_id": 1874, "color": 3, "status": 0, "confidence": 0.9967215657234192}]}}
+{"data": {"timestamp_sec": 277, "timestamp_ns": 79993806, "num_lights": 2, "lights": [{"map_primitive_id": 1872, "color": 3, "status": 0, "confidence": 0.9977185726165771}, {"map_primitive_id": 1874, "color": 3, "status": 0, "confidence": 0.9972003102302551}]}}

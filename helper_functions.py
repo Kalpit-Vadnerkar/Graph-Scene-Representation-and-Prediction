@@ -1,3 +1,46 @@
+import json
+#import numpy as np
+import json
+
+def read_scene_data():
+    file1 = '_tf.json'
+    file2 = '_perception_object_recognition_tracking_objects.json'
+    file3 = '_perception_traffic_light_recognition_traffic_signals.json'
+    file4 = '_vehicle_status_velocity_status.json'
+    data = {}
+
+    with open(file1, 'r') as f1, open(file2, 'r') as f2, open(file3, 'r') as f3, open(file4, 'r') as f4:
+        lines = [f1.readline(), f2.readline(), f3.readline(), f4.readline()]
+
+        while all(lines):
+            data1, data2, data3, data4 = map(json.loads, lines)
+
+            timestamp_sec = data1['data']['timestamp_sec']
+
+            if all(timestamp_sec == d['data']['timestamp_sec'] for d in [data2, data3, data4]):
+                position1 = data1['data']['position']
+                velocity1 = data4['data']['longitudinal_velocity'], data4['data']['lateral_velocity']
+
+                objects = data2['data']['objects']
+                positions = [{'x': position1['x'], 'y': position1['y']}]
+                velocities = [{'Vx': velocity1[0], 'Vy': velocity1[1]}]
+
+                for obj in objects:
+                    positions.append({'x': obj['x'], 'y': obj['y']})
+                    velocities.append({'Vx': obj['linear_velocity_x'], 'Vy': obj['linear_velocity_y']})
+
+                traffic_lights = [(light['map_primitive_id'], light['color']) for light in data3['data']['lights'] if light['color'] <= 3]
+
+                data[timestamp_sec] = {
+                    'objects': [{'position': pos, 'velocity': vel} for pos, vel in zip(positions, velocities)],
+                    'traffic_lights': traffic_lights
+                }
+
+            lines = [f.readline() for f in [f1, f2, f3, f4]]
+
+    return data
+
+
 def lanelet2_to_graph_debug(map_data):
     # Display attributes of the LaneletMap object
     print("LaneletMap Attributes:")
@@ -64,16 +107,45 @@ def get_mid_point(line_string):
     return Point(mx, my)
 
 def convert_coordinate_frame(x_A, y_A):
-    # Given points in frame A (mrgs) and B (local cartesian)
-    x_A1, y_A1 = 81377.35044311438, 49916.90360337597
-    x_B1, y_B1 = 3535.7806390146916, 1779.5797283311367
+    """
+    Converts coordinates from frame A (e.g., geographic) to frame B (e.g., local Cartesian).
 
-    # Calculate scaling factors
-    a = x_B1 / x_A1
-    c = y_B1 / y_A1
+    Args:
+        x_A: x-coordinate in frame A
+        y_A: y-coordinate in frame A
+        reference_points: List of tuples, each containing a point in frame A and its corresponding point in frame B. 
+                          At least two reference points are required.
 
-    # Convert coordinates from frame A to frame B
-    x_B = a * x_A
-    y_B = c * y_A
+    Returns:
+        Point: Converted coordinates (x_B, y_B) in frame B
+    """
+
+    reference_points = [
+    ((81370.40, 49913.81), (3527.96, 1775.78)),
+    ((81375.16, 49917.01), (3532.70, 1779.04)),
+    ((81371.85, 49911.62), (3529.45, 1773.63)), 
+    ((81376.60, 49914.82), (3534.15, 1776.87)),
+    # ... Add more reference points if available for better accuracy
+    ]
+    if len(reference_points) < 2:
+        raise ValueError("At least two reference points are required for conversion.")
+
+    (x_A1, y_A1), (x_B1, y_B1) = reference_points[0]
+    (x_A2, y_A2), (x_B2, y_B2) = reference_points[1]
+
+    # Calculate scaling factors (consider both x and y differences)
+    a = (x_B2 - x_B1) / (x_A2 - x_A1)
+    c = (y_B2 - y_B1) / (y_A2 - y_A1)
+
+    # Calculate translation factors (shift of origin)
+    b = x_B1 - a * x_A1
+    d = y_B1 - c * y_A1
+
+    # Convert coordinates from frame A to frame B using affine transformation
+    x_B = a * x_A + b
+    y_B = c * y_A + d
 
     return Point(x_B, y_B)
+    
+
+
