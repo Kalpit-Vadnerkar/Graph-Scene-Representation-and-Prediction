@@ -1,12 +1,11 @@
 import json
-#import numpy as np
-import json
+import os
 
-def read_scene_data():
-    file1 = '_tf.json'
-    file2 = '_perception_object_recognition_tracking_objects.json'
-    file3 = '_perception_traffic_light_recognition_traffic_signals.json'
-    file4 = '_vehicle_status_velocity_status.json'
+def read_scene_data(folder_name):
+    file1 = os.path.join(folder_name, '_tf.json')
+    file2 = os.path.join(folder_name, '_perception_object_recognition_tracking_objects.json')
+    file3 = os.path.join(folder_name, '_perception_traffic_light_recognition_traffic_signals.json')
+    file4 = os.path.join(folder_name, '_vehicle_status_velocity_status.json')
     data = {}
 
     with open(file1, 'r') as f1, open(file2, 'r') as f2, open(file3, 'r') as f3, open(file4, 'r') as f4:
@@ -39,6 +38,7 @@ def read_scene_data():
             lines = [f.readline() for f in [f1, f2, f3, f4]]
 
     return data
+
 
 
 def lanelet2_to_graph_debug(map_data):

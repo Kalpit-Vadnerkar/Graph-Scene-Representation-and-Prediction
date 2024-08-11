@@ -6,6 +6,8 @@ import matplotlib.patches as patches
 import matplotlib.colors as colors
 import numpy as np
 from math import sqrt
+import pickle
+import os
 from helper_functions import *
 from map import lanelet2_to_graph, plot_graph_and_data
 
@@ -17,48 +19,73 @@ map_data, load_errors = lanelet2.io.loadRobust(path, projector)
 
 
 
-import pickle
+def process_and_save_sequences(input_folder, output_folder):
+    # Ensure output directory exists
+    os.makedirs(output_folder, exist_ok=True)
 
-data = read_scene_data()
-print("Reading Scene Data:")
+    # Iterate over subfolders in input folder
+    for folder_name in os.listdir(input_folder):
+        folder_path = os.path.join(input_folder, folder_name)
+        if os.path.isdir(folder_path):
+            print(f"Processing folder: {folder_name}")
 
-sequence = []
-window_size = 4
+            # Read scene data
+            data = read_scene_data(folder_path)
 
-for i in range(len(data) - window_size + 1):
-    window_sequence = []
-    for j in range(i, i + window_size):
-        timestamp, data_dict = list(data.items())[j]
-        dynamic_object_positions = []
-        dynamic_object_velocities = []
-        for obj in data_dict['objects']:
-            dynamic_object_positions.append(convert_coordinate_frame(obj['position']["x"], obj['position']["y"]))
-            dynamic_object_velocities.append(Point(obj['velocity']["Vx"], obj['velocity']["Vy"]))
+            # Process data and create sequence
+            sequence = []
+            window_size = 4
 
-        G = lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocities)
-        print(f"Number of nodes: {G.number_of_nodes()}")
-        print(f"Number of edges: {G.number_of_edges()}")
-        window_sequence.append(G)
-    sequence.append(window_sequence)
+            for i in range(len(data) - window_size + 1):
+                window_sequence = []
+                for j in range(i, i + window_size):
+                    timestamp, data_dict = list(data.items())[j]
+                    dynamic_object_positions = []
+                    dynamic_object_velocities = []
+                    for obj in data_dict['objects']:
+                        dynamic_object_positions.append(convert_coordinate_frame(obj['position']["x"], obj['position']["y"]))
+                        dynamic_object_velocities.append(Point(obj['velocity']["Vx"], obj['velocity']["Vy"]))
 
-# Save sequence to file
-with open('graph_sequence.pkl', 'wb') as f:
-    pickle.dump(sequence, f)
+                    G = lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocities)
+                    #print(f"Number of nodes: {G.number_of_nodes()}")
+                    #print(f"Number of edges: {G.number_of_edges()}")
+                    window_sequence.append(G)
+                sequence.append(window_sequence)
+
+            # Save sequence to pickle file
+            output_file = os.path.join(output_folder, f"{folder_name}.pkl")
+            with open(output_file, 'wb') as f:
+                pickle.dump(sequence, f)
+            print("done!")
+
+# Call the function
+input_folder = "Cleaned_Data_set"
+output_folder = "Sequence_Dataset"
+process_and_save_sequences(input_folder, output_folder)
 
 
-# Load sequence from file
-with open('graph_sequence.pkl', 'rb') as f:
-    sequence = pickle.load(f)
 
-# Loop through the sequences and graphs
-for i, window_sequence in enumerate(sequence):
-    print(f"Sequence {i+1}:")
-    for j, G in enumerate(window_sequence):
-        print(f"  Graph {j+1}:")
-        filename = 'plots/sequence_' + str(i+1) + '_Graph_' + str(j+1) +'.png'
-        plot_graph_and_data(G, filename)
-        #print(f"    Number of nodes: {G.number_of_nodes()}")
-        #print(f"    Number of edges: {G.number_of_edges()}")
+def load_sequence_data(file_name):
+    # Load sequence from file
+    with open(file_name, 'rb') as f:
+        sequence = pickle.load(f)
+
+    # Loop through the sequences and graphs
+    for i, window_sequence in enumerate(sequence):
+        print(f"Sequence {i+1}:")
+        for j, G in enumerate(window_sequence):
+            print(f"  Graph {j+1}:")
+            filename = 'plots/sequence_' + str(i+1) + '_Graph_' + str(j+1) +'.png'
+            plot_graph_and_data(G, filename)
+            #print(f"    Number of nodes: {G.number_of_nodes()}")
+            #print(f"    Number of edges: {G.number_of_edges()}")
+
+
+
+#file_name = 'graph_sequence.pkl'
+#load_sequence_data(file_name)
+
+
 
 
 #filename = 'plots/sequence_' + str(timestamp) + '.png'
