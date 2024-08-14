@@ -14,7 +14,11 @@ from helper_functions import *
 
 
 
-def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocities, max_distance=45):
+def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocities):
+    max_distance = 45 # Radius of the complete graph
+    min_dist_between_node = 1 # minmum distance between two connected nodes
+    connection_threshold = 1 # minimum distance within which 2 connected components will be connected
+    
     G = nx.Graph()
     node_ids = {}  # Dictionary to store node IDs for points
     Vehicel_X = dynamic_object_positions[0].x
@@ -28,7 +32,8 @@ def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocit
             for point in centerline:
                 distance = sqrt((Vehicel_X - point.x)**2 + (Vehicel_Y - point.y)**2)
                 if distance <= max_distance:
-                    if prev_point is None or sqrt((prev_point.x - point.x)**2 + (prev_point.y - point.y)**2) >= 1:
+                    # CHeck to maintain some minimum distance between nodes.
+                    if prev_point is None or sqrt((prev_point.x - point.x)**2 + (prev_point.y - point.y)**2) >= min_dist_between_node:
                         node_id = len(node_ids) + 1
                         node_ids[point] = node_id
                         G.add_node(node_id, type="map_node", x=point.x, y=point.y,
@@ -61,6 +66,18 @@ def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocit
                 distance = sqrt((mid_point.x - node[1]['x'])**2 + (mid_point.y - node[1]['y'])**2)
                 if distance <= 10:
                     G.nodes[node[0]]['nearest_traffic_light_detection_probability'] = 1
+
+    # Ensure the graph is connected
+    components = list(nx.connected_components(G))
+    if len(components) > 1:
+        # Connect the components by adding edges between all pairs of nodes in different components that are within the connection threshold
+        for i in range(len(components)):
+            for j in range(i+1, len(components)):
+                for node1 in components[i]:
+                    for node2 in components[j]:
+                        distance = sqrt((G.nodes[node1]['x'] - G.nodes[node2]['x'])**2 + (G.nodes[node1]['y'] - G.nodes[node2]['y'])**2)
+                        if distance <= connection_threshold:
+                            G.add_edge(node1, node2, type="connection_edge")
 
     return G
 

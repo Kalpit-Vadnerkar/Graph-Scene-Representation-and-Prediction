@@ -16,10 +16,11 @@ def load_lanelet_map(file):
     projector = LocalCartesianProjector(lanelet2.io.Origin(35.67, 139.65, 0))
     #projector = LocalCartesianProjector(lanelet2.io.Origin(0, 0))
     map_data, load_errors = lanelet2.io.loadRobust(file, projector)
+    return map_data
 
 
 
-def process_and_save_sequences(input_folder, output_folder):
+def process_and_save_sequences(map_data, input_folder, output_folder):
     # Ensure output directory exists
     os.makedirs(output_folder, exist_ok=True)
 
@@ -51,12 +52,14 @@ def process_and_save_sequences(input_folder, output_folder):
                     #print(f"Number of edges: {G.number_of_edges()}")
                     window_sequence.append(G)
                 sequence.append(window_sequence)
+                
 
             # Save sequence to pickle file
             output_file = os.path.join(output_folder, f"{folder_name}.pkl")
             with open(output_file, 'wb') as f:
                 pickle.dump(sequence, f)
             print("done!")
+            
 
 def load_sequence_data(file_name):
     # Load sequence from file
@@ -79,8 +82,12 @@ def plot_sequence_data(sequence):
 input_folder = "Cleaned_Data_set"
 output_folder = "Sequence_Dataset"
 map_file = "lanelet2_map.osm"
-load_lanelet_map(map_file)
-process_and_save_sequences(input_folder, output_folder)
+map_data = load_lanelet_map(map_file)
+process_and_save_sequences(map_data, input_folder, output_folder)
+for file_name in os.listdir(output_folder):
+    file_path = os.path.join(output_folder, file_name)
+    plot_sequence_data(load_sequence_data(file_path))
+    break
 
 
 
