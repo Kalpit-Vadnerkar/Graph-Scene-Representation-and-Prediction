@@ -70,6 +70,8 @@ def load_sequence_data(file_name):
 def plot_sequence_data(sequence):
     # Loop through the sequences and graphs
     for i, window_sequence in enumerate(sequence):
+        if i % 10:
+            continue
         print(f"Sequence {i+1}:")
         for j, G in enumerate(window_sequence):
             print(f"  Graph {j+1}:")
@@ -78,17 +80,20 @@ def plot_sequence_data(sequence):
             #print(f"    Number of nodes: {G.number_of_nodes()}")
             #print(f"    Number of edges: {G.number_of_edges()}")
 
+
 # Call the function
-input_folder = "Cleaned_Data_set"
-output_folder = "Sequence_Dataset"
+user_folder = input("Please provide folder name: ")
+input_folder = os.path.join(user_folder, "Cleaned_Dataset")
+output_folder = os.path.join(user_folder, "Sequence_Dataset")
 map_file = "lanelet2_map.osm"
 map_data = load_lanelet_map(map_file)
 process_and_save_sequences(map_data, input_folder, output_folder)
+count = 0
 for file_name in os.listdir(output_folder):
     file_path = os.path.join(output_folder, file_name)
     plot_sequence_data(load_sequence_data(file_path))
     break
-
+    
 
 
 

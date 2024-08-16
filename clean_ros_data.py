@@ -8,7 +8,7 @@ files_to_clean = {"_perception_object_recognition_tracking_objects.json",
                   "_vehicle_status_velocity_status.json",
 }
 
-main_folder = "Data_set"
+main_folder = "Testing Dataset/Raw_Dataset"
 
 # Iterate over all subfolders in the main folder
 for subfolder in os.listdir(main_folder):

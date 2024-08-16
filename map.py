@@ -16,8 +16,8 @@ from helper_functions import *
 
 def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocities):
     max_distance = 45 # Radius of the complete graph
-    min_dist_between_node = 1 # minmum distance between two connected nodes
-    connection_threshold = 1 # minimum distance within which 2 connected components will be connected
+    min_dist_between_node = 5 # minmum distance between two connected nodes
+    connection_threshold = 5 # minimum distance within which 2 connected components will be connected
     
     G = nx.Graph()
     node_ids = {}  # Dictionary to store node IDs for points
@@ -36,6 +36,7 @@ def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocit
                     if prev_point is None or sqrt((prev_point.x - point.x)**2 + (prev_point.y - point.y)**2) >= min_dist_between_node:
                         node_id = len(node_ids) + 1
                         node_ids[point] = node_id
+                        
                         G.add_node(node_id, type="map_node", x=point.x, y=point.y,
                                     dynamic_object_exist_probability = 0, dynamic_object_position_X = 0, dynamic_object_position_Y = 0,
                                     dynamic_object_velocity_X = 0, dynamic_object_velocity_Y = 0, nearest_traffic_light_detection_probability = 0)
@@ -70,14 +71,38 @@ def lanelet2_to_graph(map_data, dynamic_object_positions, dynamic_object_velocit
     # Ensure the graph is connected
     components = list(nx.connected_components(G))
     if len(components) > 1:
-        # Connect the components by adding edges between all pairs of nodes in different components that are within the connection threshold
-        for i in range(len(components)):
-            for j in range(i+1, len(components)):
-                for node1 in components[i]:
-                    for node2 in components[j]:
-                        distance = sqrt((G.nodes[node1]['x'] - G.nodes[node2]['x'])**2 + (G.nodes[node1]['y'] - G.nodes[node2]['y'])**2)
-                        if distance <= connection_threshold:
-                            G.add_edge(node1, node2, type="connection_edge")
+        def find_closest_components(components):
+            min_distance = float('inf')
+            closest_pair = None
+            for i in range(len(components)):
+                for j in range(i + 1, len(components)):
+                    for node1 in components[i]:
+                        for node2 in components[j]:
+                            distance = sqrt((G.nodes[node1]['x'] - G.nodes[node2]['x'])**2 + 
+                                            (G.nodes[node1]['y'] - G.nodes[node2]['y'])**2)
+                            if distance < min_distance:
+                                min_distance = distance
+                                closest_pair = (node1, node2, i, j)
+            return closest_pair, min_distance
+
+        while len(components) > 1:
+            closest_pair, min_distance = find_closest_components(components)
+            if min_distance <= connection_threshold:
+                node1, node2, i, j = closest_pair
+                G.add_edge(node1, node2, type="connection_edge")
+                # Merge the two connected components
+                new_component = components[i].union(components[j])
+                components = [comp for k, comp in enumerate(components) if k not in (i, j)]
+                components.append(new_component)
+            else:
+                # If no components are within the threshold, we stop connecting
+                break
+    # Scale position features by 1000
+    for node_id in G.nodes:
+        G.nodes[node_id]['x'] /= 1000
+        G.nodes[node_id]['y'] /= 1000
+        G.nodes[node_id]['dynamic_object_position_X'] /= 1000
+        G.nodes[node_id]['dynamic_object_position_Y'] /= 1000
 
     return G
 
@@ -119,8 +144,9 @@ def plot_graph_and_data(G, filename):
     # Set axis limits to fit the data
     x_values = [data['x'] for node, data in G.nodes(data=True)]
     y_values = [data['y'] for node, data in G.nodes(data=True)]
-    plt.xlim(min(x_values) - 10, max(x_values) + 10)
-    plt.ylim(min(y_values) - 10, max(y_values) + 10)
+    plot_padding = 0
+    plt.xlim(min(x_values) - plot_padding, max(x_values) + plot_padding)
+    plt.ylim(min(y_values) - plot_padding, max(y_values) + plot_padding)
 
     # Add a legend
     plt.legend(loc='upper right')
