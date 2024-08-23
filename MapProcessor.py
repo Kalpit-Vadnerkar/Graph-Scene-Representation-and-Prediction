@@ -16,7 +16,15 @@ class MapProcessor:
         route_file = os.path.join(folder_path, 'route.json')
         with open(route_file, 'r') as f:
             route_json = json.load(f)
-        self.route = route_json['data']['route_segments']
+        
+        # Extract lane IDs from route segments
+        route_lane_ids = []
+        for segment in route_json['data']['route_segments']:
+            for primitive in segment['primitives']:
+                if primitive['primitive_type'] == 'lane':
+                    route_lane_ids.append(primitive['id'])
+        
+        self.route = route_lane_ids
 
     def get_route(self):
         return self.route

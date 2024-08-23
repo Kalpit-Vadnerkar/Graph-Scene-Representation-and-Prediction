@@ -4,8 +4,7 @@ import json
 import numpy as np
 from MapProcessor import MapProcessor
 from GraphBuilder import GraphBuilder
-from helper_functions import convert_coordinate_frame, Point
-
+from Point import Point
 
 class DataProcessor:
     def __init__(self, map_file, input_folder, output_folder, window_size, prediction_horizon):
@@ -13,8 +12,15 @@ class DataProcessor:
         self.graph_builder = None
         self.input_folder = input_folder
         self.output_folder = output_folder
+        self.graph_size = 30
         self.window_size = window_size
         self.prediction_horizon = prediction_horizon
+        self.reference_points = [
+            ((81370.40, 49913.81), (3527.96, 1775.78)),
+            ((81375.16, 49917.01), (3532.70, 1779.04)),
+            ((81371.85, 49911.62), (3529.45, 1773.63)),
+            ((81376.60, 49914.82), (3534.15, 1776.87)),
+        ]
 
     def process_all_sequences(self):
         os.makedirs(self.output_folder, exist_ok=True)
@@ -63,9 +69,9 @@ class DataProcessor:
                     ego_velocity = {
                         'longitudinal': vel_data['data']['longitudinal_velocity'],
                         'lateral': vel_data['data']['lateral_velocity'],
-                        'angular': vel_data['data']['heading_rate']
+                        'angular': vel_data['data']['yaw_rate']
                     }
-                    ego_steering = steer_data['data']['steering_tire_angle']
+                    ego_steering = steer_data['data']['steering_angle']
 
                     objects = [{
                         'position': {'x': obj['x'], 'y': obj['y'], 'z': obj['z']},
@@ -134,10 +140,9 @@ class DataProcessor:
         center_y = (initial_position.y + final_position.y) / 2
         center_position = Point(center_x, center_y)
 
-        distance = np.sqrt((final_position.x - initial_position.x)**2 + 
-                           (final_position.y - initial_position.y)**2)
+        distance = Point.distance(initial_position, final_position)
 
-        max_distance = max(distance / 2, 45)  # 45 is the original max_distance from GraphBuilder
+        max_distance = max(distance / 2, self.graph_size)  # 45 is the original max_distance from GraphBuilder
 
         return self.graph_builder.build_graph(center_position, max_distance)
 
@@ -149,10 +154,45 @@ class DataProcessor:
         y_min, y_max = min(y_coords), max(y_coords)
         
         for node in G.nodes(data=True):
-            node[1]['x'] = (node[1]['x'] - x_min) / (x_max - x_min)
-            node[1]['y'] = (node[1]['y'] - y_min) / (y_max - y_min)
+            scaled_point = Point(node[1]['x'], node[1]['y']).scale(x_min, x_max, y_min, y_max)
+            node[1]['x'] = scaled_point.x
+            node[1]['y'] = scaled_point.y
         
         return G, x_min, x_max, y_min, y_max
+
+    def extract_ego_data(self, data_dict):
+        ego_pos = Point.convert_coordinate_frame(
+            data_dict['ego']['position']["x"], 
+            data_dict['ego']['position']["y"], 
+            self.reference_points
+        )
+        ego_vel = Point(data_dict['ego']['velocity']["longitudinal"], data_dict['ego']['velocity']["lateral"])
+        ego_orientation = data_dict['ego']['orientation']
+        ego_steering = data_dict['ego']['steering']
+        return {
+            'position': ego_pos,
+            'velocity': ego_vel,
+            'orientation': ego_orientation,
+            'steering': ego_steering,
+            'yaw_rate': data_dict['ego']['velocity']["angular"]
+        }
+
+    def extract_object_data(self, data_dict):
+        objects = []
+        for obj in data_dict['objects']:
+            pos = Point.convert_coordinate_frame(
+                obj['position']["x"], 
+                obj['position']["y"], 
+                self.reference_points
+            )
+            vel = Point(obj['velocity']["x"], obj['velocity']["y"])
+            objects.append({
+                'position': pos,
+                'velocity': vel,
+                'orientation': obj['orientation'],
+                'classification': obj['classification']
+            })
+        return objects
 
     def process_timestep(self, data_dict, G, x_min, x_max, y_min, y_max, is_past):
         ego_data = self.extract_ego_data(data_dict)
@@ -174,7 +214,7 @@ class DataProcessor:
         }
         
         return processed_data
-
+    
     def scale_position(self, position, x_min, x_max, y_min, y_max):
         return [
             (position.x - x_min) / (x_max - x_min),
