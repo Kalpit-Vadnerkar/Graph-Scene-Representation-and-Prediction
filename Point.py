@@ -36,7 +36,10 @@ class Point:
     def distance(point1, point2):
         return sqrt((point1.x - point2.x)**2 + (point1.y - point2.y)**2)
 
+    def clamp(self, value, min_value, max_value):
+        return max(min_value, min(value, max_value))
+
     def scale(self, x_min, x_max, y_min, y_max):
-        scaled_x = (self.x - x_min) / (x_max - x_min)
-        scaled_y = (self.y - y_min) / (y_max - y_min)
+        scaled_x = self.clamp((self.x - x_min) / (x_max - x_min), 0, 1)
+        scaled_y = self.clamp((self.y - y_min) / (y_max - y_min), 0, 1)
         return Point(scaled_x, scaled_y)

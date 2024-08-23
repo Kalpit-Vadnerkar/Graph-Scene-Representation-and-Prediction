@@ -7,12 +7,15 @@ from GraphBuilder import GraphBuilder
 from Point import Point
 
 class DataProcessor:
-    def __init__(self, map_file, input_folder, output_folder, window_size, prediction_horizon):
+    def __init__(self, map_file, input_folder, output_folder, min_dist_between_node, connection_threshold, max_nodes, min_nodes, window_size, prediction_horizon):
         self.map_processor = MapProcessor(map_file)
         self.graph_builder = None
         self.input_folder = input_folder
         self.output_folder = output_folder
-        self.graph_size = 30
+        self.min_dist_between_node = min_dist_between_node
+        self.connection_threshold = connection_threshold
+        self.max_nodes = max_nodes
+        self.min_nodes = min_nodes
         self.window_size = window_size
         self.prediction_horizon = prediction_horizon
         self.reference_points = [
@@ -32,7 +35,7 @@ class DataProcessor:
     def process_sequence(self, folder_name, folder_path):
         print(f"Processing folder: {folder_name}")
         self.map_processor.load_route(folder_path)
-        self.graph_builder = GraphBuilder(self.map_processor.map_data, self.map_processor.get_route())
+        self.graph_builder = GraphBuilder(self.map_processor.map_data, self.map_processor.get_route(), self.min_dist_between_node, self.connection_threshold, self.max_nodes, self.min_nodes)
         data = self.read_scene_data(folder_path)
         sequence = self.create_sequence(data)
         self.save_sequence(sequence, folder_name)
@@ -99,52 +102,12 @@ class DataProcessor:
 
         return data
 
-    def create_sequence(self, data):
-        sequence = []
-        timestamps = list(data.keys())
-        
-        for i in range(len(timestamps) - self.window_size - self.prediction_horizon + 1):
-            # Get initial and final positions
-            initial_timestamp = timestamps[i]
-            final_timestamp = timestamps[i + self.window_size + self.prediction_horizon - 1]
-            initial_position = self.extract_ego_data(data[initial_timestamp])['position']
-            final_position = self.extract_ego_data(data[final_timestamp])['position']
-            
-            # Create a graph that covers both initial and final positions
-            G = self.create_expanded_graph(initial_position, final_position)
-            
-            # Scale the graph and get scaling factors
-            G, x_min, x_max, y_min, y_max = self.scale_graph(G)
-            
-            past_sequence = []
-            future_sequence = []
-            
-            for j in range(i, i + self.window_size):
-                timestamp = timestamps[j]
-                past_sequence.append(self.process_timestep(data[timestamp], G, x_min, x_max, y_min, y_max, is_past=True))
-            
-            for j in range(i + self.window_size, i + self.window_size + self.prediction_horizon):
-                timestamp = timestamps[j]
-                future_sequence.append(self.process_timestep(data[timestamp], G, x_min, x_max, y_min, y_max, is_past=False))
-            
-            sequence.append({
-                'past': past_sequence,
-                'future': future_sequence,
-                'graph': G  # Store the graph once for the entire sequence
-            })
-        
-        return sequence
-
     def create_expanded_graph(self, initial_position, final_position):
         center_x = (initial_position.x + final_position.x) / 2
         center_y = (initial_position.y + final_position.y) / 2
         center_position = Point(center_x, center_y)
 
-        distance = Point.distance(initial_position, final_position)
-
-        max_distance = max(distance / 2, self.graph_size)  # 45 is the original max_distance from GraphBuilder
-
-        return self.graph_builder.build_graph(center_position, max_distance)
+        return self.graph_builder.build_graph(center_position)
 
     def scale_graph(self, G):
         x_coords = [node[1]['x'] for node in G.nodes(data=True)]
@@ -194,6 +157,42 @@ class DataProcessor:
             })
         return objects
 
+    def create_sequence(self, data):
+        sequence = []
+        timestamps = list(data.keys())
+        
+        for i in range(len(timestamps) - self.window_size - self.prediction_horizon + 1):
+            # Get initial and final positions
+            initial_timestamp = timestamps[i]
+            final_timestamp = timestamps[i + self.window_size + self.prediction_horizon - 1]
+            initial_position = self.extract_ego_data(data[initial_timestamp])['position']
+            final_position = self.extract_ego_data(data[final_timestamp])['position']
+            
+            # Create a graph that covers both initial and final positions
+            G = self.create_expanded_graph(initial_position, final_position)
+            
+            # Scale the graph and get scaling factors
+            G, x_min, x_max, y_min, y_max = self.scale_graph(G)
+            
+            past_sequence = []
+            future_sequence = []
+            
+            for j in range(i, i + self.window_size):
+                timestamp = timestamps[j]
+                past_sequence.append(self.process_timestep(data[timestamp], G, x_min, x_max, y_min, y_max, is_past=True))
+            
+            for j in range(i + self.window_size, i + self.window_size + self.prediction_horizon):
+                timestamp = timestamps[j]
+                future_sequence.append(self.process_timestep(data[timestamp], G, x_min, x_max, y_min, y_max, is_past=False))
+            
+            sequence.append({
+                'past': past_sequence,
+                'future': future_sequence,
+                'graph': G  # Store the graph once for the entire sequence
+            })
+        
+        return sequence
+
     def process_timestep(self, data_dict, G, x_min, x_max, y_min, y_max, is_past):
         ego_data = self.extract_ego_data(data_dict)
         objects = self.extract_object_data(data_dict)
@@ -215,11 +214,23 @@ class DataProcessor:
         
         return processed_data
     
+    def check_object_in_path(self, G, ego_position, objects):
+        for obj in objects:
+            closest_node = min(G.nodes(data=True), 
+                               key=lambda n: (n[1]['x'] - obj['position'][0])**2 + 
+                                             (n[1]['y'] - obj['position'][1])**2)
+            if closest_node[1]['path_node'] == 1:
+                return 1
+        return 0
+
+    def clamp(self, value, min_value, max_value):
+        return max(min_value, min(value, max_value))
+
     def scale_position(self, position, x_min, x_max, y_min, y_max):
-        return [
-            (position.x - x_min) / (x_max - x_min),
-            (position.y - y_min) / (y_max - y_min)
-        ]
+        scaled_x = self.clamp((position.x - x_min) / (x_max - x_min), 0, 1)
+        scaled_y = self.clamp((position.y - y_min) / (y_max - y_min), 0, 1)
+        
+        return [scaled_x, scaled_y]
 
     def scale_object(self, obj, x_min, x_max, y_min, y_max):
         return {
@@ -233,16 +244,7 @@ class DataProcessor:
         return [abs(velocity.x) / scaling_factor, abs(velocity.y) / scaling_factor]
 
     def scale_steering(self, steering):
-        return steering + 0.5
-
-    def check_object_in_path(self, G, ego_position, objects):
-        for obj in objects:
-            closest_node = min(G.nodes(data=True), 
-                               key=lambda n: (n[1]['x'] - obj['position'][0])**2 + 
-                                             (n[1]['y'] - obj['position'][1])**2)
-            if closest_node[1]['path_node'] == 1:
-                return 1
-        return 0
+        return steering + 0.5  
 
     def check_traffic_light_detected(self, G, ego_position):
         closest_node = min(G.nodes(data=True), 
