@@ -3,7 +3,7 @@ import os
 class Config:
     def __init__(self):
         # Map processing
-        self.MAP_FILE = "lanelet2_map.osm"
+        self.MAP_FILE = "map/lanelet2_map.osm"
         
         # Graph building
         self.MIN_DIST_BETWEEN_NODE = 5
@@ -16,7 +16,7 @@ class Config:
         self.PREDICTION_HORIZON = 3
         
         # Data augmentation
-        self.ROTATIONS = [90, 180, 270]
+        self.ROTATIONS = [45, 90, 135, 180, 225, 270]
         self.MIRRORS = ['x', 'y']
         
         # Reference points for coordinate conversion
@@ -30,7 +30,7 @@ class Config:
         # Velocity and steering angle scaling factors
         self.MAX_VELOCITY = 12.0  # m/s, adjust as needed
         self.MIN_VELOCITY = -0.0  # m/s, adjust as needed
-        self.MAX_STEERING = 0.38  # radians, adjust as needed
+        self.MAX_STEERING = 0.3  # radians, adjust as needed
         self.MIN_STEERING = -0.3  # radians, adjust as needed
         
     def set_folders(self, user_folder):
