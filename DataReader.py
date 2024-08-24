@@ -62,6 +62,7 @@ class DataReader:
             while True:
                 lines = [f.readline().strip() for f in [f_tf, f_obj, f_tl, f_vel, f_steer]]
                 if not all(lines):
+                    #print(f"Problems in {self.folder_path}")
                     break
 
                 tf_data, obj_data, tl_data, vel_data, steer_data = map(json.loads, lines)

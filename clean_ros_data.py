@@ -1,6 +1,6 @@
 import json
 import os
-import math
+from collections import defaultdict
 
 files_to_clean = {
     "_perception_object_recognition_tracking_objects.json",
@@ -15,20 +15,12 @@ raw_data_folder = os.path.join(main_folder, "Raw_Dataset")
 cleaned_data_folder = os.path.join(main_folder, "Cleaned_Dataset")
 stopped_limit = 4
 
-max_velocity = float('-inf')
-min_velocity = float('inf')
-max_steering_angle = float('-inf')
-min_steering_angle = float('inf')
-
 def process_velocity_data(data_points):
-    global max_velocity, min_velocity
     zero_velocity_count = 0
     timestamps_to_keep = set()
     
     for timestamp, data in sorted(data_points.items()):
-        velocity = data['data']['longitudinal_velocity']
-        max_velocity = max(max_velocity, velocity)
-        min_velocity = min(min_velocity, velocity)
+        velocity = data['longitudinal_velocity']
         if abs(velocity) < 1e-6:  # Consider velocities very close to 0 as 0
             zero_velocity_count += 1
         else:
@@ -38,6 +30,20 @@ def process_velocity_data(data_points):
             timestamps_to_keep.add(timestamp)
     
     return timestamps_to_keep
+
+def extract_timestamp(data):
+    if isinstance(data, dict):
+        return data.get('timestamp_sec')
+    elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+        return data[0].get('timestamp_sec')
+    return None
+
+def extract_velocity(data):
+    if isinstance(data, dict):
+        return data.get('longitudinal_velocity')
+    elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+        return data[0].get('longitudinal_velocity')
+    return None
 
 # Create the Cleaned_Dataset folder
 os.makedirs(cleaned_data_folder, exist_ok=True)
@@ -52,7 +58,32 @@ for subfolder in os.listdir(raw_data_folder):
     output_folder = os.path.join(cleaned_data_folder, subfolder)
     os.makedirs(output_folder, exist_ok=True)
 
-    # Process velocity data first
+    # First, collect all timestamps from all files
+    all_timestamps = defaultdict(set)
+    for filename in files_to_clean:
+        if not os.path.isfile(os.path.join(input_folder, filename)):
+            continue
+        
+        with open(os.path.join(input_folder, filename), 'r') as file:
+            for line in file:
+                try:
+                    data = json.loads(line)
+                    timestamp_sec = extract_timestamp(data['data'])
+                    if timestamp_sec is not None:
+                        all_timestamps[filename].add(timestamp_sec)
+                except json.JSONDecodeError:
+                    continue
+                except KeyError as e:
+                    print(f"KeyError in file {filename}: {e}")
+                    print(f"Data structure: {data}")
+                except Exception as e:
+                    print(f"Unexpected error in file {filename}: {e}")
+                    print(f"Data structure: {data}")
+
+    # Find common timestamps across all files
+    common_timestamps = set.intersection(*all_timestamps.values())
+
+    # Now process velocity data
     velocity_file = "_vehicle_status_velocity_status.json"
     velocity_data_points = {}
     
@@ -60,55 +91,46 @@ for subfolder in os.listdir(raw_data_folder):
         for line in file:
             try:
                 data = json.loads(line)
-                timestamp_sec = data['data']['timestamp_sec']
-                if "Transform not found" not in str(data['data']):
-                    velocity_data_points[timestamp_sec] = data
+                timestamp_sec = extract_timestamp(data['data'])
+                velocity = extract_velocity(data['data'])
+                if timestamp_sec in common_timestamps and velocity is not None:
+                    velocity_data_points[timestamp_sec] = {'longitudinal_velocity': velocity}
             except json.JSONDecodeError:
                 continue
+            except KeyError as e:
+                print(f"KeyError in velocity file: {e}")
+                print(f"Data structure: {data}")
+            except Exception as e:
+                print(f"Unexpected error in velocity file: {e}")
+                print(f"Data structure: {data}")
 
     timestamps_to_keep = process_velocity_data(velocity_data_points)
 
+    # Now process all files
     for filename in files_to_clean:
-        # Check if the file exists in the input folder
         if not os.path.isfile(os.path.join(input_folder, filename)):
             continue
 
-        # Open the file and read the lines
-        with open(os.path.join(input_folder, filename), 'r') as file:
-            lines = file.readlines()
-
-        # Initialize a dictionary to store the data points
         data_points = {}
-
-        # Iterate over the lines
-        for line in lines:
-            try:
-                # Try to parse the line as JSON
-                data = json.loads(line)
-
-                # If the line contains "Transform not found", skip it
-                if "Transform not found" in str(data['data']):
+        with open(os.path.join(input_folder, filename), 'r') as file:
+            for line in file:
+                try:
+                    data = json.loads(line)
+                    timestamp_sec = extract_timestamp(data['data'])
+                    if timestamp_sec in common_timestamps and timestamp_sec in timestamps_to_keep:
+                        data_points[timestamp_sec] = data
+                except json.JSONDecodeError:
                     continue
-
-                # Extract the timestamp_sec
-                timestamp_sec = data['data']['timestamp_sec']
-
-                # If the filename is the steering status file, update max_steering_angle and min_steering_angle
-                if filename == "_vehicle_status_steering_status.json":
-                    steering_angle = data['data']['steering_angle']
-                    max_steering_angle = max(max_steering_angle, steering_angle)
-                    min_steering_angle = min(min_steering_angle, steering_angle)
-
-                # If the timestamp_sec is in the set of timestamps to keep, add the data point
-                if timestamp_sec in timestamps_to_keep:
-                    data_points[timestamp_sec] = data
-            except json.JSONDecodeError:
-                # If the line is not valid JSON, skip it
-                continue
+                except KeyError as e:
+                    print(f"KeyError in file {filename}: {e}")
+                    print(f"Data structure: {data}")
+                except Exception as e:
+                    print(f"Unexpected error in file {filename}: {e}")
+                    print(f"Data structure: {data}")
 
         # Write the cleaned data points to a new file
         with open(os.path.join(output_folder, filename), 'w') as file:
-            for data_point in data_points.values():
+            for data_point in sorted(data_points.values(), key=lambda x: extract_timestamp(x['data'])):
                 file.write(json.dumps(data_point) + '\n')
 
     # Copy the route file without modifications
@@ -118,8 +140,4 @@ for subfolder in os.listdir(raw_data_folder):
              open(os.path.join(output_folder, route_file), 'w') as outfile:
             outfile.write(infile.read())
 
-print("Data cleaning and velocity filtering completed.")
-print(f"Maximum velocity: {max_velocity:.2f} m/s")
-print(f"Minimum velocity: {min_velocity:.2f} m/s")
-print(f"Maximum steering angle: {max_steering_angle:.2f} radians ({math.degrees(max_steering_angle):.2f} degrees)")
-print(f"Minimum steering angle: {min_steering_angle:.2f} radians ({math.degrees(min_steering_angle):.2f} degrees)")
+print("Data cleaning and velocity filtering completed. Cleaned data stored in 'Cleaned_Dataset' folder.")

@@ -30,8 +30,8 @@ class Config:
         # Velocity and steering angle scaling factors
         self.MAX_VELOCITY = 12.0  # m/s, adjust as needed
         self.MIN_VELOCITY = -0.0  # m/s, adjust as needed
-        self.MAX_STEERING = 0.4  # radians, adjust as needed
-        self.MIN_STEERING = -0.4  # radians, adjust as needed
+        self.MAX_STEERING = 0.38  # radians, adjust as needed
+        self.MIN_STEERING = -0.3  # radians, adjust as needed
         
     def set_folders(self, user_folder):
         self.INPUT_FOLDER = os.path.join(user_folder, "Cleaned_Dataset")
