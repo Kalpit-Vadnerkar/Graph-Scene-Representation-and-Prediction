@@ -11,7 +11,9 @@ def load_sequences(folder_path):
             file_path = os.path.join(folder_path, filename)
             with open(file_path, 'rb') as f:
                 sequences = pickle.load(f)
-                all_sequences.extend(sequences)
+                all_sequences.append(sequences)
+                #all_sequences.extend(sequences)
+    print(f"loaded {len(all_sequences)} files")            
     return all_sequences
 
 def plot_graph_and_sequence(sequence, ax):
@@ -58,15 +60,20 @@ os.makedirs(plots_folder, exist_ok=True)
 
 all_sequences = load_sequences(output_folder)
 
-# Randomly select 5 sequences
-selected_sequences = random.sample(all_sequences, min(5, len(all_sequences)))
+selected_sequences = []
+
+for sequence in all_sequences:
+    # Randomly select 5 sequences
+    selected_sequences.extend(random.sample(sequence, min(3, len(sequence))))
+
+print(f"loaded {len(selected_sequences)} sequences")
 
 # Create individual plots for each sequence
 for i, sequence in enumerate(selected_sequences):
     plt.figure(figsize=(10, 8))
     plot_graph_and_sequence(sequence, plt.gca())
     plt.title(f"Sequence {i+1}")
-    individual_plot_filename = os.path.join(plots_folder, f"sequence_{i+1}.png")
+    individual_plot_filename = os.path.join(plots_folder, f"run_{(i // 3) + 1}_sequence_{i + 1}.png")
     plt.savefig(individual_plot_filename, dpi=300, bbox_inches='tight')
     print(f"Plot saved as {individual_plot_filename}")
     plt.close()

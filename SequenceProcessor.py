@@ -1,4 +1,5 @@
 from Point import Point
+from config import config
 
 class SequenceProcessor:
     def __init__(self, window_size, prediction_horizon, reference_points):
@@ -68,8 +69,13 @@ class SequenceProcessor:
         return [scaled_x, scaled_y]
 
     def scale_velocity(self, velocity):
-        scaling_factor = 10
-        return [abs(velocity.x) / scaling_factor, abs(velocity.y) / scaling_factor]
+        def scale_component(value, min_val, max_val):
+            return max(0, min(1, (value - min_val) / (max_val - min_val)))
+        
+        return [
+            scale_component(velocity.x, config.MIN_VELOCITY, config.MAX_VELOCITY),
+            scale_component(velocity.y, config.MIN_VELOCITY, config.MAX_VELOCITY)
+        ]
     
     def scale_object(self, obj, x_min, x_max, y_min, y_max):
         return {
@@ -79,7 +85,7 @@ class SequenceProcessor:
         }
 
     def scale_steering(self, steering):
-        return steering + 0.5  
+        return max(0, min(1, (steering - config.MIN_STEERING) / (config.MAX_STEERING - config.MIN_STEERING)))
     
     def check_object_in_path(self, G, ego_position, objects):
         for obj in objects:
@@ -117,7 +123,7 @@ class SequenceProcessor:
         
         return processed_data
     
-    def create_sequences(self, data, graph_builder):
+    def create_sequences(self, data, graph_builder, inner_pbar):
         sequences = []
         timestamps = list(data.keys())
         
@@ -147,5 +153,5 @@ class SequenceProcessor:
                 'future': future_sequence,
                 'graph': G
             })
-        
+            inner_pbar.update(1)
         return sequences

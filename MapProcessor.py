@@ -1,10 +1,11 @@
 import lanelet2
 import json
 import os
+from config import config
 
 class MapProcessor:
-    def __init__(self, map_file):
-        self.map_data = self.load_lanelet_map(map_file)
+    def __init__(self):
+        self.map_data = self.load_lanelet_map(config.MAP_FILE)
         self.route = None  # Initialize route as None
 
     def load_lanelet_map(self, file):

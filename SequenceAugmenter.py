@@ -5,8 +5,8 @@ class SequenceAugmenter:
     def __init__(self, sequence):
         self.sequence = deepcopy(sequence)
 
-    def _scale_positions(self):
-        # Find min and max x and y values across all nodes and positions
+    def _translate_and_scale_positions(self):
+        # Collect all positions
         all_positions = []
         for node in self.sequence['graph'].nodes(data=True):
             all_positions.append([node[1]['x'], node[1]['y']])
@@ -16,23 +16,28 @@ class SequenceAugmenter:
                 all_positions.append(obj['position'])
         
         all_positions = np.array(all_positions)
-        min_x, min_y = np.min(all_positions, axis=0)
-        max_x, max_y = np.max(all_positions, axis=0)
 
-        # Scale function
-        def scale(pos):
-            return [(pos[0] - min_x) / (max_x - min_x), (pos[1] - min_y) / (max_y - min_y)]
+        # Find min and max x and y values
+        min_pos = np.min(all_positions, axis=0)
+        max_pos = np.max(all_positions, axis=0)
 
-        # Scale graph nodes
+        # Calculate range for x and y
+        pos_range = max_pos - min_pos
+
+        # Define translation and scaling function
+        def translate_and_scale(pos):
+            return (np.array(pos) - min_pos) / pos_range
+
+        # Apply translation and scaling to graph nodes
         for node in self.sequence['graph'].nodes(data=True):
-            scaled_pos = scale([node[1]['x'], node[1]['y']])
+            scaled_pos = translate_and_scale([node[1]['x'], node[1]['y']])
             node[1]['x'], node[1]['y'] = scaled_pos
 
-        # Scale past and future positions
+        # Apply translation and scaling to past and future positions
         for timestep in self.sequence['past'] + self.sequence['future']:
-            timestep['position'] = scale(timestep['position'])
+            timestep['position'] = translate_and_scale(timestep['position']).tolist()
             for obj in timestep['objects']:
-                obj['position'] = scale(obj['position'])
+                obj['position'] = translate_and_scale(obj['position']).tolist()
 
     def rotate(self, angle_degrees):
         angle_radians = np.radians(angle_degrees)
@@ -59,13 +64,12 @@ class SequenceAugmenter:
                 rotated_obj_pos = np.dot(rot_matrix, obj_pos)
                 obj['position'] = rotated_obj_pos.tolist()
 
-        # Scale positions to [0, 1] after rotation
-        self._scale_positions()
+        # Translate and scale positions to [0, 1] after rotation
+        self._translate_and_scale_positions()
 
         return self.sequence
 
     def mirror(self, axis='x'):
-
         # Mirror graph nodes
         for node in self.sequence['graph'].nodes(data=True):
             if axis == 'x':

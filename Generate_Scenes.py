@@ -1,19 +1,16 @@
 import os
 from DataProcessor import DataProcessor
-
+from config import config
+from tqdm import tqdm
 
 user_folder = input("Please provide folder name: ")
-map_file = "lanelet2_map.osm"
-input_folder = os.path.join(user_folder, "Cleaned_Dataset")
-output_folder = os.path.join(user_folder, "Sequence_Dataset")
+config.set_folders(user_folder)
 
-min_dist_between_node = 5
-connection_threshold = 5
-max_nodes = 500
-min_nodes = 200
+processor = DataProcessor(config)
 
-past_trajectory = 3 # Number of past timesteps
-prediction_horizon = 3  # Number of future timesteps to predict
+# Get the total number of folders to process
+total_folders = sum(1 for folder_name in os.listdir(config.INPUT_FOLDER) if os.path.isdir(os.path.join(config.INPUT_FOLDER, folder_name)))
 
-processor = DataProcessor(map_file, input_folder, output_folder, min_dist_between_node, connection_threshold, max_nodes, min_nodes, past_trajectory, prediction_horizon)
-processor.process_all_sequences()
+# Create a progress bar
+with tqdm(total=total_folders, desc="Processing folders") as pbar:
+    processor.process_all_sequences(pbar)
