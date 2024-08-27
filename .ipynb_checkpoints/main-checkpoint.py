@@ -20,7 +20,13 @@ def load_sequences(folder_path):
 
 def main():
     # Hyperparameters
-    input_size = 7  # position (2) + velocity (2) + steering (1) + object_in_path (1) + traffic_light_detected (1)
+    input_sizes = {
+        'position': 2,
+        'velocity': 2,
+        'steering': 1,
+        'object_in_path': 1,
+        'traffic_light_detected': 1
+    }
     hidden_size = 64
     num_layers = 2
     batch_size = 32
@@ -43,7 +49,7 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
     
     # Model initialization
-    model = TrajectoryLSTM(input_size, hidden_size, num_layers)
+    model = TrajectoryLSTM(input_sizes, hidden_size, num_layers)
     
     # Training
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

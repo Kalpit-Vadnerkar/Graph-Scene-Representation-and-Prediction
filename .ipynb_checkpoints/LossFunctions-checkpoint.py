@@ -1,12 +1,17 @@
 import torch
+import torch.nn as nn
 
-class CombinedLoss(torch.nn.Module):
+class CombinedLoss(nn.Module):
     def __init__(self):
         super(CombinedLoss, self).__init__()
-        self.mse_loss = torch.nn.MSELoss()
-        self.bce_loss = torch.nn.BCELoss()
+        self.mse_loss = nn.MSELoss()
+        self.bce_loss = nn.BCELoss()
         
-    def forward(self, continuous_pred, binary_pred, continuous_target, binary_target):
-        mse = self.mse_loss(continuous_pred, continuous_target)
-        bce = self.bce_loss(binary_pred, binary_target)
-        return mse + 0*bce
+    def forward(self, pred, target):
+        loss = 0
+        for key in pred.keys():
+            if key in ['object_in_path', 'traffic_light_detected']:
+                loss += self.bce_loss(pred[key], target[key])
+            else:
+                loss += self.mse_loss(pred[key], target[key])
+        return loss
