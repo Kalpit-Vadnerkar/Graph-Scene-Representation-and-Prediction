@@ -26,11 +26,11 @@ class TrajectoryLSTM(nn.Module):
         object_out, _ = self.lstm_object(x['object_in_path'])
         traffic_out, _ = self.lstm_traffic(x['traffic_light_detected'])
         
-        position_pred = self.fc_position(position_out)
-        velocity_pred = self.fc_velocity(velocity_out)
-        steering_pred = self.fc_steering(steering_out)
-        object_pred = torch.sigmoid(self.fc_object(object_out))
-        traffic_pred = torch.sigmoid(self.fc_traffic(traffic_out))
+        position_pred = self.fc_position(position_out[:, -1, :])
+        velocity_pred = self.fc_velocity(velocity_out[:, -1, :])
+        steering_pred = self.fc_steering(steering_out[:, -1, :])
+        object_pred = torch.sigmoid(self.fc_object(object_out[:, -1, :]))
+        traffic_pred = torch.sigmoid(self.fc_traffic(traffic_out[:, -1, :]))
         
         return {
             'position': position_pred,
