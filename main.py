@@ -29,6 +29,8 @@ def main():
     }
     hidden_size = 64
     num_layers = 2
+    input_seq_len = 3  # past trajectory length
+    output_seq_len = 3  # future prediction length
     batch_size = 32
     num_epochs = 50
     learning_rate = 0.001
@@ -49,7 +51,7 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
     
     # Model initialization
-    model = TrajectoryLSTM(input_sizes, hidden_size, num_layers)
+    model = TrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
     
     # Training
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,7 +59,7 @@ def main():
     trained_model = trainer.train(num_epochs)
     
     # Save the trained model
-    torch.save(trained_model.state_dict(), "trajectory_model.pth")
+    torch.save(trained_model.state_dict(), "improved_trajectory_model.pth")
     
     # Evaluate on test set
     test_loss = trainer.validate()
