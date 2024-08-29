@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import pickle
 import os
+import networkx as nx
 
 class TrajectoryDataset(Dataset):
     def __init__(self, data_folder):
@@ -51,4 +52,28 @@ class TrajectoryDataset(Dataset):
         past_tensor = {k: torch.tensor(v, dtype=torch.float32) for k, v in past_features.items()}
         future_tensor = {k: torch.tensor(v, dtype=torch.float32) for k, v in future_features.items()}
         
-        return past_tensor, future_tensor
+        # Process graph data
+        G = sequence['graph']
+        node_features = torch.zeros((200, 4), dtype=torch.float32)
+        for node, data in G.nodes(data=True):
+            if node < 200:  # Ensure we don't exceed 200 nodes
+                node_features[node] = torch.tensor([
+                    data['x'],
+                    data['y'],
+                    float(data['traffic_light_detection_node']),
+                    float(data['path_node'])
+                ])
+        
+        edge_list = []
+        for edge in G.edges():
+            if edge[0] < 200 and edge[1] < 200:  # Ensure we don't exceed 200 nodes
+                edge_list.append([edge[0], edge[1]])
+        
+        edge_index = torch.tensor(edge_list, dtype=torch.long).t() if edge_list else torch.empty((2, 0), dtype=torch.long)
+        
+        graph_tensor = {
+            'node_features': node_features,
+            'edge_index': edge_index
+        }
+        
+        return past_tensor, future_tensor, graph_tensor

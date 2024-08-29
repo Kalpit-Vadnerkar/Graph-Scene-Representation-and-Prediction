@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader, random_split
 from TrajectoryDataset import TrajectoryDataset
-from DLModels import TrajectoryLSTM
+from DLModels import GraphTrajectoryLSTM
 from Trainer import Trainer
 from visualizer import visualize_predictions
 import pickle
@@ -29,6 +29,8 @@ def main():
     }
     hidden_size = 64
     num_layers = 2
+    input_seq_len = 3  # past trajectory length
+    output_seq_len = 3  # future prediction length
     batch_size = 32
     num_epochs = 50
     learning_rate = 0.001
@@ -45,11 +47,11 @@ def main():
     print(f"Train set size: {len(train_dataset)}")
     print(f"Test set size: {len(test_dataset)}")
     
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, collate_fn=collate_fn)
     
     # Model initialization
-    model = TrajectoryLSTM(input_sizes, hidden_size, num_layers)
+    model = GraphTrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
     
     # Training
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,7 +59,7 @@ def main():
     trained_model = trainer.train(num_epochs)
     
     # Save the trained model
-    torch.save(trained_model.state_dict(), "trajectory_model.pth")
+    torch.save(trained_model.state_dict(), "graph_trajectory_model.pth")
     
     # Evaluate on test set
     test_loss = trainer.validate()
@@ -66,6 +68,15 @@ def main():
     # Visualization
     all_sequences = load_sequences(data_folder)
     visualize_predictions(trained_model, dataset, device, all_sequences)
+
+def collate_fn(batch):
+    past_batch = {k: torch.stack([item[0][k] for item in batch]) for k in batch[0][0].keys()}
+    future_batch = {k: torch.stack([item[1][k] for item in batch]) for k in batch[0][1].keys()}
+    graph_batch = {
+        'node_features': torch.stack([item[2]['node_features'] for item in batch]),
+        'edge_index': torch.cat([item[2]['edge_index'] + i * 200 for i, item in enumerate(batch)], dim=1)
+    }
+    return past_batch, future_batch, graph_batch
 
 if __name__ == "__main__":
     main()

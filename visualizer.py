@@ -49,10 +49,11 @@ def make_predictions(model, dataset, device, num_samples=9):
 
     with torch.no_grad():
         for idx in sampled_sequences:
-            past, future = dataset[idx]
+            past, future, graph = dataset[idx]
             past = {k: v.unsqueeze(0).to(device) for k, v in past.items()}  # Add batch dimension
+            graph = {k: v.unsqueeze(0).to(device) for k, v in graph.items()}  # Add batch dimension
 
-            predictions = model(past)
+            predictions = model(past, graph)
 
             all_predictions.append({k: v.squeeze().cpu().numpy() for k, v in predictions.items()})
             all_actual.append({k: v.numpy() for k, v in future.items()})
