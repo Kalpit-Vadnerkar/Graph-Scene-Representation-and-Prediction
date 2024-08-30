@@ -9,24 +9,28 @@ class Trainer:
         self.val_loader = val_loader
         self.criterion = CombinedLoss()
         self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min')
         self.device = device
 
     def train_epoch(self):
         self.model.train()
         train_loss = 0.0
         
-        for past, future in tqdm(self.train_loader, desc="Training"):
+        for past, future, graph in tqdm(self.train_loader, desc="Training"):
             past = {k: v.to(self.device) for k, v in past.items()}
             future = {k: v.to(self.device) for k, v in future.items()}
+            graph = {k: v.to(self.device) for k, v in graph.items()}
             
             self.optimizer.zero_grad()
-            predictions = self.model(past)
+            predictions = self.model(past, graph)
             
             loss = self.criterion(predictions, future)
             loss.backward()
             self.optimizer.step()
             
             train_loss += loss.item()
+        # Update learning rate
+        self.scheduler.step(train_loss)
         
         return train_loss / len(self.train_loader)
 
@@ -34,11 +38,12 @@ class Trainer:
         self.model.eval()
         val_loss = 0.0
         with torch.no_grad():
-            for past, future in self.val_loader:
+            for past, future, graph in self.val_loader:
                 past = {k: v.to(self.device) for k, v in past.items()}
                 future = {k: v.to(self.device) for k, v in future.items()}
+                graph = {k: v.to(self.device) for k, v in graph.items()}
                 
-                predictions = self.model(past)
+                predictions = self.model(past, graph)
                 
                 loss = self.criterion(predictions, future)
                 val_loss += loss.item()
