@@ -74,7 +74,7 @@ def collate_fn(batch):
     future_batch = {k: torch.stack([item[1][k] for item in batch]) for k in batch[0][1].keys()}
     graph_batch = {
         'node_features': torch.stack([item[2]['node_features'] for item in batch]),
-        'edge_index': torch.cat([item[2]['edge_index'] + i * 200 for i, item in enumerate(batch)], dim=1)
+        'adj_matrix': torch.stack([item[2]['adj_matrix'] for item in batch])
     }
     return past_batch, future_batch, graph_batch
 

@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import pickle
 import os
 import networkx as nx
+import numpy as np
 
 class TrajectoryDataset(Dataset):
     def __init__(self, data_folder):
@@ -64,16 +65,14 @@ class TrajectoryDataset(Dataset):
                     float(data['path_node'])
                 ])
         
-        edge_list = []
-        for edge in G.edges():
-            if edge[0] < 200 and edge[1] < 200:  # Ensure we don't exceed 200 nodes
-                edge_list.append([edge[0], edge[1]])
-        
-        edge_index = torch.tensor(edge_list, dtype=torch.long).t() if edge_list else torch.empty((2, 0), dtype=torch.long)
+        # Create adjacency matrix
+        adj_matrix = nx.to_numpy_array(G)
+        adj_matrix = adj_matrix[:200, :200]  # Ensure we don't exceed 200 nodes
+        adj_matrix = torch.tensor(adj_matrix, dtype=torch.float32)
         
         graph_tensor = {
             'node_features': node_features,
-            'edge_index': edge_index
+            'adj_matrix': adj_matrix
         }
         
         return past_tensor, future_tensor, graph_tensor

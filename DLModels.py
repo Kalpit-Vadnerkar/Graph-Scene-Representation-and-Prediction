@@ -1,7 +1,20 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
+
+class GraphConvolution(nn.Module):
+    def __init__(self, in_features, out_features):
+        super(GraphConvolution, self).__init__()
+        self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.weight)
+
+    def forward(self, input, adj):
+        support = torch.matmul(input, self.weight)
+        output = torch.matmul(adj, support)
+        return output
 
 class GraphTrajectoryLSTM(nn.Module):
     def __init__(self, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len):
@@ -11,16 +24,16 @@ class GraphTrajectoryLSTM(nn.Module):
         self.input_seq_len = input_seq_len
         self.output_seq_len = output_seq_len
         
-        # Graph Convolutional Network for processing map features
-        self.gcn1 = GCNConv(4, hidden_size)  # 4 input features: x, y, traffic_light, path_node
-        self.gcn2 = GCNConv(hidden_size, hidden_size)
+        # Graph Convolutional layers
+        self.gc1 = GraphConvolution(4, hidden_size)
+        self.gc2 = GraphConvolution(hidden_size, hidden_size)
         
         # Attention mechanism for graph features
         self.attention = nn.MultiheadAttention(hidden_size, num_heads=4)
         
         # LSTM layers
-        self.lstm_position = nn.LSTM(2 + hidden_size, hidden_size, num_layers, batch_first=True)
-        self.lstm_velocity = nn.LSTM(2 + hidden_size, hidden_size, num_layers, batch_first=True)
+        self.lstm_position = nn.LSTM(input_sizes['position'] + hidden_size, hidden_size, num_layers, batch_first=True)
+        self.lstm_velocity = nn.LSTM(input_sizes['velocity'] + hidden_size, hidden_size, num_layers, batch_first=True)
         self.lstm_steering = nn.LSTM(input_sizes['steering'] + hidden_size, hidden_size, num_layers, batch_first=True)
         self.lstm_object = nn.LSTM(input_sizes['object_in_path'] + hidden_size, hidden_size, num_layers, batch_first=True)
         self.lstm_traffic = nn.LSTM(input_sizes['traffic_light_detected'] + hidden_size, hidden_size, num_layers, batch_first=True)
@@ -34,32 +47,19 @@ class GraphTrajectoryLSTM(nn.Module):
         
     def forward(self, x, graph):
         # Process graph features
-        node_features, edge_index = graph['node_features'], graph['edge_index']
+        node_features, adj_matrix = graph['node_features'], graph['adj_matrix']
         batch_size = x['position'].size(0)
-
-        # Ensure edge_index is 2xN
-        if edge_index.dim() == 1:
-            edge_index = edge_index.unsqueeze(0).repeat(2, 1)
-        elif edge_index.size(0) == 1:
-            edge_index = edge_index.repeat(2, 1)
 
         # Process each graph in the batch separately
         graph_features_list = []
         for i in range(batch_size):
-            # Extract features and edge_index for a single graph
+            # Extract features and adjacency matrix for a single graph
             single_graph_features = node_features[i]
-            single_edge_index = edge_index[:, edge_index[0] == i]
+            single_adj_matrix = adj_matrix[i]
             
-            # If no edges for this graph, create self-loops
-            if single_edge_index.numel() == 0:
-                num_nodes = single_graph_features.size(0)
-                single_edge_index = torch.arange(num_nodes, device=single_graph_features.device).repeat(2, 1)
-            else:
-                single_edge_index = single_edge_index[1:] - i * 200  # Adjust node indices
-
-            # Apply GCN layers
-            single_graph_features = F.relu(self.gcn1(single_graph_features, single_edge_index))
-            single_graph_features = F.relu(self.gcn2(single_graph_features, single_edge_index))
+            # Apply Graph Convolutional layers
+            single_graph_features = F.relu(self.gc1(single_graph_features, single_adj_matrix))
+            single_graph_features = F.relu(self.gc2(single_graph_features, single_adj_matrix))
             
             graph_features_list.append(single_graph_features)
 
@@ -106,6 +106,7 @@ class GraphTrajectoryLSTM(nn.Module):
             'object_in_path': object_pred,
             'traffic_light_detected': traffic_pred
         }
+
 
 
 class TrajectoryLSTM(nn.Module):

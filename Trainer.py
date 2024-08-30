@@ -9,6 +9,7 @@ class Trainer:
         self.val_loader = val_loader
         self.criterion = CombinedLoss()
         self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min')
         self.device = device
 
     def train_epoch(self):
@@ -28,6 +29,8 @@ class Trainer:
             self.optimizer.step()
             
             train_loss += loss.item()
+        # Update learning rate
+        self.scheduler.step(train_loss)
         
         return train_loss / len(self.train_loader)
 
