@@ -25,7 +25,7 @@ class GraphTrajectoryLSTM(nn.Module):
         self.output_seq_len = output_seq_len
         
         # Graph Convolutional layers
-        self.gc1 = GraphConvolution(4, hidden_size)
+        self.gc1 = GraphConvolution(input_sizes['node_features'], hidden_size)
         self.gc2 = GraphConvolution(hidden_size, hidden_size)
         
         # Attention mechanism for graph features
@@ -38,12 +38,32 @@ class GraphTrajectoryLSTM(nn.Module):
         self.lstm_object = nn.LSTM(input_sizes['object_in_path'] + hidden_size, hidden_size, num_layers, batch_first=True)
         self.lstm_traffic = nn.LSTM(input_sizes['traffic_light_detected'] + hidden_size, hidden_size, num_layers, batch_first=True)
         
-        # Fully connected layers for prediction
-        self.fc_position = nn.Linear(hidden_size, 2 * output_seq_len)
-        self.fc_velocity = nn.Linear(hidden_size, 2 * output_seq_len)
-        self.fc_steering = nn.Linear(hidden_size, output_seq_len)
-        self.fc_object = nn.Linear(hidden_size, output_seq_len)
-        self.fc_traffic = nn.Linear(hidden_size, output_seq_len)
+        # Fully connected layers for prediction with intermediate ReLU activations
+        self.fc_position = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, input_sizes['position'] * output_seq_len)
+        )
+        self.fc_velocity = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, input_sizes['velocity'] * output_seq_len)
+        )
+        self.fc_steering = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, input_sizes['steering'] * output_seq_len)
+        )
+        self.fc_object = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, input_sizes['object_in_path'] * output_seq_len)
+        )
+        self.fc_traffic = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, input_sizes['traffic_light_detected'] * output_seq_len)
+        )
         
     def forward(self, x, graph):
         # Process graph features
@@ -57,7 +77,7 @@ class GraphTrajectoryLSTM(nn.Module):
             single_graph_features = node_features[i]
             single_adj_matrix = adj_matrix[i]
             
-            # Apply Graph Convolutional layers
+            # Apply Graph Convolutional layers with ReLU activations
             single_graph_features = F.relu(self.gc1(single_graph_features, single_adj_matrix))
             single_graph_features = F.relu(self.gc2(single_graph_features, single_adj_matrix))
             
@@ -92,7 +112,7 @@ class GraphTrajectoryLSTM(nn.Module):
         object_out, _ = self.lstm_object(object_input)
         traffic_out, _ = self.lstm_traffic(traffic_input)
         
-        # Predict future trajectory
+        # Predict future trajectory using fully connected layers with ReLU activations
         position_pred = self.fc_position(position_out[:, -1]).view(-1, self.output_seq_len, 2)
         velocity_pred = self.fc_velocity(velocity_out[:, -1]).view(-1, self.output_seq_len, 2)
         steering_pred = self.fc_steering(steering_out[:, -1]).unsqueeze(-1)
