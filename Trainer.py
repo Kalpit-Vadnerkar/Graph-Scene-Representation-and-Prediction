@@ -23,6 +23,14 @@ class Trainer:
             
             self.optimizer.zero_grad()
             predictions = self.model(past, graph)
+
+            # Print shapes for debugging
+            #print("Prediction shapes:")
+            #for key, value in predictions.items():
+            #    print(f"{key}: {value.shape}")
+            #print("Target shapes:")
+            #for key, value in future.items():
+            #    print(f"{key}: {value.shape}")
             
             loss = self.criterion(predictions, future)
             loss.backward()

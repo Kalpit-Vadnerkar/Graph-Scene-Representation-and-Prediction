@@ -66,6 +66,13 @@ class GraphTrajectoryLSTM(nn.Module):
         )
         
     def forward(self, x, graph):
+        # Print shapes for debugging
+        #print("Input shapes:")
+        #for key, value in x.items():
+        #    print(f"{key}: {value.shape}")
+        #print(f"node_features: {graph['node_features'].shape}")
+        #print(f"adj_matrix: {graph['adj_matrix'].shape}")
+        
         # Process graph features
         node_features, adj_matrix = graph['node_features'], graph['adj_matrix']
         batch_size = x['position'].size(0)
@@ -95,16 +102,41 @@ class GraphTrajectoryLSTM(nn.Module):
         # Average pooling over nodes
         graph_features = graph_features.mean(dim=0)
 
+        # Print graph_features shape
+        #print(f"graph_features shape after processing: {graph_features.shape}")
+    
+        # Ensure all input tensors have 3 dimensions [batch_size, sequence_length, feature_size]
+        x = {k: v.view(batch_size, -1, v.size(-1)) if v.dim() == 3 else v.view(batch_size, -1, 1) for k, v in x.items()}
+    
         # Repeat graph features for each timestep
         graph_features = graph_features.unsqueeze(1).repeat(1, x['position'].size(1), 1)
         
+        # Ensure all input tensors have 3 dimensions [batch_size, sequence_length, feature_size]
+        #x['steering'] = x['steering'].unsqueeze(-1)
+        #x['object_in_path'] = x['object_in_path'].unsqueeze(-1)
+        #x['traffic_light_detected'] = x['traffic_light_detected'].unsqueeze(-1)
+    
+        # Print shapes after ensuring 3 dimensions
+        #print("Shapes after ensuring 3 dimensions:")
+        #for key, value in x.items():
+        #    print(f"{key}: {value.shape}")
+        #print(f"graph_features shape: {graph_features.shape}")
+    
         # Concatenate graph features with input features
         position_input = torch.cat((x['position'], graph_features), dim=-1)
         velocity_input = torch.cat((x['velocity'], graph_features), dim=-1)
         steering_input = torch.cat((x['steering'], graph_features), dim=-1)
         object_input = torch.cat((x['object_in_path'], graph_features), dim=-1)
         traffic_input = torch.cat((x['traffic_light_detected'], graph_features), dim=-1)
-        
+    
+        # Print shapes after concatenation
+        #print("Shapes after concatenation:")
+        #print(f"position_input: {position_input.shape}")
+        #print(f"velocity_input: {velocity_input.shape}")
+        #print(f"steering_input: {steering_input.shape}")
+        #print(f"object_input: {object_input.shape}")
+        #print(f"traffic_input: {traffic_input.shape}")
+    
         # Process with LSTM layers
         position_out, _ = self.lstm_position(position_input)
         velocity_out, _ = self.lstm_velocity(velocity_input)
@@ -112,12 +144,12 @@ class GraphTrajectoryLSTM(nn.Module):
         object_out, _ = self.lstm_object(object_input)
         traffic_out, _ = self.lstm_traffic(traffic_input)
         
-        # Predict future trajectory using fully connected layers with ReLU activations
+        # Predict future trajectory
         position_pred = self.fc_position(position_out[:, -1]).view(-1, self.output_seq_len, 2)
         velocity_pred = self.fc_velocity(velocity_out[:, -1]).view(-1, self.output_seq_len, 2)
-        steering_pred = self.fc_steering(steering_out[:, -1]).unsqueeze(-1)
-        object_pred = torch.sigmoid(self.fc_object(object_out[:, -1])).unsqueeze(-1)
-        traffic_pred = torch.sigmoid(self.fc_traffic(traffic_out[:, -1])).unsqueeze(-1)
+        steering_pred = self.fc_steering(steering_out[:, -1]).view(-1, self.output_seq_len)
+        object_pred = torch.sigmoid(self.fc_object(object_out[:, -1])).view(-1, self.output_seq_len)
+        traffic_pred = torch.sigmoid(self.fc_traffic(traffic_out[:, -1])).view(-1, self.output_seq_len)
         
         return {
             'position': position_pred,

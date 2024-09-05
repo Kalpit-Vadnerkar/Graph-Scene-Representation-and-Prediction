@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 
-def plot_graph_and_trajectories(sequence, actual_future, predicted_future, ax):
+def plot_graph_and_trajectories(sequence, predicted_future, ax):
     # Extract the graph
     G = sequence['graph']
 
@@ -31,7 +31,8 @@ def plot_graph_and_trajectories(sequence, actual_future, predicted_future, ax):
     ax.scatter(x_past, y_past, c='blue', s=30, label='Past positions')
 
     # Plot actual future trajectory
-    x_actual, y_actual = zip(*[pos.tolist() for pos in actual_future['position']])
+    future_positions = [step['position'] for step in sequence['future']]
+    x_actual, y_actual = zip(*future_positions)
     ax.scatter(x_actual, y_actual, c='green', s=30, label='Actual future')
 
     # Plot predicted future trajectory
@@ -44,34 +45,51 @@ def plot_graph_and_trajectories(sequence, actual_future, predicted_future, ax):
 def make_predictions(model, dataset, device, num_samples=9):
     model.eval()
     all_predictions = []
-    all_actual = []
     sampled_sequences = random.sample(range(len(dataset)), num_samples)
 
     with torch.no_grad():
         for idx in sampled_sequences:
             past, future, graph = dataset[idx]
+            
+            # Ensure consistent dimensions
             past = {k: v.unsqueeze(0).to(device) for k, v in past.items()}  # Add batch dimension
             graph = {k: v.unsqueeze(0).to(device) for k, v in graph.items()}  # Add batch dimension
+            
+            # Move tensors to device
+            #past = {k: v.to(device) for k, v in past.items()}
+            #graph = {k: v.to(device) for k, v in graph.items()}
+            
+            # Print shapes for debugging
+            #print("Input shapes:")
+            #for k, v in past.items():
+            #    print(f"{k}: {v.shape}")
+            #for k, v in graph.items():
+            #    print(f"graph_{k}: {v.shape}")
 
             predictions = model(past, graph)
 
+            # Print prediction shapes for debugging
+            #print("Prediction shapes:")
+            #for k, v in predictions.items():
+            #    print(f"{k}: {v.shape}")
+
             all_predictions.append({k: v.squeeze().cpu().numpy() for k, v in predictions.items()})
-            all_actual.append({k: v.numpy() for k, v in future.items()})
 
-    return all_predictions, all_actual, sampled_sequences
+    return all_predictions, sampled_sequences
 
-def visualize_predictions(model, dataset, device, all_sequences):
+def visualize_predictions(model, dataset, device):
     # Make predictions
     num_samples = 9  # 3x3 grid
-    predictions, actuals, sampled_indices = make_predictions(model, dataset, device, num_samples)
+    predictions, sampled_indices = make_predictions(model, dataset, device, num_samples)
 
     # Create a grid of subplots
     fig, axes = plt.subplots(3, 3, figsize=(20, 20))
     fig.suptitle("Trajectory Predictions", fontsize=16)
 
-    for i, (pred, actual, idx) in enumerate(zip(predictions, actuals, sampled_indices)):
+    for i, (pred, idx) in enumerate(zip(predictions, sampled_indices)):
         ax = axes[i // 3, i % 3]
-        plot_graph_and_trajectories(all_sequences[idx], actual, pred, ax)
+        sequence = dataset.data[idx]  # Get the full sequence from the dataset
+        plot_graph_and_trajectories(sequence, pred, ax)
         ax.set_title(f"Sample {i+1}")
 
     plt.tight_layout()
