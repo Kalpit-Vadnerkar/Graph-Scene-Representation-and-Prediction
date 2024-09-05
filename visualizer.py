@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 
-def plot_graph_and_trajectories(sequence, predicted_future, ax):
+def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     # Extract the graph
     G = sequence['graph']
 
     # Plot graph nodes
-    pos = {node: (data['x'], data['y']) for node, data in G.nodes(data=True)}
+    pos = {node: (data['x'] * scaling_factor, data['y'] * scaling_factor) for node, data in G.nodes(data=True)}
 
     # Plot regular map nodes
     nx.draw_networkx_nodes(G, pos, ax=ax, node_color='black', node_size=1, 
@@ -25,17 +25,20 @@ def plot_graph_and_trajectories(sequence, predicted_future, ax):
     # Plot edges
     nx.draw_networkx_edges(G, pos, ax=ax, edge_color='gray', width=1)
 
-    # Plot past trajectory
-    past_positions = [step['position'] for step in sequence['past']]
+    # Plot past trajectory (scaled up)
+    past_positions = [(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) 
+                      for step in sequence['past']]
     x_past, y_past = zip(*past_positions)
     ax.scatter(x_past, y_past, c='blue', s=30, label='Past positions')
 
-    # Plot actual future trajectory
-    future_positions = [step['position'] for step in sequence['future']]
+    # Plot actual future trajectory (scaled up)
+    future_positions = [(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) 
+                        for step in sequence['future']]
     x_actual, y_actual = zip(*future_positions)
     ax.scatter(x_actual, y_actual, c='green', s=30, label='Actual future')
 
     # Plot predicted future trajectory
+    #x_pred, y_pred = zip(*[(pos[0] / scaling_factor, pos[1] / scaling_factor) for pos in predicted_future['position']])
     x_pred, y_pred = zip(*[pos.tolist() for pos in predicted_future['position']])
     ax.scatter(x_pred, y_pred, c='red', s=30, label='Predicted future')
 
@@ -77,7 +80,7 @@ def make_predictions(model, dataset, device, num_samples=9):
 
     return all_predictions, sampled_sequences
 
-def visualize_predictions(model, dataset, device):
+def visualize_predictions(model, dataset, scaling_factor, device):
     # Make predictions
     num_samples = 9  # 3x3 grid
     predictions, sampled_indices = make_predictions(model, dataset, device, num_samples)
@@ -89,8 +92,9 @@ def visualize_predictions(model, dataset, device):
     for i, (pred, idx) in enumerate(zip(predictions, sampled_indices)):
         ax = axes[i // 3, i % 3]
         sequence = dataset.data[idx]  # Get the full sequence from the dataset
-        plot_graph_and_trajectories(sequence, pred, ax)
+        plot_graph_and_trajectories(sequence, scaling_factor, pred, ax)
         ax.set_title(f"Sample {i+1}")
 
     plt.tight_layout()
     plt.show()
+    plt.savefig("plots/model_visualization.png") 

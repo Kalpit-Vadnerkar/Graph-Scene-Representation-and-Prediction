@@ -6,9 +6,9 @@ import networkx as nx
 import numpy as np
 
 class TrajectoryDataset(Dataset):
-    def __init__(self, data_folder):
+    def __init__(self, data_folder, scaling_factor):
         self.data = []
-        self.scaling_factor = 10
+        self.scaling_factor = scaling_factor
         for filename in os.listdir(data_folder):
             if filename.endswith('.pkl'):
                 with open(os.path.join(data_folder, filename), 'rb') as f:

@@ -18,26 +18,30 @@ def load_sequences(folder_path):
     print(f"Loaded {len(all_sequences)} sequences")
     return all_sequences
 
-def main():
+def train():
     # Hyperparameters
     input_sizes = {
+        'node_features': 4,
         'position': 2,
         'velocity': 2,
         'steering': 1,
         'object_in_path': 1,
         'traffic_light_detected': 1
     }
-    hidden_size = 64
+    hidden_size = 128
     num_layers = 2
     input_seq_len = 3  # past trajectory length
     output_seq_len = 3  # future prediction length
-    batch_size = 32
-    num_epochs = 50
+    batch_size = 128
+    num_epochs = 100
     learning_rate = 0.001
+
+    # Scaling for distributions
+    scaling_factor = 10
     
     # Data loading
     data_folder = "Dataset/Sequence_Dataset"
-    dataset = TrajectoryDataset(data_folder)
+    dataset = TrajectoryDataset(data_folder, scaling_factor=scaling_factor)
     
     # Split the dataset
     train_size = int(0.8 * len(dataset))
@@ -66,8 +70,9 @@ def main():
     print(f"Test Loss: {test_loss:.4f}")
 
     # Visualization
-    all_sequences = load_sequences(data_folder)
-    visualize_predictions(trained_model, dataset, device, all_sequences)
+    #all_sequences = load_sequences(data_folder)
+    #dataset = TrajectoryDataset(data_folder)
+    visualize_predictions(trained_model, dataset, scaling_factor, device)
 
 def collate_fn(batch):
     past_batch = {k: torch.stack([item[0][k] for item in batch]) for k in batch[0][0].keys()}
@@ -76,7 +81,76 @@ def collate_fn(batch):
         'node_features': torch.stack([item[2]['node_features'] for item in batch]),
         'adj_matrix': torch.stack([item[2]['adj_matrix'] for item in batch])
     }
+    
+    # Ensure all tensors have 3 dimensions
+    for key in ['steering', 'object_in_path', 'traffic_light_detected']:
+        if past_batch[key].dim() == 3:
+            past_batch[key] = past_batch[key].squeeze(-1)
+        if future_batch[key].dim() == 3:
+            future_batch[key] = future_batch[key].squeeze(-1)
+    
+    # Print shapes for debugging
+    #print("Shapes after collate_fn:")
+    #for key, value in past_batch.items():
+    #    print(f"past_{key}: {value.shape}")
+    #for key, value in future_batch.items():
+    #    print(f"future_{key}: {value.shape}")
+    #for key, value in graph_batch.items():
+    #    print(f"graph_{key}: {value.shape}")
+    
     return past_batch, future_batch, graph_batch
+
+def load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device):
+    model = GraphTrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+    return model
+
+def visualize_loaded_model(model_path):
+    # Hyperparameters (ensure these match the values used during training)
+    input_sizes = {
+        'node_features': 4,
+        'position': 2,
+        'velocity': 2,
+        'steering': 1,
+        'object_in_path': 1,
+        'traffic_light_detected': 1
+    }
+    hidden_size = 128
+    num_layers = 2
+    input_seq_len = 3  # past trajectory length
+    output_seq_len = 3  # future prediction length
+
+    # Scaling for distributions
+    scaling_factor = 10
+    
+    # Data loading
+    data_folder = "Dataset/Sequence_Dataset"
+    dataset = TrajectoryDataset(data_folder, scaling_factor=scaling_factor)
+
+    # Load the model
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
+
+    # Visualization
+    visualize_predictions(model, dataset, dataset.scaling_factor, device)
+
+def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
+    parser.add_argument('--mode', type=str, choices=['train', 'visualize'], required=True,
+                        help='Mode of operation: train a new model or visualize a saved model')
+    parser.add_argument('--model_path', type=str, default='graph_trajectory_model.pth',
+                        help='Path to save/load the model')
+
+    args = parser.parse_args()
+
+    if args.mode == 'train':
+        train(args.model_path)
+    elif args.mode == 'visualize':
+        visualize_loaded_model(args.model_path)
 
 if __name__ == "__main__":
     main()
