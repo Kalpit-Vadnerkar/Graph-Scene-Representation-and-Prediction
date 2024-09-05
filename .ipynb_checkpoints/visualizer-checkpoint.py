@@ -27,7 +27,7 @@ def plot_graph_and_trajectories(sequence, actual_future, predicted_future, ax):
     # Plot edges
     nx.draw_networkx_edges(G, pos, ax=ax, edge_color='gray', width=1)
 
-    # Plot past trajectory
+     # Plot past trajectory
     past_positions = [step['position'] for step in sequence['past']]
     x_past, y_past = zip(*past_positions)
     ax.scatter(x_past, y_past, c='blue', s=30, label='Past positions')
@@ -37,14 +37,22 @@ def plot_graph_and_trajectories(sequence, actual_future, predicted_future, ax):
     ax.scatter(x_actual, y_actual, c='green', s=30, label='Actual future')
 
     # Plot predicted future trajectory (mean and confidence ellipse)
-    position_mean, position_log_std = predicted_future['position']
+    position_mean, position_log_var = predicted_future['position']
+    
+    # Convert to numpy if they're PyTorch tensors
+    if isinstance(position_mean, torch.Tensor):
+        position_mean = position_mean.numpy()
+    if isinstance(position_log_var, torch.Tensor):
+        position_log_var = position_log_var.numpy()
+    
     x_pred, y_pred = position_mean[:, 0], position_mean[:, 1]
-    x_std, y_std = np.exp(position_log_std[:, 0]), np.exp(position_log_std[:, 1])
+    position_var = np.exp(position_log_var)
+    x_std, y_std = np.sqrt(position_var[:, 0]), np.sqrt(position_var[:, 1])
 
     ax.scatter(x_pred, y_pred, c='red', s=30, label='Predicted future (mean)')
 
     for x, y, std_x, std_y in zip(x_pred, y_pred, x_std, y_std):
-        ellipse = patches.Ellipse((x, y), width=2*std_x, height=2*std_y, angle=0, edgecolor='r', fc='None', lw=1, label='95% confidence ellipse')
+        ellipse = patches.Ellipse((x, y), width=2*std_x, height=2*std_y, angle=0, edgecolor='r', fc='None', lw=1)
         ax.add_patch(ellipse)
 
     ax.legend()
@@ -64,6 +72,7 @@ def make_predictions(model, dataset, device, num_samples=9):
 
             predictions = model(past, graph)
 
+            # Convert predictions to numpy arrays
             all_predictions.append({k: (v[0].squeeze().cpu().numpy(), v[1].squeeze().cpu().numpy()) 
                                     if isinstance(v, tuple) else v.squeeze().cpu().numpy() 
                                     for k, v in predictions.items()})

@@ -24,13 +24,12 @@ class Trainer:
             self.optimizer.zero_grad()
             predictions = self.model(past, graph)
             
+            #print("\nTraining losses:")
             loss = self.criterion(predictions, future)
             loss.backward()
             self.optimizer.step()
             
             train_loss += loss.item()
-        # Update learning rate
-        self.scheduler.step(train_loss)
         
         return train_loss / len(self.train_loader)
 
@@ -45,6 +44,7 @@ class Trainer:
                 
                 predictions = self.model(past, graph)
                 
+                #print("\nValidation losses:")
                 loss = self.criterion(predictions, future)
                 val_loss += loss.item()
         
@@ -55,6 +55,9 @@ class Trainer:
             train_loss = self.train_epoch()
             val_loss = self.validate()
             
-            print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+            print(f"\nEpoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+            
+            # Update learning rate
+            self.scheduler.step(val_loss)
         
         return self.model

@@ -40,11 +40,11 @@ class GraphTrajectoryLSTM(nn.Module):
         
         # Fully connected layers for prediction (mean and log-std)
         self.fc_position_mean = nn.Linear(hidden_size, 2 * output_seq_len)
-        self.fc_position_log_std = nn.Linear(hidden_size, 2 * output_seq_len)
+        self.fc_position_log_var = nn.Linear(hidden_size, 2 * output_seq_len)
         self.fc_velocity_mean = nn.Linear(hidden_size, 2 * output_seq_len)
-        self.fc_velocity_log_std = nn.Linear(hidden_size, 2 * output_seq_len)
+        self.fc_velocity_log_var = nn.Linear(hidden_size, 2 * output_seq_len)
         self.fc_steering_mean = nn.Linear(hidden_size, output_seq_len)
-        self.fc_steering_log_std = nn.Linear(hidden_size, output_seq_len)
+        self.fc_steering_log_var = nn.Linear(hidden_size, output_seq_len)
         self.fc_object = nn.Linear(hidden_size, output_seq_len)
         self.fc_traffic = nn.Linear(hidden_size, output_seq_len)
         
@@ -95,20 +95,20 @@ class GraphTrajectoryLSTM(nn.Module):
         object_out, _ = self.lstm_object(object_input)
         traffic_out, _ = self.lstm_traffic(traffic_input)
         
-         # Predict future trajectory (mean and log-std)
+        # Predict future trajectory (mean and var)
         position_mean = self.fc_position_mean(F.relu(position_out[:, -1])).view(-1, self.output_seq_len, 2)
-        position_log_std = self.fc_position_log_std(F.relu(position_out[:, -1])).view(-1, self.output_seq_len, 2)
+        position_log_var = self.fc_position_log_var(F.relu(position_out[:, -1])).view(-1, self.output_seq_len, 2)
         velocity_mean = self.fc_velocity_mean(F.relu(velocity_out[:, -1])).view(-1, self.output_seq_len, 2)
-        velocity_log_std = self.fc_velocity_log_std(F.relu(velocity_out[:, -1])).view(-1, self.output_seq_len, 2)
-        steering_mean = self.fc_steering_mean(F.relu(steering_out[:, -1])).unsqueeze(-1)
-        steering_log_std = self.fc_steering_log_std(F.relu(steering_out[:, -1])).unsqueeze(-1)
-        object_pred = torch.sigmoid(self.fc_object(F.relu(object_out[:, -1]))).unsqueeze(-1)
-        traffic_pred = torch.sigmoid(self.fc_traffic(F.relu(traffic_out[:, -1]))).unsqueeze(-1)
+        velocity_log_var = self.fc_velocity_log_var(F.relu(velocity_out[:, -1])).view(-1, self.output_seq_len, 2)
+        steering_mean = self.fc_steering_mean(F.relu(steering_out[:, -1])).view(-1, self.output_seq_len, 1)
+        steering_log_var = self.fc_steering_log_var(F.relu(steering_out[:, -1])).view(-1, self.output_seq_len, 1)
+        object_pred = torch.sigmoid(self.fc_object(F.relu(object_out[:, -1]))).view(-1, self.output_seq_len, 1)
+        traffic_pred = torch.sigmoid(self.fc_traffic(F.relu(traffic_out[:, -1]))).view(-1, self.output_seq_len, 1)
         
         return {
-            'position': (position_mean, position_log_std),
-            'velocity': (velocity_mean, velocity_log_std),
-            'steering': (steering_mean, steering_log_std),
+            'position': (position_mean, position_log_var),
+            'velocity': (velocity_mean, velocity_log_var),
+            'steering': (steering_mean, steering_log_var),
             'object_in_path': object_pred,
             'traffic_light_detected': traffic_pred
         }
