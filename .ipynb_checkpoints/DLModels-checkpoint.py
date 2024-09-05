@@ -38,7 +38,7 @@ class GraphTrajectoryLSTM(nn.Module):
         self.lstm_object = nn.LSTM(input_sizes['object_in_path'] + hidden_size, hidden_size, num_layers, batch_first=True)
         self.lstm_traffic = nn.LSTM(input_sizes['traffic_light_detected'] + hidden_size, hidden_size, num_layers, batch_first=True)
         
-        # Fully connected layers for prediction (mean and log-std)
+        # Fully connected layers for prediction (mean and log-var)
         self.fc_position_mean = nn.Linear(hidden_size, 2 * output_seq_len)
         self.fc_position_log_var = nn.Linear(hidden_size, 2 * output_seq_len)
         self.fc_velocity_mean = nn.Linear(hidden_size, 2 * output_seq_len)
@@ -48,36 +48,25 @@ class GraphTrajectoryLSTM(nn.Module):
         self.fc_object = nn.Linear(hidden_size, output_seq_len)
         self.fc_traffic = nn.Linear(hidden_size, output_seq_len)
         
+        # Dropout for regularization
+        self.dropout = nn.Dropout(0.2)
+        
     def forward(self, x, graph):
         # Process graph features
         node_features, adj_matrix = graph['node_features'], graph['adj_matrix']
-        batch_size = x['position'].size(0)
-
-        # Process each graph in the batch separately
-        graph_features_list = []
-        for i in range(batch_size):
-            # Extract features and adjacency matrix for a single graph
-            single_graph_features = node_features[i]
-            single_adj_matrix = adj_matrix[i]
-            
-            # Apply Graph Convolutional layers with ReLU activations
-            single_graph_features = F.relu(self.gc1(single_graph_features, single_adj_matrix))
-            single_graph_features = F.relu(self.gc2(single_graph_features, single_adj_matrix))
-            
-            graph_features_list.append(single_graph_features)
-
-        # Stack the processed graph features
-        graph_features = torch.stack(graph_features_list)
-
-        # Reshape graph features for attention mechanism
-        graph_features = graph_features.permute(1, 0, 2)
-
+        
+        # Apply Graph Convolutional layers
+        graph_features = F.relu(self.gc1(node_features, adj_matrix))
+        graph_features = F.relu(self.gc2(graph_features, adj_matrix))
+        
         # Apply attention mechanism
+        graph_features = graph_features.permute(1, 0, 2)
         graph_features, _ = self.attention(graph_features, graph_features, graph_features)
-
+        graph_features = graph_features.permute(1, 0, 2)
+        
         # Average pooling over nodes
-        graph_features = graph_features.mean(dim=0)
-
+        graph_features = graph_features.mean(dim=1)
+        
         # Repeat graph features for each timestep
         graph_features = graph_features.unsqueeze(1).repeat(1, x['position'].size(1), 1)
         
@@ -95,7 +84,14 @@ class GraphTrajectoryLSTM(nn.Module):
         object_out, _ = self.lstm_object(object_input)
         traffic_out, _ = self.lstm_traffic(traffic_input)
         
-        # Predict future trajectory (mean and var)
+        # Apply dropout
+        position_out = self.dropout(position_out)
+        velocity_out = self.dropout(velocity_out)
+        steering_out = self.dropout(steering_out)
+        object_out = self.dropout(object_out)
+        traffic_out = self.dropout(traffic_out)
+        
+        # Predict future trajectory (mean and log-var)
         position_mean = self.fc_position_mean(F.relu(position_out[:, -1])).view(-1, self.output_seq_len, 2)
         position_log_var = self.fc_position_log_var(F.relu(position_out[:, -1])).view(-1, self.output_seq_len, 2)
         velocity_mean = self.fc_velocity_mean(F.relu(velocity_out[:, -1])).view(-1, self.output_seq_len, 2)
