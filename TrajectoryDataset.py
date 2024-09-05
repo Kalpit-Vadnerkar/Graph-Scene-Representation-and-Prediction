@@ -6,9 +6,8 @@ import networkx as nx
 import numpy as np
 
 class TrajectoryDataset(Dataset):
-    def __init__(self, data_folder, scale_factor=5.0):
+    def __init__(self, data_folder):
         self.data = []
-        self.scale_factor = scale_factor
         for filename in os.listdir(data_folder):
             if filename.endswith('.pkl'):
                 with open(os.path.join(data_folder, filename), 'rb') as f:
@@ -38,23 +37,23 @@ class TrajectoryDataset(Dataset):
         }
         
         for step in sequence['past']:
-            past_features['position'].append(np.array(step['position']) * self.scale_factor)
-            past_features['velocity'].append(np.array(step['velocity']) * self.scale_factor)
-            past_features['steering'].append([step['steering'] * self.scale_factor])
+            past_features['position'].append(step['position'])
+            past_features['velocity'].append(step['velocity'])
+            past_features['steering'].append([step['steering']])
             past_features['object_in_path'].append([step['object_in_path']])
             past_features['traffic_light_detected'].append([step['traffic_light_detected']])
         
         for step in sequence['future']:
-            future_features['position'].append(np.array(step['position']) * self.scale_factor)
-            future_features['velocity'].append(np.array(step['velocity']) * self.scale_factor)
-            future_features['steering'].append([step['steering'] * self.scale_factor])
+            future_features['position'].append(step['position'])
+            future_features['velocity'].append(step['velocity'])
+            future_features['steering'].append([step['steering']])
             future_features['object_in_path'].append([step['object_in_path']])
             future_features['traffic_light_detected'].append([step['traffic_light_detected']])
         
         past_tensor = {k: torch.tensor(v, dtype=torch.float32) for k, v in past_features.items()}
         future_tensor = {k: torch.tensor(v, dtype=torch.float32) for k, v in future_features.items()}
         
-        # Process graph data (unchanged)
+        # Process graph data
         G = sequence['graph']
         node_features = torch.zeros((200, 4), dtype=torch.float32)
         for node, data in G.nodes(data=True):
