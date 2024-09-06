@@ -2,6 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
+import numpy as np
 
 def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     # Extract the graph
@@ -29,21 +30,81 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     past_positions = [(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) 
                       for step in sequence['past']]
     x_past, y_past = zip(*past_positions)
-    ax.scatter(x_past, y_past, c='blue', s=30, label='Past positions')
+    ax.scatter(x_past, y_past, c='blue', s=3, label='Past positions')
 
     # Plot actual future trajectory (scaled up)
     future_positions = [(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) 
                         for step in sequence['future']]
     x_actual, y_actual = zip(*future_positions)
-    ax.scatter(x_actual, y_actual, c='green', s=30, label='Actual future')
+    ax.scatter(x_actual, y_actual, c='green', s=3, label='Actual future')
 
-    # Plot predicted future trajectory
-    #x_pred, y_pred = zip(*[(pos[0] / scaling_factor, pos[1] / scaling_factor) for pos in predicted_future['position']])
-    x_pred, y_pred = zip(*[pos.tolist() for pos in predicted_future['position']])
-    ax.scatter(x_pred, y_pred, c='red', s=30, label='Predicted future')
+    # Plot predicted future trajectory with uncertainty
+    x_pred = predicted_future['position_mean'][:, 0]
+    y_pred = predicted_future['position_mean'][:, 1]
+    x_var = predicted_future['position_var'][:, 0]
+    y_var = predicted_future['position_var'][:, 1]
+
+    ax.scatter(x_pred, y_pred, c='red', s=3, label='Predicted future')
+    
+    # Plot uncertainty ellipses
+    for i in range(len(x_pred)):
+        ellipse = plt.matplotlib.patches.Ellipse(
+            (x_pred[i], y_pred[i]),
+            width=2*np.sqrt(x_var[i]),
+            height=2*np.sqrt(y_var[i]),
+            fill=False,
+            color='red',
+            alpha=0.3
+        )
+        ax.add_patch(ellipse)
 
     ax.legend()
     ax.set_aspect('equal')
+
+def plot_velocity_and_steering(sequence, predicted_future, ax1, ax2):
+    # Time steps
+    time_steps = range(len(sequence['past']) + len(sequence['future']))
+    past_steps = range(len(sequence['past']))
+    future_steps = range(len(sequence['past']), len(sequence['past']) + len(sequence['future']))
+
+    # Actual past and future velocity
+    past_velocity = [np.linalg.norm(step['velocity']) for step in sequence['past']]
+    future_velocity = [np.linalg.norm(step['velocity']) for step in sequence['future']]
+    
+    # Predicted future velocity
+    pred_velocity_mean = np.linalg.norm(predicted_future['velocity_mean'], axis=1)
+    pred_velocity_std = np.sqrt(np.sum(predicted_future['velocity_var'], axis=1))
+
+    # Plot velocity
+    ax1.plot(past_steps, past_velocity, 'b-', label='Past velocity')
+    ax1.plot(future_steps, future_velocity, 'g-', label='Actual future velocity')
+    ax1.plot(future_steps, pred_velocity_mean, 'r-', label='Predicted future velocity')
+    ax1.fill_between(future_steps, 
+                     pred_velocity_mean - 2*pred_velocity_std, 
+                     pred_velocity_mean + 2*pred_velocity_std, 
+                     color='r', alpha=0.2)
+    ax1.set_ylabel('Velocity')
+    ax1.legend()
+
+    # Actual past and future steering
+    past_steering = [step['steering'] for step in sequence['past']]
+    future_steering = [step['steering'] for step in sequence['future']]
+    
+    # Predicted future steering
+    pred_steering_mean = predicted_future['steering_mean']
+    pred_steering_std = np.sqrt(predicted_future['steering_var'])
+
+    # Plot steering
+    ax2.plot(past_steps, past_steering, 'b-', label='Past steering')
+    ax2.plot(future_steps, future_steering, 'g-', label='Actual future steering')
+    ax2.plot(future_steps, pred_steering_mean, 'r-', label='Predicted future steering')
+    ax2.fill_between(future_steps, 
+                     pred_steering_mean - 2*pred_steering_std, 
+                     pred_steering_mean + 2*pred_steering_std, 
+                     color='r', alpha=0.2)
+    ax2.set_ylabel('Steering')
+    ax2.set_xlabel('Time steps')
+    ax2.legend()
 
 def make_predictions(model, dataset, device, num_samples=9):
     model.eval()
@@ -58,23 +119,7 @@ def make_predictions(model, dataset, device, num_samples=9):
             past = {k: v.unsqueeze(0).to(device) for k, v in past.items()}  # Add batch dimension
             graph = {k: v.unsqueeze(0).to(device) for k, v in graph.items()}  # Add batch dimension
             
-            # Move tensors to device
-            #past = {k: v.to(device) for k, v in past.items()}
-            #graph = {k: v.to(device) for k, v in graph.items()}
-            
-            # Print shapes for debugging
-            #print("Input shapes:")
-            #for k, v in past.items():
-            #    print(f"{k}: {v.shape}")
-            #for k, v in graph.items():
-            #    print(f"graph_{k}: {v.shape}")
-
             predictions = model(past, graph)
-
-            # Print prediction shapes for debugging
-            #print("Prediction shapes:")
-            #for k, v in predictions.items():
-            #    print(f"{k}: {v.shape}")
 
             all_predictions.append({k: v.squeeze().cpu().numpy() for k, v in predictions.items()})
 
@@ -96,5 +141,5 @@ def visualize_predictions(model, dataset, scaling_factor, device):
         ax.set_title(f"Sample {i+1}")
 
     plt.tight_layout()
-    plt.show()
-    plt.savefig("plots/model_visualization.png") 
+    plt.savefig("plots/model_visualization.png")
+    plt.close()

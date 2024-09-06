@@ -148,7 +148,7 @@ def main():
     args = parser.parse_args()
 
     if args.mode == 'train':
-        train(args.model_path)
+        train()
     elif args.mode == 'visualize':
         visualize_loaded_model(args.model_path)
 

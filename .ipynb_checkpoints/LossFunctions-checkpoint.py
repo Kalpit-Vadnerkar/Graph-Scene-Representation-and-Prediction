@@ -1,17 +1,37 @@
 import torch
 import torch.nn as nn
+import logging
 
 class CombinedLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, min_var=1e-12, epsilon=0):
         super(CombinedLoss, self).__init__()
         self.mse_loss = nn.MSELoss()
         self.bce_loss = nn.BCELoss()
+        self.min_var = min_var
+        self.epsilon = epsilon
         
     def forward(self, pred, target):
         loss = 0
-        for key in pred.keys():
-            if key in ['object_in_path', 'traffic_light_detected']:
-                loss += self.bce_loss(pred[key], target[key])
-            else:
+        for key in ['position', 'velocity', 'steering']:
+            mean_key = f'{key}_mean'
+            var_key = f'{key}_var'
+            if mean_key in pred and var_key in pred:
+                # Clip variance to minimum value
+                variance = torch.clamp(pred[var_key], min=self.min_var) + self.epsilon
+                gnll_loss = 0.5 * torch.mean(torch.log(variance) + 
+                                             (target[key] - pred[mean_key])**2 / variance)
+                loss += gnll_loss
+                
+                #if gnll_loss < 0:
+                #    logging.warning(f"Negative GNLL loss encountered for {key}: {gnll_loss.item()}")
+            elif key in pred:
                 loss += self.mse_loss(pred[key], target[key])
+        
+        for key in ['object_in_path', 'traffic_light_detected']:
+            if key in pred:
+                loss += self.bce_loss(pred[key], target[key])
+        
+        #if loss < 0:
+        #    logging.warning(f"Total loss is negative: {loss.item()}")
+        
         return loss

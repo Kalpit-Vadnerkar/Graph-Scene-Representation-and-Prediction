@@ -23,21 +23,13 @@ class Trainer:
             
             self.optimizer.zero_grad()
             predictions = self.model(past, graph)
-
-            # Print shapes for debugging
-            #print("Prediction shapes:")
-            #for key, value in predictions.items():
-            #    print(f"{key}: {value.shape}")
-            #print("Target shapes:")
-            #for key, value in future.items():
-            #    print(f"{key}: {value.shape}")
             
             loss = self.criterion(predictions, future)
             loss.backward()
             self.optimizer.step()
             
             train_loss += loss.item()
-        # Update learning rate
+        
         self.scheduler.step(train_loss)
         
         return train_loss / len(self.train_loader)
