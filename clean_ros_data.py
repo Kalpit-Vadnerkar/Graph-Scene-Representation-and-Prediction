@@ -15,20 +15,39 @@ raw_data_folder = os.path.join(main_folder, "Raw_Dataset")
 cleaned_data_folder = os.path.join(main_folder, "Cleaned_Dataset")
 stopped_limit = 4
 
+min_longitudinal_velocity = float('inf')
+max_longitudinal_velocity = float('-inf')
+min_lateral_velocity = float('inf')
+max_lateral_velocity = float('-inf')
+
 def process_velocity_data(data_points):
     zero_velocity_count = 0
     timestamps_to_keep = set()
-    
+
+    global min_longitudinal_velocity, max_longitudinal_velocity, min_lateral_velocity, max_lateral_velocity
+
     for timestamp, data in sorted(data_points.items()):
-        velocity = data['longitudinal_velocity']
-        if abs(velocity) < 1e-6:  # Consider velocities very close to 0 as 0
+        longitudinal_velocity = data.get('longitudinal_velocity')
+        lateral_velocity = data.get('lateral_velocity')
+
+        # Update min and max longitudinal velocities
+        if longitudinal_velocity is not None:
+            min_longitudinal_velocity = min(min_longitudinal_velocity, longitudinal_velocity)
+            max_longitudinal_velocity = max(max_longitudinal_velocity, longitudinal_velocity)
+
+        # Update min and max lateral velocities
+        if lateral_velocity is not None:
+            min_lateral_velocity = min(min_lateral_velocity, lateral_velocity)
+            max_lateral_velocity = max(max_lateral_velocity, lateral_velocity)
+
+        if longitudinal_velocity is not None and abs(longitudinal_velocity) < 1e-6:  # Consider velocities very close to 0 as 0
             zero_velocity_count += 1
         else:
             zero_velocity_count = 0
-        
+
         if zero_velocity_count <= stopped_limit:
             timestamps_to_keep.add(timestamp)
-    
+
     return timestamps_to_keep
 
 def extract_timestamp(data):
@@ -40,10 +59,10 @@ def extract_timestamp(data):
 
 def extract_velocity(data):
     if isinstance(data, dict):
-        return data.get('longitudinal_velocity')
+        return data.get('longitudinal_velocity'), data.get('lateral_velocity')
     elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
-        return data[0].get('longitudinal_velocity')
-    return None
+        return data[0].get('longitudinal_velocity'), data[0].get('lateral_velocity')
+    return None, None
 
 # Create the Cleaned_Dataset folder
 os.makedirs(cleaned_data_folder, exist_ok=True)
@@ -63,7 +82,7 @@ for subfolder in os.listdir(raw_data_folder):
     for filename in files_to_clean:
         if not os.path.isfile(os.path.join(input_folder, filename)):
             continue
-        
+
         with open(os.path.join(input_folder, filename), 'r') as file:
             for line in file:
                 try:
@@ -86,15 +105,15 @@ for subfolder in os.listdir(raw_data_folder):
     # Now process velocity data
     velocity_file = "_vehicle_status_velocity_status.json"
     velocity_data_points = {}
-    
+
     with open(os.path.join(input_folder, velocity_file), 'r') as file:
         for line in file:
             try:
                 data = json.loads(line)
                 timestamp_sec = extract_timestamp(data['data'])
-                velocity = extract_velocity(data['data'])
-                if timestamp_sec in common_timestamps and velocity is not None:
-                    velocity_data_points[timestamp_sec] = {'longitudinal_velocity': velocity}
+                longitudinal_velocity, lateral_velocity = extract_velocity(data['data'])
+                if timestamp_sec in common_timestamps and longitudinal_velocity is not None:
+                    velocity_data_points[timestamp_sec] = {'longitudinal_velocity': longitudinal_velocity, 'lateral_velocity': lateral_velocity}
             except json.JSONDecodeError:
                 continue
             except KeyError as e:
@@ -141,3 +160,7 @@ for subfolder in os.listdir(raw_data_folder):
             outfile.write(infile.read())
 
 print("Data cleaning and velocity filtering completed. Cleaned data stored in 'Cleaned_Dataset' folder.")
+print(f"Minimum longitudinal velocity: {min_longitudinal_velocity}")
+print(f"Maximum longitudinal velocity: {max_longitudinal_velocity}")
+print(f"Minimum lateral velocity: {min_lateral_velocity}")
+print(f"Maximum lateral velocity: {max_lateral_velocity}")
