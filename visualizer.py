@@ -43,6 +43,8 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     y_pred = predicted_future['position_mean'][:, 1]
     x_var = predicted_future['position_var'][:, 0]
     y_var = predicted_future['position_var'][:, 1]
+    print(f"Variance X: {x_var}")
+    print(f"Variance Y: {y_var}")
 
     ax.scatter(x_pred, y_pred, c='red', s=3, label='Predicted future')
     

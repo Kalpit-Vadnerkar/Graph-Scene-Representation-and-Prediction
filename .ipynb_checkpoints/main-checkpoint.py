@@ -28,20 +28,24 @@ def train():
         'object_in_path': 1,
         'traffic_light_detected': 1
     }
-    hidden_size = 128
+    hidden_size = 64
     num_layers = 2
     input_seq_len = 3  # past trajectory length
     output_seq_len = 3  # future prediction length
-    batch_size = 128
-    num_epochs = 100
-    learning_rate = 0.001
+    batch_size = 64
+    num_epochs = 10
+    learning_rate = 0.0001
 
+    model_path = 'graph_trajectory_model.pth'
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     # Scaling for distributions
     scaling_factor = 10
     
     # Data loading
     data_folder = "Dataset/Sequence_Dataset"
-    dataset = TrajectoryDataset(data_folder, scaling_factor=scaling_factor)
+    dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
     
     # Split the dataset
     train_size = int(0.8 * len(dataset))
@@ -55,19 +59,20 @@ def train():
     test_loader = DataLoader(test_dataset, batch_size=batch_size, collate_fn=collate_fn)
     
     # Model initialization
-    model = GraphTrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
+    #model = GraphTrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
+    model = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
     
     # Training
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     trainer = Trainer(model, train_loader, test_loader, learning_rate, device)
     trained_model = trainer.train(num_epochs)
     
     # Save the trained model
-    torch.save(trained_model.state_dict(), "graph_trajectory_model.pth")
+    torch.save(trained_model.state_dict(), model_path)
     
     # Evaluate on test set
-    test_loss = trainer.validate()
-    print(f"Test Loss: {test_loss:.4f}")
+    #test_loss = trainer.validate()
+    #print(f"Test Loss: {test_loss:.4f}")
 
     # Visualization
     #all_sequences = load_sequences(data_folder)
@@ -117,7 +122,7 @@ def visualize_loaded_model(model_path):
         'object_in_path': 1,
         'traffic_light_detected': 1
     }
-    hidden_size = 128
+    hidden_size = 64
     num_layers = 2
     input_seq_len = 3  # past trajectory length
     output_seq_len = 3  # future prediction length
@@ -127,14 +132,14 @@ def visualize_loaded_model(model_path):
     
     # Data loading
     data_folder = "Dataset/Sequence_Dataset"
-    dataset = TrajectoryDataset(data_folder, scaling_factor=scaling_factor)
+    dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
 
     # Load the model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
 
     # Visualization
-    visualize_predictions(model, dataset, dataset.scaling_factor, device)
+    visualize_predictions(model, dataset, scaling_factor, device)
 
 def main():
     import argparse

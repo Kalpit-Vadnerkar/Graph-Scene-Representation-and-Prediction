@@ -17,69 +17,84 @@ class GraphConvolution(nn.Module):
         return output
 
 class GraphTrajectoryLSTM(nn.Module):
-    def __init__(self, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len):
+    def __init__(self, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, dropout_rate=0.2):
         super(GraphTrajectoryLSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.input_seq_len = input_seq_len
         self.output_seq_len = output_seq_len
+        self.dropout_rate = dropout_rate
         
         # Graph Convolutional layers
         self.gc1 = GraphConvolution(input_sizes['node_features'], hidden_size)
         self.gc2 = GraphConvolution(hidden_size, hidden_size)
         
+        # Dropout layer after Graph Convolution
+        self.dropout_gc = nn.Dropout(dropout_rate)
+        
         # Attention mechanism for graph features
         self.attention = nn.MultiheadAttention(hidden_size, num_heads=4)
         
-        # LSTM layers
-        self.lstm_position = nn.LSTM(input_sizes['position'] + hidden_size, hidden_size, num_layers, batch_first=True)
-        self.lstm_velocity = nn.LSTM(input_sizes['velocity'] + hidden_size, hidden_size, num_layers, batch_first=True)
-        self.lstm_steering = nn.LSTM(input_sizes['steering'] + hidden_size, hidden_size, num_layers, batch_first=True)
-        self.lstm_object = nn.LSTM(input_sizes['object_in_path'] + hidden_size, hidden_size, num_layers, batch_first=True)
-        self.lstm_traffic = nn.LSTM(input_sizes['traffic_light_detected'] + hidden_size, hidden_size, num_layers, batch_first=True)
+        # LSTM layers with dropout
+        self.lstm_position = nn.LSTM(input_sizes['position'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
+        self.lstm_velocity = nn.LSTM(input_sizes['velocity'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
+        self.lstm_steering = nn.LSTM(input_sizes['steering'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
+        self.lstm_object = nn.LSTM(input_sizes['object_in_path'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
+        self.lstm_traffic = nn.LSTM(input_sizes['traffic_light_detected'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
         
-        # Fully connected layers for prediction with intermediate ReLU activations
+        # Dropout layer after LSTM
+        self.dropout_lstm = nn.Dropout(dropout_rate)
+        
+        # Fully connected layers for prediction with intermediate ReLU activations and dropout
         self.fc_position_mean = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['position'] * output_seq_len)
         )
         self.fc_position_var = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['position'] * output_seq_len),
             nn.Softplus()  # Ensure positive variance
         )
         self.fc_velocity_mean = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['velocity'] * output_seq_len)
         )
         self.fc_velocity_var = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['velocity'] * output_seq_len),
             nn.Softplus()  # Ensure positive variance
         )
         self.fc_steering_mean = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['steering'] * output_seq_len)
         )
         self.fc_steering_var = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['steering'] * output_seq_len),
             nn.Softplus()  # Ensure positive variance
         )
         self.fc_object = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['object_in_path'] * output_seq_len)
         )
         self.fc_traffic = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
+            nn.Dropout(dropout_rate),
             nn.Linear(hidden_size, input_sizes['traffic_light_detected'] * output_seq_len)
         )
         
@@ -95,9 +110,11 @@ class GraphTrajectoryLSTM(nn.Module):
             single_graph_features = node_features[i]
             single_adj_matrix = adj_matrix[i]
             
-            # Apply Graph Convolutional layers with ReLU activations
+            # Apply Graph Convolutional layers with ReLU activations and dropout
             single_graph_features = F.relu(self.gc1(single_graph_features, single_adj_matrix))
+            single_graph_features = self.dropout_gc(single_graph_features)
             single_graph_features = F.relu(self.gc2(single_graph_features, single_adj_matrix))
+            single_graph_features = self.dropout_gc(single_graph_features)
             
             graph_features_list.append(single_graph_features)
 
@@ -126,12 +143,17 @@ class GraphTrajectoryLSTM(nn.Module):
         object_input = torch.cat((x['object_in_path'], graph_features), dim=-1)
         traffic_input = torch.cat((x['traffic_light_detected'], graph_features), dim=-1)
     
-        # Process with LSTM layers
+        # Process with LSTM layers and apply dropout
         position_out, _ = self.lstm_position(position_input)
+        position_out = self.dropout_lstm(position_out)
         velocity_out, _ = self.lstm_velocity(velocity_input)
+        velocity_out = self.dropout_lstm(velocity_out)
         steering_out, _ = self.lstm_steering(steering_input)
+        steering_out = self.dropout_lstm(steering_out)
         object_out, _ = self.lstm_object(object_input)
+        object_out = self.dropout_lstm(object_out)
         traffic_out, _ = self.lstm_traffic(traffic_input)
+        traffic_out = self.dropout_lstm(traffic_out)
         
         # Predict future trajectory with mean and variance
         position_mean = self.fc_position_mean(position_out[:, -1]).view(-1, self.output_seq_len, 2)
@@ -153,7 +175,6 @@ class GraphTrajectoryLSTM(nn.Module):
             'object_in_path': object_pred,
             'traffic_light_detected': traffic_pred
         }
-
 
 
 class TrajectoryLSTM(nn.Module):
