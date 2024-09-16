@@ -10,7 +10,7 @@ files_to_clean = {
     "_vehicle_status_velocity_status.json",
 }
 
-main_folder = "Dataset"
+main_folder = input("Enter data folder name: ")
 raw_data_folder = os.path.join(main_folder, "Raw_Dataset")
 cleaned_data_folder = os.path.join(main_folder, "Cleaned_Dataset")
 stopped_limit = 4

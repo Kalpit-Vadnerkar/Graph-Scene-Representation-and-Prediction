@@ -1,0 +1,171 @@
+{"data": {"timestamp_sec": 47, "timestamp_ns": 909998929, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 48, "timestamp_ns": 909998906, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 49, "timestamp_ns": 909998884, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 50, "timestamp_ns": 909998862, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 69, "timestamp_ns": 909998437, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81369.70498451282, "y": 49916.440636498664, "z": 41.84485626220703, "orientation_x": 0.0039739186293305945, "orientation_y": 0.0034283888961939356, "orientation_z": -0.8447399133467154, "orientation_w": 0.5351513177777737, "linear_velocity_x": 0.5951055937359307, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 70, "timestamp_ns": 909998415, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81368.40032050802, "y": 49916.058032175446, "z": 41.88063430786133, "orientation_x": -0.007853275319137968, "orientation_y": -0.0017217932657433595, "orientation_z": -0.9832462244454884, "orientation_w": 0.18210497963648323, "linear_velocity_x": 0.8900718423134647, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 71, "timestamp_ns": 909998392, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81367.48112835106, "y": 49915.463845084145, "z": 41.90552520751953, "orientation_x": 0.00829376466316254, "orientation_y": 0.0005045163213101024, "orientation_z": -0.9667124494100794, "orientation_w": 0.255730324925611, "linear_velocity_x": 1.0005572038884802, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 72, "timestamp_ns": 909998370, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 73, "timestamp_ns": 909998347, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 74, "timestamp_ns": 909998325, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 75, "timestamp_ns": 909998303, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 76, "timestamp_ns": 909998280, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 77, "timestamp_ns": 909998258, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 78, "timestamp_ns": 909998236, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 79, "timestamp_ns": 909998213, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 80, "timestamp_ns": 909998191, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 81, "timestamp_ns": 909998169, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 82, "timestamp_ns": 909998146, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 83, "timestamp_ns": 909998124, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 84, "timestamp_ns": 909998102, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 85, "timestamp_ns": 909998079, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 105, "timestamp_ns": 909997632, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 106, "timestamp_ns": 909997610, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 107, "timestamp_ns": 909997588, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 108, "timestamp_ns": 909997565, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 109, "timestamp_ns": 909997543, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 110, "timestamp_ns": 909997520, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 111, "timestamp_ns": 909997498, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 112, "timestamp_ns": 909997476, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 113, "timestamp_ns": 909997453, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 114, "timestamp_ns": 909997431, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 115, "timestamp_ns": 909997409, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 116, "timestamp_ns": 909997386, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81411.23427364689, "y": 49906.939625509374, "z": 41.85465621948242, "orientation_x": -0.009664475458425264, "orientation_y": 0.004893903199974374, "orientation_z": 0.8175152046382146, "orientation_w": 0.5758051213830256, "linear_velocity_x": 0.5669312530929363, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 1}]}}
+{"data": {"timestamp_sec": 117, "timestamp_ns": 909997364, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 118, "timestamp_ns": 909997342, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81411.14176983244, "y": 49973.3517655931, "z": 41.69728088378906, "orientation_x": -0.010402932127584256, "orientation_y": -0.0007335646840515219, "orientation_z": 0.7754968160653462, "orientation_w": 0.6312653397411534, "linear_velocity_x": 0.3138631441932679, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 1}]}}
+{"data": {"timestamp_sec": 119, "timestamp_ns": 909997319, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81411.49493205902, "y": 49971.200481724896, "z": 41.61241149902344, "orientation_x": 0.00922311373425394, "orientation_y": 0.0008975435668008829, "orientation_z": 0.7738661932341565, "orientation_w": 0.6332813304984333, "linear_velocity_x": -1.2690452897640119, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 1}]}}
+{"data": {"timestamp_sec": 120, "timestamp_ns": 909997297, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81411.33630839594, "y": 49971.75269608445, "z": 41.67471694946289, "orientation_x": 0.008415699684345879, "orientation_y": 0.0006371998576178923, "orientation_z": 0.7789123399502854, "orientation_w": 0.6270760214266969, "linear_velocity_x": -0.08722759721369161, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 1}]}}
+{"data": {"timestamp_sec": 121, "timestamp_ns": 909997275, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 122, "timestamp_ns": 909997252, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 123, "timestamp_ns": 909997230, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 124, "timestamp_ns": 909997208, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 125, "timestamp_ns": 909997185, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 126, "timestamp_ns": 909997163, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 127, "timestamp_ns": 909997140, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 128, "timestamp_ns": 909997118, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 129, "timestamp_ns": 909997096, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 130, "timestamp_ns": 909997073, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 131, "timestamp_ns": 909997051, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 132, "timestamp_ns": 909997029, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 133, "timestamp_ns": 909997006, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 134, "timestamp_ns": 909996984, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 135, "timestamp_ns": 909996962, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 136, "timestamp_ns": 909996939, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 137, "timestamp_ns": 909996917, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 138, "timestamp_ns": 909996895, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 139, "timestamp_ns": 909996872, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 140, "timestamp_ns": 909996850, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 141, "timestamp_ns": 909996828, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 142, "timestamp_ns": 909996805, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 143, "timestamp_ns": 909996783, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 144, "timestamp_ns": 909996761, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 145, "timestamp_ns": 909996738, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 146, "timestamp_ns": 909996716, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 147, "timestamp_ns": 909996693, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 148, "timestamp_ns": 909996671, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 149, "timestamp_ns": 909996649, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 150, "timestamp_ns": 909996626, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 151, "timestamp_ns": 909996604, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 152, "timestamp_ns": 909996582, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 153, "timestamp_ns": 909996559, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 154, "timestamp_ns": 909996537, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 155, "timestamp_ns": 909996515, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 156, "timestamp_ns": 909996492, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 157, "timestamp_ns": 909996470, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 158, "timestamp_ns": 909996448, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 159, "timestamp_ns": 909996425, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 160, "timestamp_ns": 909996403, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 173, "timestamp_ns": 909996112, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 174, "timestamp_ns": 909996090, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 175, "timestamp_ns": 909996068, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 176, "timestamp_ns": 909996045, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 177, "timestamp_ns": 909996023, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 178, "timestamp_ns": 909996001, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 179, "timestamp_ns": 909995978, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 180, "timestamp_ns": 909995956, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 181, "timestamp_ns": 909995933, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 182, "timestamp_ns": 909995911, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 183, "timestamp_ns": 909995889, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 184, "timestamp_ns": 909995866, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81536.9284431234, "y": 50021.50844844421, "z": 42.89096450805664, "orientation_x": -0.008278950906814903, "orientation_y": -0.002277478944022139, "orientation_z": 0.1381977739799602, "orientation_w": 0.9903674304663528, "linear_velocity_x": 0.2710257012325543, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 185, "timestamp_ns": 909995844, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81537.96901324333, "y": 50021.75560405008, "z": 42.959083557128906, "orientation_x": -0.012895662631279283, "orientation_y": 0.003998579441267374, "orientation_z": 0.11651338058023564, "orientation_w": 0.9930973494041343, "linear_velocity_x": 0.8674904937201391, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 186, "timestamp_ns": 909995822, "num_objects": 2, "is_map_frame": true, "objects": [{"x": 81539.20688264076, "y": 50022.02438135006, "z": 42.934513092041016, "orientation_x": -0.01085740229020515, "orientation_y": -0.0006518271863519924, "orientation_z": 0.10969733139005305, "orientation_w": 0.9939055223826502, "linear_velocity_x": 1.117526002696726, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}, {"x": 81566.38710823451, "y": 50012.00751261441, "z": 43.349586486816406, "orientation_x": -0.003069168478440727, "orientation_y": -0.010208056707533643, "orientation_z": -0.9940593435079053, "orientation_w": 0.10831619162313302, "linear_velocity_x": 12.306415858701984, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 2}]}}
+{"data": {"timestamp_sec": 187, "timestamp_ns": 909995799, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 188, "timestamp_ns": 909995777, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 189, "timestamp_ns": 909995755, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 190, "timestamp_ns": 909995732, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 191, "timestamp_ns": 909995710, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 192, "timestamp_ns": 909995688, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 193, "timestamp_ns": 909995665, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 194, "timestamp_ns": 909995643, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 195, "timestamp_ns": 909995621, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 196, "timestamp_ns": 909995598, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 197, "timestamp_ns": 909995576, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 198, "timestamp_ns": 909995554, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 199, "timestamp_ns": 909995531, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 200, "timestamp_ns": 909995509, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 201, "timestamp_ns": 909995486, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 202, "timestamp_ns": 909995464, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 203, "timestamp_ns": 909995442, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 204, "timestamp_ns": 909995419, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 205, "timestamp_ns": 909995397, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 206, "timestamp_ns": 909995375, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 207, "timestamp_ns": 909995352, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 208, "timestamp_ns": 909995330, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 209, "timestamp_ns": 909995308, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 210, "timestamp_ns": 909995285, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 211, "timestamp_ns": 909995263, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 212, "timestamp_ns": 909995241, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 213, "timestamp_ns": 909995218, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 214, "timestamp_ns": 909995196, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 215, "timestamp_ns": 909995174, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 216, "timestamp_ns": 909995151, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 217, "timestamp_ns": 909995129, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 218, "timestamp_ns": 909995106, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 219, "timestamp_ns": 909995084, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 220, "timestamp_ns": 909995062, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 221, "timestamp_ns": 909995039, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 222, "timestamp_ns": 909995017, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 223, "timestamp_ns": 909994995, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 909994972, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 909994950, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 909994928, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 909994570, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 909994548, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 909994525, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 909994503, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 909994481, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 909994458, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 909994436, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81673.24296582342, "y": 50032.1037880749, "z": 43.46795654296875, "orientation_x": 0.0005782012438218073, "orientation_y": -0.011545010983586023, "orientation_z": -0.9946632788017044, "orientation_w": 0.10252482727687713, "linear_velocity_x": 14.821758228005057, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 2}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 909994414, "num_objects": 2, "is_map_frame": true, "objects": [{"x": 81660.74941794096, "y": 50029.84504548464, "z": 43.50000762939453, "orientation_x": 0.0006414921035226115, "orientation_y": -0.011524995244757287, "orientation_z": -0.9952665663790022, "orientation_w": 0.0964946880436451, "linear_velocity_x": 13.574210517053166, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 2}, {"x": 81712.77627920706, "y": 50064.70136183149, "z": 42.145668029785156, "orientation_x": -0.00845043301864282, "orientation_y": 0.00801624837390446, "orientation_z": 0.7487374471177368, "orientation_w": 0.6627643361161036, "linear_velocity_x": 0.26406013491244923, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 909994391, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81712.56295609387, "y": 50065.793224647336, "z": 42.13868713378906, "orientation_x": -0.009578052014348956, "orientation_y": 0.006486748801270681, "orientation_z": 0.7954809583548242, "orientation_w": 0.6058681604973892, "linear_velocity_x": 0.8731414570045517, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 909994369, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81712.41340095049, "y": 50066.82451020228, "z": 42.12070083618164, "orientation_x": 0.0022128622902995495, "orientation_y": 0.009249074828913864, "orientation_z": 0.7674680361206586, "orientation_w": 0.6410166701329948, "linear_velocity_x": 0.9548047468382743, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 909994347, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81712.26136481858, "y": 50067.85776758964, "z": 42.12432098388672, "orientation_x": -0.006396075701582365, "orientation_y": -0.00329272730413349, "orientation_z": 0.759449795530192, "orientation_w": 0.6505261380080509, "linear_velocity_x": 1.006620316279324, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 909994324, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 909994302, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 909994279, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 909994257, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 909994235, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 909994212, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 909994190, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 909994168, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 909994145, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 909994123, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 909994101, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 909994078, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 909994056, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81709.8661089478, "y": 50080.56597691876, "z": 42.10623550415039, "orientation_x": -0.0044029646990961496, "orientation_y": -0.008773099840489502, "orientation_z": 0.7697129356653416, "orientation_w": 0.6383146898595465, "linear_velocity_x": 0.8514491368971494, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 909994034, "num_objects": 1, "is_map_frame": true, "objects": [{"x": 81709.65247102105, "y": 50081.59082950415, "z": 42.10602951049805, "orientation_x": -0.005685741540688646, "orientation_y": -0.008393182422465994, "orientation_z": 0.772577306281877, "orientation_w": 0.6348397692726837, "linear_velocity_x": 0.9724478345976105, "linear_velocity_y": 0.0, "linear_velocity_z": 0.0, "classification": 7}]}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 909994011, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 909993989, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 909993967, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 909993944, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 909993922, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 909993899, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 909993877, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 909993855, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 909993832, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 909993810, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 277, "timestamp_ns": 909993788, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 278, "timestamp_ns": 909993765, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 279, "timestamp_ns": 909993743, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 280, "timestamp_ns": 909993721, "num_objects": 0, "is_map_frame": true, "objects": []}}
+{"data": {"timestamp_sec": 281, "timestamp_ns": 109993716, "num_objects": 0, "is_map_frame": true, "objects": []}}

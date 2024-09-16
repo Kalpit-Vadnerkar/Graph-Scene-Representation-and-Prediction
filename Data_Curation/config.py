@@ -30,7 +30,7 @@ class Config:
         # Velocity and steering angle scaling factors
         self.MAX_VELOCITY_X = 12.0  # m/s, adjust as needed
         self.MIN_VELOCITY_X = -0.0  # m/s, adjust as needed
-        self.MAX_VELOCITY_Y = 0.35  # m/s, adjust as needed
+        self.MAX_VELOCITY_Y = 0.45  # m/s, adjust as needed
         self.MIN_VELOCITY_Y = -0.35  # m/s, adjust as needed
         self.MAX_STEERING = 0.3  # radians, adjust as needed
         self.MIN_STEERING = -0.3  # radians, adjust as needed

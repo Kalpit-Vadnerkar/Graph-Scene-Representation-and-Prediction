@@ -101,6 +101,7 @@ class SequenceProcessor:
                            key=lambda n: (n[1]['x'] - ego_position[0])**2 + 
                                          (n[1]['y'] - ego_position[1])**2)
         return closest_node[1]['traffic_light_detection_node']
+        #return 0
     
     def process_timestep(self, data_dict, G, x_min, x_max, y_min, y_max, is_past):
         ego_data = self.extract_ego_data(data_dict)

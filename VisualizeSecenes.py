@@ -6,15 +6,16 @@ import random
 
 def load_sequences(folder_path):
     all_sequences = []
+    sequence_names = []
     for filename in os.listdir(folder_path):
         if filename.endswith('.pkl'):
             file_path = os.path.join(folder_path, filename)
             with open(file_path, 'rb') as f:
                 sequences = pickle.load(f)
                 all_sequences.append(sequences)
-                #all_sequences.extend(sequences)
+                sequence_names.append(filename)
     print(f"loaded {len(all_sequences)} files")            
-    return all_sequences
+    return all_sequences, sequence_names
 
 def plot_graph_and_sequence(sequence, ax):
     # Extract the graph
@@ -52,13 +53,14 @@ def plot_graph_and_sequence(sequence, ax):
     ax.set_aspect('equal')
 
 # Main execution
-output_folder = "Dataset/Sequence_Dataset"  # Replace with your actual output folder path
-plots_folder = "plots"  # Folder where plots will be saved
+main_folder = input("Enter data folder name: ")
+output_folder = os.path.join(main_folder, "Sequence_Dataset")  # Replace with your actual output folder path
+plots_folder = "Test_plots"  # Folder where plots will be saved
 
 # Create plots folder if it doesn't exist
 os.makedirs(plots_folder, exist_ok=True)
 
-all_sequences = load_sequences(output_folder)
+all_sequences, sequence_names = load_sequences(output_folder)
 
 selected_sequences = []
 
@@ -73,7 +75,7 @@ for i, sequence in enumerate(selected_sequences):
     plt.figure(figsize=(10, 8))
     plot_graph_and_sequence(sequence, plt.gca())
     plt.title(f"Sequence {i+1}")
-    individual_plot_filename = os.path.join(plots_folder, f"run_{(i // 3) + 1}_sequence_{i + 1}.png")
+    individual_plot_filename = os.path.join(plots_folder, f"{sequence_names[(i // 3)]}_sequence_{i + 1}.png")
     plt.savefig(individual_plot_filename, dpi=300, bbox_inches='tight')
     print(f"Plot saved as {individual_plot_filename}")
     plt.close()
