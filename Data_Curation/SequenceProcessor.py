@@ -152,7 +152,8 @@ class SequenceProcessor:
             sequences.append({
                 'past': past_sequence,
                 'future': future_sequence,
-                'graph': G
+                'graph': G,
+                'graph_bounds': [x_min, x_max, y_min, y_max]
             })
             inner_pbar.update(1)
         return sequences
