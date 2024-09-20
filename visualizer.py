@@ -111,11 +111,12 @@ def plot_velocity_and_steering(sequence, predicted_future, ax1, ax2):
 def make_predictions(model, dataset, device, num_samples=9):
     model.eval()
     all_predictions = []
-    sampled_sequences = random.sample(range(len(dataset)), num_samples)
+    #sampled_sequences = random.sample(range(len(dataset)), num_samples)
+    sampled_sequences = [i + 10 for i in range(num_samples)]
 
     with torch.no_grad():
         for idx in sampled_sequences:
-            past, future, graph = dataset[idx]
+            past, future, graph, graph_bounds = dataset[idx]
             
             # Ensure consistent dimensions
             past = {k: v.unsqueeze(0).to(device) for k, v in past.items()}  # Add batch dimension
@@ -143,5 +144,5 @@ def visualize_predictions(model, dataset, scaling_factor, device):
         ax.set_title(f"Sample {i+1}")
 
     plt.tight_layout()
-    plt.savefig("plots/model_visualization.png")
+    plt.savefig("model_visualization.png")
     plt.close()

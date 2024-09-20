@@ -95,5 +95,7 @@ class TrajectoryDataset(Dataset):
             'node_features': node_features,
             'adj_matrix': adj_matrix
         }
+
+        graph_bounds = sequence['graph_bounds']
         
-        return past_tensor, future_tensor, graph_tensor
+        return past_tensor, future_tensor, graph_tensor, graph_bounds

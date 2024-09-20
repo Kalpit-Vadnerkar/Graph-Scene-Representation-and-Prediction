@@ -45,6 +45,7 @@ def train():
     
     # Data loading
     data_folder = "Dataset/Sequence_Dataset"
+    #data_folder = "Test_Dataset/Sequence_Dataset"
     dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
     
     # Split the dataset
@@ -115,7 +116,7 @@ def visualize_loaded_model(model_path):
     scaling_factor = 10
     
     # Data loading
-    data_folder = "Dataset/Sequence_Dataset"
+    data_folder = "Test_Dataset/Sequence_Dataset"
     dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
 
     # Load the model

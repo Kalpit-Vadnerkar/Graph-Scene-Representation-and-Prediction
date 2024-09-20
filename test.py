@@ -6,6 +6,7 @@ from scipy.stats import multivariate_normal
 
 from TrajectoryDataset import TrajectoryDataset
 from DLModels import GraphTrajectoryLSTM
+from visualizer import visualize_predictions
 
 
 def load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device):
@@ -15,13 +16,31 @@ def load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, 
     model.eval()
     return model
 
+def restore_mean(scaled_mean_x, scaled_mean_y, graph_bounds):
+    x_min, x_max, y_min, y_max = graph_bounds
+    original_mean_x = scaled_mean_x * (x_max - x_min) + x_min
+    original_mean_y = scaled_mean_y * (y_max - y_min) + y_min
+    return [original_mean_x, original_mean_y]
+
+def restore_variance(scaled_variance_x, scaled_variance_y, graph_bounds):
+    x_min, x_max, y_min, y_max = graph_bounds
+    original_variance_x = scaled_variance_x * (x_max - x_min)**2 
+    original_variance_y = scaled_variance_y * (y_max - y_min)**2
+    return [original_variance_x, original_variance_y]
+
+def restore_position(scaled_x, scaled_y, graph_bounds):
+    x_min, x_max, y_min, y_max = graph_bounds
+    original_x = scaled_x * (x_max - x_min) + x_min
+    original_y = scaled_y * (y_max - y_min) + y_min
+    return [original_x, original_y]
+
 def make_predictions(model, dataset, device, num_samples=9):
     model.eval()
     all_predictions = []
 
     with torch.no_grad():
         for idx in range(num_samples):
-            past, future, graph = dataset[idx+10]
+            past, future, graph, graph_bounds = dataset[idx+10]
             
             # Ensure consistent dimensions
             past = {k: v.unsqueeze(0).to(device) for k, v in past.items()}  # Add batch dimension
@@ -33,9 +52,10 @@ def make_predictions(model, dataset, device, num_samples=9):
 
     return all_predictions
 
-def plot_3d_distributions(predictions, past_positions, future_positions):
+def plot_3d_distributions(predictions, past_positions, future_positions, all_graph_bounds):  # Add all_graph_bounds
     fig = plt.figure(figsize=(20, 20))
     colors = ['viridis', 'plasma', 'inferno']
+    print("Scaled Variances: ")
     for i in range(9):
         ax = fig.add_subplot(3, 3, i+1, projection='3d')
         
@@ -45,6 +65,13 @@ def plot_3d_distributions(predictions, past_positions, future_positions):
         pred_pos = predictions[i]['position_mean']
         pred_var = predictions[i]['position_var']
         
+        # Unscale the predicted mean and variance using the corresponding graph bounds
+        graph_bounds = all_graph_bounds[i] 
+        future_pos = np.array([restore_position(x, y, graph_bounds) for x, y in future_pos])
+        pred_pos = np.array([restore_mean(x, y, graph_bounds) for x, y in pred_pos])
+        pred_var = np.array([restore_variance(x, y, graph_bounds) for x, y in pred_var])
+        
+        print(pred_var)
         # Plot past trajectory
         #ax.plot(past_pos[:, 0], past_pos[:, 1], np.zeros_like(past_pos[:, 0]), 'b-', label='Past')
         
@@ -55,7 +82,7 @@ def plot_3d_distributions(predictions, past_positions, future_positions):
         ax.scatter(pred_pos[:, 0], pred_pos[:, 1], np.zeros_like(pred_pos[:, 0]), 'r-', label='Predicted Mean')
         
         # Create grid for probability distribution
-        padding = 1
+        padding = 50
         x = np.linspace(min(pred_pos[:, 0]) - padding, max(pred_pos[:, 0]) + padding, 100)
         y = np.linspace(min(pred_pos[:, 1]) - padding, max(pred_pos[:, 1]) + padding, 100)
         X, Y = np.meshgrid(x, y)
@@ -65,6 +92,11 @@ def plot_3d_distributions(predictions, past_positions, future_positions):
             mean = pred_pos[t]
             cov = np.diag(pred_var[t])
             Z = multivariate_normal.pdf(np.dstack((X, Y)), mean=mean, cov=cov)
+
+            # Normalize Z
+            #Z = Z * 1000
+            #Z = Z / Z.max()  # Scale Z so that the maximum value is 1
+
             ax.plot_surface(X, Y, Z, cmap=colors[t], alpha=0.3)
         
         ax.set_xlabel('X')
@@ -76,6 +108,66 @@ def plot_3d_distributions(predictions, past_positions, future_positions):
     plt.tight_layout()
     plt.show()
     plt.savefig("pdf.png")
+
+
+input_sizes = {
+        'node_features': 4,
+        'position': 2,
+        'velocity': 2,
+        'steering': 1,
+        'object_in_path': 1,
+        'traffic_light_detected': 1
+    }
+hidden_size = 64
+num_layers = 2
+input_seq_len = 3  # past trajectory length
+output_seq_len = 3  # future prediction length
+
+scaling_factor = 10
+
+# Data loading
+data_folder = "Test_Dataset/Sequence_Dataset"
+dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
+
+model_path = 'graph_trajectory_model.pth'
+
+# Load the model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
+
+print(device)
+
+# Make predictions
+predictions = make_predictions(model, dataset, device, num_samples=9)
+
+# Extract past and future positions
+past_positions = []
+future_positions = []
+all_graph_bounds = []
+for i in range(10,19):
+    past, future, graph, graph_bounds = dataset[i]
+    past_positions.append(past['position'].numpy())
+    future_positions.append(future['position'].numpy())
+    all_graph_bounds.append(graph_bounds)
+
+# Plot 3D distributions grouped by time steps
+plot_3d_distributions(predictions, past_positions, future_positions, all_graph_bounds)
+
+print("distribution viz. done!")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def plot_distributions_by_time_step(predictions, future_positions, num_time_steps=6):
     fig, axs = plt.subplots(2, 3, figsize=(20, 15), subplot_kw={'projection': '3d'})
@@ -152,41 +244,4 @@ def plot_distributions_by_time_step(predictions, future_positions, num_time_step
     plt.savefig("time_step_distributions.png")
 
 
-input_sizes = {
-        'node_features': 4,
-        'position': 2,
-        'velocity': 2,
-        'steering': 1,
-        'object_in_path': 1,
-        'traffic_light_detected': 1
-    }
-hidden_size = 64
-num_layers = 2
-input_seq_len = 3  # past trajectory length
-output_seq_len = 3  # future prediction length
-
-# Data loading
-data_folder = "Test_Dataset/Sequence_Dataset"
-dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
-
-model_path = 'graph_trajectory_model.pth'
-
-# Load the model
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
-
-# Make predictions
-predictions = make_predictions(model, dataset, device, num_samples=9)
-
-# Extract past and future positions
-past_positions = []
-future_positions = []
-for i in range(10,19):
-    past, future, _ = dataset[i]
-    past_positions.append(past['position'].numpy())
-    future_positions.append(future['position'].numpy())
-
-# Plot 3D distributions grouped by time steps
-plot_3d_distributions(predictions, past_positions, future_positions)
-
-plot_distributions_by_time_step(predictions, future_positions)
+#plot_distributions_by_time_step(predictions, future_positions)
