@@ -32,14 +32,14 @@ def train():
     num_layers = 2
     input_seq_len = 3  # past trajectory length
     output_seq_len = 3  # future prediction length
-    batch_size = 64
-    num_epochs = 10
+    batch_size = 128
+    num_epochs = 50
     learning_rate = 0.0001
 
     model_path = 'graph_trajectory_model.pth'
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+    print(device)
     # Scaling for distributions
     scaling_factor = 10
     
@@ -70,13 +70,6 @@ def train():
     # Save the trained model
     torch.save(trained_model.state_dict(), model_path)
     
-    # Evaluate on test set
-    #test_loss = trainer.validate()
-    #print(f"Test Loss: {test_loss:.4f}")
-
-    # Visualization
-    #all_sequences = load_sequences(data_folder)
-    #dataset = TrajectoryDataset(data_folder)
     visualize_predictions(trained_model, dataset, scaling_factor, device)
 
 def collate_fn(batch):
@@ -93,15 +86,6 @@ def collate_fn(batch):
             past_batch[key] = past_batch[key].squeeze(-1)
         if future_batch[key].dim() == 3:
             future_batch[key] = future_batch[key].squeeze(-1)
-    
-    # Print shapes for debugging
-    #print("Shapes after collate_fn:")
-    #for key, value in past_batch.items():
-    #    print(f"past_{key}: {value.shape}")
-    #for key, value in future_batch.items():
-    #    print(f"future_{key}: {value.shape}")
-    #for key, value in graph_batch.items():
-    #    print(f"graph_{key}: {value.shape}")
     
     return past_batch, future_batch, graph_batch
 
