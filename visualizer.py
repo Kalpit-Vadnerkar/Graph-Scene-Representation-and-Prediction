@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 import numpy as np
+from scipy.stats import multivariate_normal
 
 def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     # Extract the graph
@@ -30,38 +31,40 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     past_positions = [(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) 
                       for step in sequence['past']]
     x_past, y_past = zip(*past_positions)
-    ax.scatter(x_past, y_past, c='blue', s=3, label='Past positions')
+    ax.scatter(x_past, y_past, c='blue', s=30, label='Past positions')
 
     # Plot actual future trajectory (scaled up)
     future_positions = [(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) 
                         for step in sequence['future']]
     x_actual, y_actual = zip(*future_positions)
-    ax.scatter(x_actual, y_actual, c='green', s=3, label='Actual future')
+    ax.scatter(x_actual, y_actual, c='green', s=30, label='Actual future')
 
     # Plot predicted future trajectory with uncertainty
     x_pred = predicted_future['position_mean'][:, 0]
     y_pred = predicted_future['position_mean'][:, 1]
     x_var = predicted_future['position_var'][:, 0]
     y_var = predicted_future['position_var'][:, 1]
-    print(f"Variance X: {x_var}")
-    print(f"Variance Y: {y_var}")
+    #print(f"Variance X: {x_var}")
+    #print(f"Variance Y: {y_var}")
 
-    ax.scatter(x_pred, y_pred, c='red', s=3, label='Predicted future')
+    ax.scatter(x_pred, y_pred, c='red', s=30, label='Predicted future')
     
-    # Plot uncertainty ellipses
+    #Visualize uncertainty as distributions
     for i in range(len(x_pred)):
-        ellipse = plt.matplotlib.patches.Ellipse(
-            (x_pred[i], y_pred[i]),
-            width=2*np.sqrt(x_var[i]),
-            height=2*np.sqrt(y_var[i]),
-            fill=False,
-            color='red',
-            alpha=0.3
-        )
-        ax.add_patch(ellipse)
+        # Create a grid of points for the contour plot
+        x, y = np.mgrid[x_pred[i] - 3*np.sqrt(x_var[i]):x_pred[i] + 3*np.sqrt(x_var[i]):0.1, 
+                        y_pred[i] - 3*np.sqrt(y_var[i]):y_pred[i] + 3*np.sqrt(y_var[i]):0.1]
+        pos = np.dstack((x, y))
+
+        # Create a multivariate normal distribution
+        rv = multivariate_normal([x_pred[i], y_pred[i]], [[x_var[i], 0], [0, y_var[i]]])
+
+        # Plot the contour
+        ax.contour(x, y, rv.pdf(pos), cmap="Reds", alpha=0.5)
 
     ax.legend()
     ax.set_aspect('equal')
+
 
 def plot_velocity_and_steering(sequence, predicted_future, ax1, ax2):
     # Time steps
@@ -144,5 +147,5 @@ def visualize_predictions(model, dataset, scaling_factor, device):
         ax.set_title(f"Sample {i+1}")
 
     plt.tight_layout()
-    plt.savefig("model_visualization.png")
+    plt.savefig("predictions/model_visualization.png")
     plt.close()
