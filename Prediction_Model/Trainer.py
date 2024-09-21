@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-from LossFunctions import CombinedLoss
+from Prediction_Model.LossFunctions import CombinedLoss
 
 class Trainer:
     def __init__(self, model, train_loader, val_loader, learning_rate, device):

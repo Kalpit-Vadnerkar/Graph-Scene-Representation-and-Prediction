@@ -1,8 +1,8 @@
 import torch
 from torch.utils.data import DataLoader, random_split
-from TrajectoryDataset import TrajectoryDataset
-from DLModels import GraphTrajectoryLSTM
-from Trainer import Trainer
+from Prediction_Model.TrajectoryDataset import TrajectoryDataset
+from Prediction_Model.DLModels import GraphTrajectoryLSTM
+from Prediction_Model.Trainer import Trainer
 from visualizer import visualize_predictions
 import pickle
 import os
