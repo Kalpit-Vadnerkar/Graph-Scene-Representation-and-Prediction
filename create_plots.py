@@ -4,39 +4,43 @@ from Prediction_Model.TrajectoryDataset import TrajectoryDataset
 from Visualization.visualizer import *
 
 def main():
-    # Data loading
-    dataset = TrajectoryDataset(
-        CONFIG['data_folder'],
-        position_scaling_factor=CONFIG['position_scaling_factor'],
-        velocity_scaling_factor=100,
-        steering_scaling_factor=100
-    )
+    for condition in CONFIG['conditions']:
+        # Update data folder for current condition
+        CONFIG['data_folder'] = f"Test_Dataset/Sequence_Dataset/{condition}"
+        
+        # Data loading
+        dataset = TrajectoryDataset(
+            CONFIG['data_folder'],
+            position_scaling_factor=CONFIG['position_scaling_factor'],
+            velocity_scaling_factor=100,
+            steering_scaling_factor=100
+        )
 
-    # Load the model
-    model = load_model(CONFIG)
+        # Load the model
+        model = load_model(CONFIG)
 
-    # Make predictions
-    predictions, sampled_sequences = make_predictions(model, dataset, CONFIG)
+        # Make predictions
+        predictions, sampled_sequences = make_predictions(model, dataset, CONFIG)
 
-    # Extract past and future positions
-    past_positions = []
-    future_positions = []
-    all_graph_bounds = []
-    for i in range(CONFIG['sample_start_index'], CONFIG['sample_start_index'] + CONFIG['num_samples']):
-        past, future, graph, graph_bounds = dataset[i]
-        past_positions.append(past['position'].numpy())
-        future_positions.append(future['position'].numpy())
-        all_graph_bounds.append(graph_bounds)
+        # Extract past and future positions
+        past_positions = []
+        future_positions = []
+        all_graph_bounds = []
+        for i in range(CONFIG['sample_start_index'], CONFIG['sample_start_index'] + CONFIG['num_samples']):
+            past, future, graph, graph_bounds = dataset[i]
+            past_positions.append(past['position'].numpy())
+            future_positions.append(future['position'].numpy())
+            all_graph_bounds.append(graph_bounds)
 
-    # Visualizations
-    visualize_predictions(dataset, CONFIG['position_scaling_factor'], predictions, sampled_sequences)
-    print("trajectory viz. done!")
+        # Visualizations
+        visualize_predictions(dataset, CONFIG['position_scaling_factor'], predictions, sampled_sequences, condition)
+        print(f"{condition} trajectory viz. done!")
 
-    plot_3d_distributions(predictions, past_positions, future_positions, all_graph_bounds)
-    print("sequence distribution viz. done!")
+        plot_3d_distributions(predictions, past_positions, future_positions, all_graph_bounds, condition)
+        print(f"{condition} sequence distribution viz. done!")
 
-    plot_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds)
-    print("time step distribution viz. done!")
+        plot_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, condition)
+        print(f"{condition} time step distribution viz. done!")
 
 if __name__ == "__main__":
     main()

@@ -4,22 +4,7 @@ import networkx as nx
 import numpy as np
 from scipy.stats import multivariate_normal
 
-class GraphBoundsScaler:
-    def __init__(self, graph_bounds):
-        self.x_min, self.x_max, self.y_min, self.y_max = graph_bounds
-
-    def restore_position(self, scaled_x, scaled_y):
-        original_x = scaled_x * (self.x_max - self.x_min) + self.x_min
-        original_y = scaled_y * (self.y_max - self.y_min) + self.y_min
-        return np.array([original_x, original_y])
-
-    def restore_mean(self, scaled_mean_x, scaled_mean_y):
-        return self.restore_position(scaled_mean_x, scaled_mean_y)
-
-    def restore_variance(self, scaled_variance_x, scaled_variance_y):
-        original_variance_x = scaled_variance_x * (self.x_max - self.x_min)**2 
-        original_variance_y = scaled_variance_y * (self.y_max - self.y_min)**2
-        return np.array([original_variance_x, original_variance_y])
+from Visualization.Rescaler import GraphBoundsScaler
 
 def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     # Extract the graph
@@ -71,11 +56,16 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     ax.legend()
     ax.set_aspect('equal')
 
-def plot_3d_distributions(predictions, past_positions, future_positions, all_graph_bounds):
-    fig = plt.figure(figsize=(20, 20))
+def plot_3d_distributions(predictions, past_positions, future_positions, all_graph_bounds, condition):
+    num_samples = len(predictions)
+    rows = int(np.ceil(np.sqrt(num_samples)))
+    cols = int(np.ceil(num_samples / rows))
+    
+    fig = plt.figure(figsize=(5*cols, 5*rows))
     colors = ['viridis', 'plasma', 'inferno']
-    for i in range(9):
-        ax = fig.add_subplot(3, 3, i+1, projection='3d')
+    
+    for i in range(num_samples):
+        ax = fig.add_subplot(rows, cols, i+1, projection='3d')
         
         scaler = GraphBoundsScaler(all_graph_bounds[i])
         
@@ -83,8 +73,8 @@ def plot_3d_distributions(predictions, past_positions, future_positions, all_gra
         pred_pos = np.array([scaler.restore_mean(x, y) for x, y in predictions[i]['position_mean']])
         pred_var = np.array([scaler.restore_variance(x, y) for x, y in predictions[i]['position_var']])
         
-        ax.scatter(future_pos[:, 0], future_pos[:, 1], np.zeros_like(future_pos[:, 0]), 'g-', label='Ground Truth')
-        ax.scatter(pred_pos[:, 0], pred_pos[:, 1], np.zeros_like(pred_pos[:, 0]), 'r-', label='Predicted Mean')
+        ax.scatter(future_pos[:, 0], future_pos[:, 1], np.zeros_like(future_pos[:, 0]), c='g', marker='o', label='Ground Truth')
+        ax.scatter(pred_pos[:, 0], pred_pos[:, 1], np.zeros_like(pred_pos[:, 0]), c='r', marker='x', label='Predicted Mean')
         
         padding = 50
         x = np.linspace(min(pred_pos[:, 0]) - padding, max(pred_pos[:, 0]) + padding, 100)
@@ -104,17 +94,21 @@ def plot_3d_distributions(predictions, past_positions, future_positions, all_gra
         ax.set_title(f'Sequence {i+1}')
     
     plt.tight_layout()
-    plt.savefig("predictions/pdf.png")
+    plt.savefig(f"predictions/sequence_pdf_{condition}.png")
     plt.close()
 
-def plot_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds):
-    fig = plt.figure(figsize=(20, 20))
-    colors = ['viridis', 'plasma', 'inferno'] 
-    num_timesteps = 11
+def plot_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, condition):
+    num_samples = len(predictions)
+    num_timesteps = num_samples + 2
+    rows = int(np.ceil(np.sqrt(num_timesteps)))
+    cols = int(np.ceil(num_timesteps / rows))
+    
+    fig = plt.figure(figsize=(5*cols, 5*rows))
+    colors = ['viridis', 'plasma', 'inferno']
 
     for timestep in range(num_timesteps):
-        ax = fig.add_subplot(4, 3, timestep + 1, projection='3d')
-        relevant_sequences = [i for i in range(9) if timestep in range(i, i + 3)]
+        ax = fig.add_subplot(rows, cols, timestep + 1, projection='3d')
+        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 3)]
 
         future_pos_for_timestep = []
         for seq_idx in relevant_sequences:
@@ -124,7 +118,7 @@ def plot_distributions_by_timestep(predictions, past_positions, future_positions
 
         if future_pos_for_timestep:
             mean_future_pos = np.mean(future_pos_for_timestep, axis=0)
-            padding = 50
+            padding = 100
             x = np.linspace(mean_future_pos[0] - padding, mean_future_pos[0] + padding, 100)
             y = np.linspace(mean_future_pos[1] - padding, mean_future_pos[1] + padding, 100)
             X, Y = np.meshgrid(x, y)
@@ -157,19 +151,27 @@ def plot_distributions_by_timestep(predictions, past_positions, future_positions
         ax.set_title(f'Timestep {timestep + 1}')
 
     plt.tight_layout()
-    plt.savefig("predictions/pdf_by_timestep.png")
+    plt.savefig(f"predictions/timestep_pdf_{condition}.png")
     plt.close()
 
-def visualize_predictions(dataset, scaling_factor, predictions, sampled_indices):
-    fig, axes = plt.subplots(3, 3, figsize=(20, 20))
-    fig.suptitle("Trajectory Predictions", fontsize=16)
+def visualize_predictions(dataset, scaling_factor, predictions, sampled_indices, condition):
+    num_samples = len(predictions)
+    rows = int(np.ceil(np.sqrt(num_samples)))
+    cols = int(np.ceil(num_samples / rows))
+    
+    fig, axes = plt.subplots(rows, cols, figsize=(5*cols, 5*rows))
+    fig.suptitle(f"Trajectory Predictions - {condition}", fontsize=16)
 
     for i, (pred, idx) in enumerate(zip(predictions, sampled_indices)):
-        ax = axes[i // 3, i % 3]
+        ax = axes[i // cols, i % cols] if num_samples > 1 else axes
         sequence = dataset.data[idx]
         plot_graph_and_trajectories(sequence, scaling_factor, pred, ax)
         ax.set_title(f"Sample {i+1}")
 
+    # Hide any unused subplots
+    for i in range(num_samples, rows * cols):
+        axes.flatten()[i].axis('off')
+
     plt.tight_layout()
-    plt.savefig("predictions/model_visualization.png")
+    plt.savefig(f"predictions/trajectory_prediction_{condition}.png")
     plt.close()

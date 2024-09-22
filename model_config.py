@@ -17,6 +17,7 @@ CONFIG = {
     'data_folder': "Test_Dataset/Sequence_Dataset",
     'model_path': 'models/graph_trajectory_model.pth',
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-    'num_samples': 9,
-    'sample_start_index': 10
+    'num_samples': 20,
+    'sample_start_index': 20,
+    'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_GNSS', 'Noisy_IMU', 'Noisy_Lidar']
 }
