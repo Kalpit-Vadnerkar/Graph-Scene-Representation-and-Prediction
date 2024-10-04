@@ -1,54 +1,35 @@
 import json
 import os
 from collections import defaultdict
+import numpy as np
 
 files_to_clean = {
     "_perception_object_recognition_tracking_objects.json",
-    "_vehicle_status_steering_status.json",
     "_perception_traffic_light_recognition_traffic_signals.json",
+    "_vehicle_status_steering_status.json",
     "_tf.json",
+    "_system_emergency_control_cmd.json",
     "_vehicle_status_velocity_status.json",
 }
+
+tf_file = "_tf.json"
 
 main_folder = input("Enter data folder name: ")
 raw_data_folder = os.path.join(main_folder, "Raw_Dataset")
 cleaned_data_folder = os.path.join(main_folder, "Cleaned_Dataset")
-stopped_limit = 4
+max_stopped_duration = 3  # seconds
 
-min_longitudinal_velocity = float('inf')
-max_longitudinal_velocity = float('-inf')
-min_lateral_velocity = float('inf')
-max_lateral_velocity = float('-inf')
-
-def process_velocity_data(data_points):
-    zero_velocity_count = 0
-    timestamps_to_keep = set()
-
-    global min_longitudinal_velocity, max_longitudinal_velocity, min_lateral_velocity, max_lateral_velocity
-
-    for timestamp, data in sorted(data_points.items()):
-        longitudinal_velocity = data.get('longitudinal_velocity')
-        lateral_velocity = data.get('lateral_velocity')
-
-        # Update min and max longitudinal velocities
-        if longitudinal_velocity is not None:
-            min_longitudinal_velocity = min(min_longitudinal_velocity, longitudinal_velocity)
-            max_longitudinal_velocity = max(max_longitudinal_velocity, longitudinal_velocity)
-
-        # Update min and max lateral velocities
-        if lateral_velocity is not None:
-            min_lateral_velocity = min(min_lateral_velocity, lateral_velocity)
-            max_lateral_velocity = max(max_lateral_velocity, lateral_velocity)
-
-        if longitudinal_velocity is not None and abs(longitudinal_velocity) < 1e-6:  # Consider velocities very close to 0 as 0
-            zero_velocity_count += 1
-        else:
-            zero_velocity_count = 0
-
-        if zero_velocity_count <= stopped_limit:
-            timestamps_to_keep.add(timestamp)
-
-    return timestamps_to_keep
+# Initialize metrics
+metrics = {
+    'longitudinal_velocity': {'min': float('inf'), 'max': float('-inf')},
+    'lateral_velocity': {'min': float('inf'), 'max': float('-inf')},
+    'steering_angle': {'min': float('inf'), 'max': float('-inf')},
+    'speed': {'min': float('inf'), 'max': float('-inf')},
+    'acceleration': {'min': float('inf'), 'max': float('-inf')},
+    'yaw_rate': {'min': float('inf'), 'max': float('-inf')},
+    'orientation_X': {'min': float('inf'), 'max': float('-inf')},
+    'orientation_Y': {'min': float('inf'), 'max': float('-inf')},
+}
 
 def extract_timestamp(data):
     if isinstance(data, dict):
@@ -57,110 +38,161 @@ def extract_timestamp(data):
         return data[0].get('timestamp_sec')
     return None
 
-def extract_velocity(data):
-    if isinstance(data, dict):
-        return data.get('longitudinal_velocity'), data.get('lateral_velocity')
-    elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
-        return data[0].get('longitudinal_velocity'), data[0].get('lateral_velocity')
-    return None, None
+def update_metrics(data):
+    global metrics
+    for metric, value in data.items():
+        if value is not None and metric in metrics:
+            metrics[metric]['min'] = min(metrics[metric]['min'], value)
+            metrics[metric]['max'] = max(metrics[metric]['max'], value)
 
-# Create the Cleaned_Dataset folder
-os.makedirs(cleaned_data_folder, exist_ok=True)
+def process_velocity_data(data_points):
+    stopped_threshold = 0.001  # m/s, threshold to consider the vehicle stopped
 
-# Iterate over all subfolders in the Raw_Dataset folder
-for subfolder in os.listdir(raw_data_folder):
-    input_folder = os.path.join(raw_data_folder, subfolder)
-    if not os.path.isdir(input_folder):
-        continue
+    timestamps = sorted(data_points.keys())
+    keep_timestamps = set()
+    stopped_start = None
 
-    # Create a folder to store the cleaned JSON files
-    output_folder = os.path.join(cleaned_data_folder, subfolder)
-    os.makedirs(output_folder, exist_ok=True)
+    for i, timestamp in enumerate(timestamps):
+        speed = data_points[timestamp].get('speed')
+        
+        if speed is None:
+            continue  # Skip if speed data is missing
 
-    # First, collect all timestamps from all files
-    all_timestamps = defaultdict(set)
+        if speed <= stopped_threshold:
+            if stopped_start is None:
+                stopped_start = timestamp
+        else:
+            if stopped_start is not None:
+                stopped_duration = timestamp - stopped_start
+                if stopped_duration <= max_stopped_duration:
+                    # If stopped for 3 seconds or less, keep all timestamps in this interval
+                    keep_timestamps.update(ts for ts in timestamps if stopped_start <= ts < timestamp)
+                stopped_start = None
+            keep_timestamps.add(timestamp)
+
+    # Handle case where data ends while vehicle is stopped
+    if stopped_start is not None:
+        stopped_duration = timestamps[-1] - stopped_start
+        if stopped_duration <= max_stopped_duration:
+            keep_timestamps.update(ts for ts in timestamps if ts >= stopped_start)
+
+    return keep_timestamps
+
+def load_data(input_folder):
+    data_by_timestamp = defaultdict(lambda: defaultdict(list))
     for filename in files_to_clean:
-        if not os.path.isfile(os.path.join(input_folder, filename)):
+        file_path = os.path.join(input_folder, filename)
+        if not os.path.isfile(file_path):
             continue
 
-        with open(os.path.join(input_folder, filename), 'r') as file:
+        with open(file_path, 'r') as file:
             for line in file:
                 try:
                     data = json.loads(line)
                     timestamp_sec = extract_timestamp(data['data'])
                     if timestamp_sec is not None:
-                        all_timestamps[filename].add(timestamp_sec)
+                        data_by_timestamp[filename][timestamp_sec].append(data)
+                        
+                        # Update metrics based on the file type
+                        if filename == "_vehicle_status_velocity_status.json":
+                            update_metrics({
+                                'longitudinal_velocity': data['data'].get('longitudinal_velocity'),
+                                'lateral_velocity': data['data'].get('lateral_velocity'),
+                                'yaw_rate' : data['data'].get('yaw_rate'),
+                            })
+                        elif filename == "_tf.json":
+                            update_metrics({
+                                'orientation_X': data['data']['orientation'].get('x'),
+                                'orientation_Y': data['data']['orientation'].get('y'),
+                            })
+                        elif filename == "_system_emergency_control_cmd.json":
+                            update_metrics({
+                                'steering_angle': data['data'].get('steering_angle'),
+                                'speed': data['data'].get('speed'),
+                                'acceleration': data['data'].get('acceleration')
+                            })
+                        
                 except json.JSONDecodeError:
                     continue
                 except KeyError as e:
                     print(f"KeyError in file {filename}: {e}")
-                    print(f"Data structure: {data}")
                 except Exception as e:
                     print(f"Unexpected error in file {filename}: {e}")
-                    print(f"Data structure: {data}")
 
-    # Find common timestamps across all files
-    common_timestamps = set.intersection(*all_timestamps.values())
+    return data_by_timestamp
 
-    # Now process velocity data
-    velocity_file = "_vehicle_status_velocity_status.json"
-    velocity_data_points = {}
+def get_common_timestamps(data_by_timestamp):
+    all_timestamps = set.intersection(*[set(data_by_timestamp[filename].keys()) for filename in files_to_clean])
+    return sorted(all_timestamps)
 
-    with open(os.path.join(input_folder, velocity_file), 'r') as file:
-        for line in file:
-            try:
-                data = json.loads(line)
-                timestamp_sec = extract_timestamp(data['data'])
-                longitudinal_velocity, lateral_velocity = extract_velocity(data['data'])
-                if timestamp_sec in common_timestamps and longitudinal_velocity is not None:
-                    velocity_data_points[timestamp_sec] = {'longitudinal_velocity': longitudinal_velocity, 'lateral_velocity': lateral_velocity}
-            except json.JSONDecodeError:
-                continue
-            except KeyError as e:
-                print(f"KeyError in velocity file: {e}")
-                print(f"Data structure: {data}")
-            except Exception as e:
-                print(f"Unexpected error in velocity file: {e}")
-                print(f"Data structure: {data}")
+def process_data(data_by_timestamp, common_timestamps):
+    processed_data = defaultdict(list)
+    for timestamp in common_timestamps:
+        min_data_points = len(data_by_timestamp[tf_file][timestamp])
+        
+        for filename in files_to_clean:
+            file_data = data_by_timestamp[filename][timestamp]
+            
+            if len(file_data) < 10:
+                # If we have fewer than 10 points, use all available points and pad if necessary
+                processed_points = file_data + [file_data[-1]] * (10 - len(file_data))
+            else:
+                # Select 10 evenly spaced points
+                indices = np.linspace(0, len(file_data) - 1, 10, dtype=int)
+                processed_points = [file_data[i] for i in indices]
+            
+            processed_data[filename].extend(processed_points)
 
-    timestamps_to_keep = process_velocity_data(velocity_data_points)
+    return processed_data
 
-    # Now process all files
+def write_output(output_folder, processed_data):
     for filename in files_to_clean:
-        if not os.path.isfile(os.path.join(input_folder, filename)):
-            continue
+        output_file_path = os.path.join(output_folder, filename)
+        with open(output_file_path, 'w') as outfile:
+            for data_point in processed_data[filename]:
+                outfile.write(json.dumps(data_point) + '\n')
 
-        data_points = {}
-        with open(os.path.join(input_folder, filename), 'r') as file:
-            for line in file:
-                try:
-                    data = json.loads(line)
-                    timestamp_sec = extract_timestamp(data['data'])
-                    if timestamp_sec in common_timestamps and timestamp_sec in timestamps_to_keep:
-                        data_points[timestamp_sec] = data
-                except json.JSONDecodeError:
-                    continue
-                except KeyError as e:
-                    print(f"KeyError in file {filename}: {e}")
-                    print(f"Data structure: {data}")
-                except Exception as e:
-                    print(f"Unexpected error in file {filename}: {e}")
-                    print(f"Data structure: {data}")
-
-        # Write the cleaned data points to a new file
-        with open(os.path.join(output_folder, filename), 'w') as file:
-            for data_point in sorted(data_points.values(), key=lambda x: extract_timestamp(x['data'])):
-                file.write(json.dumps(data_point) + '\n')
-
-    # Copy the route file without modifications
+def copy_route_file(input_folder, output_folder):
     route_file = "route.json"
     if os.path.isfile(os.path.join(input_folder, route_file)):
         with open(os.path.join(input_folder, route_file), 'r') as infile, \
              open(os.path.join(output_folder, route_file), 'w') as outfile:
             outfile.write(infile.read())
 
-print("Data cleaning and velocity filtering completed. Cleaned data stored in 'Cleaned_Dataset' folder.")
-print(f"Minimum longitudinal velocity: {min_longitudinal_velocity}")
-print(f"Maximum longitudinal velocity: {max_longitudinal_velocity}")
-print(f"Minimum lateral velocity: {min_lateral_velocity}")
-print(f"Maximum lateral velocity: {max_lateral_velocity}")
+def main():
+    os.makedirs(cleaned_data_folder, exist_ok=True)
+
+    for subfolder in os.listdir(raw_data_folder):
+        input_folder = os.path.join(raw_data_folder, subfolder)
+        if not os.path.isdir(input_folder):
+            continue
+
+        output_folder = os.path.join(cleaned_data_folder, subfolder)
+        os.makedirs(output_folder, exist_ok=True)
+
+        data_by_timestamp = load_data(input_folder)
+        common_timestamps = get_common_timestamps(data_by_timestamp)
+
+        velocity_data_points = {
+            ts: {
+                'speed': data[0]['data'].get('speed')
+                }
+            for ts, data in data_by_timestamp["_system_emergency_control_cmd.json"].items()
+            if ts in common_timestamps
+            }
+
+
+        timestamps_to_keep = process_velocity_data(velocity_data_points)
+        common_timestamps = [ts for ts in common_timestamps if ts in timestamps_to_keep]
+
+        processed_data = process_data(data_by_timestamp, common_timestamps)
+        write_output(output_folder, processed_data)
+        copy_route_file(input_folder, output_folder)
+
+    print("Data cleaning and velocity filtering completed. Cleaned data stored in 'Cleaned_Dataset' folder.")
+    for metric, values in metrics.items():
+        print(f"Minimum {metric}: {values['min']}")
+        print(f"Maximum {metric}: {values['max']}")
+
+if __name__ == "__main__":
+    main()

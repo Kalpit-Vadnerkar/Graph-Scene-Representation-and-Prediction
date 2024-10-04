@@ -82,7 +82,7 @@ class DataProcessor:
             # First pass to count sequences
             data_reader = DataReader(folder_path)
             data = data_reader.read_scene_data()
-            num_sequences = len(data) - self.config.PAST_TRAJECTORY - self.config.PREDICTION_HORIZON + 1
+            num_sequences = ((len(data) - self.config.PAST_TRAJECTORY - self.config.PREDICTION_HORIZON + 1) - 1) // self.config.STRIDE + 1 
             total_augmented_sequences = num_sequences * (1 + config.NUM_ROTATIONS * (1 + len(config.MIRRORS)))
             
             # Create inner progress bar for each folder

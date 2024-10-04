@@ -46,8 +46,8 @@ def plot_graph_and_sequence(sequence, ax):
     x_past, y_past = zip(*past_positions)
     x_future, y_future = zip(*future_positions)
     
-    ax.scatter(x_past, y_past, c='blue', s=30, label='Past positions')
-    ax.scatter(x_future, y_future, c='red', s=30, label='Future positions')
+    ax.scatter(x_past, y_past, c='blue', s=10, label='Past positions')
+    ax.scatter(x_future, y_future, c='red', s=10, label='Future positions')
     
     ax.legend()
     ax.set_aspect('equal')
@@ -55,7 +55,7 @@ def plot_graph_and_sequence(sequence, ax):
 # Main execution
 main_folder = input("Enter data folder name: ")
 output_folder = os.path.join(main_folder, "Sequence_Dataset")  # Replace with your actual output folder path
-plots_folder = "Test_plots"  # Folder where plots will be saved
+plots_folder = "plots"  # Folder where plots will be saved
 
 # Create plots folder if it doesn't exist
 os.makedirs(plots_folder, exist_ok=True)
@@ -66,7 +66,7 @@ selected_sequences = []
 
 for sequence in all_sequences:
     # Randomly select 5 sequences
-    selected_sequences.extend(random.sample(sequence, min(3, len(sequence))))
+    selected_sequences.extend(random.sample(sequence, min(5, len(sequence))))
 
 print(f"loaded {len(selected_sequences)} sequences")
 
@@ -75,7 +75,7 @@ for i, sequence in enumerate(selected_sequences):
     plt.figure(figsize=(10, 8))
     plot_graph_and_sequence(sequence, plt.gca())
     plt.title(f"Sequence {i+1}")
-    individual_plot_filename = os.path.join(plots_folder, f"{sequence_names[(i // 3)]}_sequence_{i + 1}.png")
+    individual_plot_filename = os.path.join(plots_folder, f"{sequence_names[(i // 5)]}_sequence_{i + 1}.png")
     plt.savefig(individual_plot_filename, dpi=300, bbox_inches='tight')
     print(f"Plot saved as {individual_plot_filename}")
     plt.close()

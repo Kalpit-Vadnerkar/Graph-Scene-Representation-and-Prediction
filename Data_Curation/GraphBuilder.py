@@ -119,10 +119,10 @@ class GraphBuilder:
             
             if added_nodes >= self.max_nodes:
                 break
-
+   
+        self.update_traffic_lights(G)
         self.clip_graph(G, center_position)
         self._ensure_graph_connectivity(G)
-        self.update_traffic_lights(G)
         return G
 
     def create_expanded_graph(self, initial_position, final_position):

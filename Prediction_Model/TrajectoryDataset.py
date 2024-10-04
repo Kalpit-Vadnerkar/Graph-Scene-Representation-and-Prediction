@@ -6,11 +6,12 @@ import networkx as nx
 import numpy as np
 
 class TrajectoryDataset(Dataset):
-    def __init__(self, data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100):
+    def __init__(self, data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100, acceleration_scaling_factor=100):
         self.data = []
         self.position_scaling_factor = position_scaling_factor
         self.velocity_scaling_factor = velocity_scaling_factor
         self.steering_scaling_factor = steering_scaling_factor
+        self.acceleration_scaling_factor = acceleration_scaling_factor
         for filename in os.listdir(data_folder):
             if filename.endswith('.pkl'):
                 with open(os.path.join(data_folder, filename), 'rb') as f:
@@ -27,7 +28,8 @@ class TrajectoryDataset(Dataset):
             'position': [],
             'velocity': [],
             'steering': [],
-            'object_in_path': [],
+            'acceleration': [],
+            'object_distance': [],
             'traffic_light_detected': []
         }
         
@@ -35,33 +37,32 @@ class TrajectoryDataset(Dataset):
             'position': [],
             'velocity': [],
             'steering': [],
-            'object_in_path': [],
+            'acceleration': [],
+            'object_distance': [],
             'traffic_light_detected': []
         }
         
         for step in sequence['past']:
             past_features['position'].append([i * self.position_scaling_factor for i in step['position']])
-            #past_features['position'].append(step['position'])
             past_features['velocity'].append([i * self.velocity_scaling_factor for i in step['velocity']])
-            #past_features['velocity'].append(step['velocity'])
             past_features['steering'].append([step['steering'] * self.steering_scaling_factor])  # Wrap in list to create 2D tensor
-            past_features['object_in_path'].append([step['object_in_path']])
+            past_features['acceleration'].append([step['acceleration'] * self.acceleration_scaling_factor])  # Wrap in list to create 2D tensor
+            past_features['object_distance'].append([step['object_distance']])
             past_features['traffic_light_detected'].append([step['traffic_light_detected']])
         
         for step in sequence['future']:
             future_features['position'].append([i * self.position_scaling_factor for i in step['position']])
-            #future_features['position'].append(step['position'])
             future_features['velocity'].append([i * self.velocity_scaling_factor for i in step['velocity']])
-            #future_features['velocity'].append(step['velocity'])
             future_features['steering'].append([step['steering'] * self.steering_scaling_factor])  # Wrap in list to create 2D tensor
-            future_features['object_in_path'].append([step['object_in_path']])
+            future_features['acceleration'].append([step['acceleration'] * self.acceleration_scaling_factor])  # Wrap in list to create 2D tensor
+            future_features['object_distance'].append([step['object_distance']])
             future_features['traffic_light_detected'].append([step['traffic_light_detected']])
         
         past_tensor = {k: torch.tensor(v, dtype=torch.float32) for k, v in past_features.items()}
         future_tensor = {k: torch.tensor(v, dtype=torch.float32) for k, v in future_features.items()}
 
         # Ensure all tensors have 3 dimensions [sequence_length, 1] for scalar values
-        for key in ['steering', 'object_in_path', 'traffic_light_detected']:
+        for key in ['steering', 'acceleration', 'object_distance', 'traffic_light_detected']:
             if past_tensor[key].dim() == 1:
                 past_tensor[key] = past_tensor[key].unsqueeze(-1)
             if future_tensor[key].dim() == 1:

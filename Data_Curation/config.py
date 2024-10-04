@@ -12,11 +12,12 @@ class Config:
         self.MIN_NODES = 150
         
         # Sequence processing
-        self.PAST_TRAJECTORY = 3
-        self.PREDICTION_HORIZON = 3
+        self.PAST_TRAJECTORY = 20
+        self.PREDICTION_HORIZON = 20
+        self.STRIDE = 10
         
         #  Data augmentation
-        self.NUM_ROTATIONS = 0  # Number of rotations to perform
+        self.NUM_ROTATIONS = 12  # Number of rotations to perform
         self.MIRRORS = ['x', 'y']
         
         # Reference points for coordinate conversion
@@ -30,10 +31,12 @@ class Config:
         # Velocity and steering angle scaling factors
         self.MAX_VELOCITY_X = 12.0  # m/s, adjust as needed
         self.MIN_VELOCITY_X = -0.0  # m/s, adjust as needed
-        self.MAX_VELOCITY_Y = 0.45  # m/s, adjust as needed
-        self.MIN_VELOCITY_Y = -0.35  # m/s, adjust as needed
-        self.MAX_STEERING = 0.3  # radians, adjust as needed
-        self.MIN_STEERING = -0.3  # radians, adjust as needed
+        self.MAX_VELOCITY_Y = 0.4  # m/s, adjust as needed
+        self.MIN_VELOCITY_Y = -0.4  # m/s, adjust as needed
+        self.MAX_STEERING = 0.5  # radians, adjust as needed
+        self.MIN_STEERING = -0.5  # radians, adjust as needed
+        self.MIN_ACCELERATION = -1.0 # m/s^2
+        self.MAX_ACCELERATION = 1.0 # m/s^2
         
     def set_folders(self, user_folder):
         self.INPUT_FOLDER = os.path.join(user_folder, "Cleaned_Dataset")

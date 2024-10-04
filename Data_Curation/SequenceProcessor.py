@@ -18,13 +18,16 @@ class SequenceProcessor:
         ego_vel = Point(data_dict['ego']['velocity']["longitudinal"], data_dict['ego']['velocity']["lateral"])
         ego_orientation = data_dict['ego']['orientation']
         ego_steering = data_dict['ego']['steering']
-        ego_yaw_rate = data_dict['ego']['velocity']["angular"]
+        ego_acceleration = data_dict['ego']['acceleration']
+        ego_yaw_rate = data_dict['ego']['velocity']["yaw_rate"]
+        #ego_yaw_rate = data_dict['ego']['velocity']["angular"]
         
         return {
             'position': ego_pos,
             'velocity': ego_vel,
             'orientation': ego_orientation,
             'steering': ego_steering,
+            'acceleration': ego_acceleration,
             'yaw_rate': ego_yaw_rate
         }
     
@@ -87,6 +90,9 @@ class SequenceProcessor:
     def scale_steering(self, steering):
         return max(0, min(1, (steering - config.MIN_STEERING) / (config.MAX_STEERING - config.MIN_STEERING)))
     
+    def scale_acceleration(self, acceleration):
+        return max(0, min(1, (acceleration - config.MIN_ACCELERATION) / (config.MAX_ACCELERATION - config.MIN_ACCELERATION)))
+    
     def check_object_in_path(self, G, ego_position, objects):
         for obj in objects:
             closest_node = min(G.nodes(data=True), 
@@ -96,6 +102,27 @@ class SequenceProcessor:
                 return 1
         return 0
 
+    def closest_object_distance(self, ego_position, objects):
+        if not objects:
+            return 1  # Return 1 if there are no objects
+
+        min_distance = float('inf')
+        for obj in objects:
+            obj_position = obj.get('position', [])
+            if len(obj_position) >= 2:
+                x, y = obj_position[0], obj_position[1]
+            else:
+                continue  # Skip this object if position data is incomplete
+
+            # Calculate Euclidean distance
+            distance = ((ego_position[0] - x) ** 2 + (ego_position[1] - y) ** 2) ** 0.5
+            
+            if distance < min_distance:
+                min_distance = distance
+
+        return min_distance if min_distance != float('inf') else 1
+        
+        
     def check_traffic_light_detected(self, G, ego_position):
         closest_node = min(G.nodes(data=True), 
                            key=lambda n: (n[1]['x'] - ego_position[0])**2 + 
@@ -110,14 +137,17 @@ class SequenceProcessor:
         scaled_ego_position = self.scale_position(ego_data['position'], x_min, x_max, y_min, y_max)
         scaled_objects = [self.scale_object(obj, x_min, x_max, y_min, y_max) for obj in objects]
         
-        object_in_path = self.check_object_in_path(G, scaled_ego_position, scaled_objects)
+        #object_in_path = self.check_object_in_path(G, scaled_ego_position, scaled_objects)
+        object_distance = self.closest_object_distance(scaled_ego_position, scaled_objects)
         traffic_light_detected = self.check_traffic_light_detected(G, scaled_ego_position)
         
         processed_data = {
             'position': scaled_ego_position,
             'velocity': self.scale_velocity(ego_data['velocity']),
             'steering': self.scale_steering(ego_data['steering']),
-            'object_in_path': object_in_path,
+            'acceleration': self.scale_acceleration(ego_data['acceleration']),
+            'object_distance': object_distance,
+            #'object_in_path': object_in_path,
             'traffic_light_detected': traffic_light_detected,
             'objects': scaled_objects
         }
@@ -128,7 +158,7 @@ class SequenceProcessor:
         sequences = []
         timestamps = list(data.keys())
         
-        for i in range(len(timestamps) - self.window_size - self.prediction_horizon + 1):
+        for i in range(0, len(timestamps) - self.window_size - self.prediction_horizon + 1, config.STRIDE):
             initial_timestamp = timestamps[i]
             final_timestamp = timestamps[i + self.window_size + self.prediction_horizon - 1]
             initial_position = self.extract_ego_data(data[initial_timestamp])['position']

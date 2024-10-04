@@ -25,7 +25,8 @@ def train():
         'position': 2,
         'velocity': 2,
         'steering': 1,
-        'object_in_path': 1,
+        'acceleration': 1,
+        'object_distance': 1,
         'traffic_light_detected': 1
     }
     hidden_size = 64
@@ -46,7 +47,7 @@ def train():
     # Data loading
     data_folder = "Dataset/Sequence_Dataset"
     #data_folder = "Test_Dataset/Sequence_Dataset"
-    dataset = TrajectoryDataset(data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100)
+    dataset = TrajectoryDataset(data_folder, position_scaling_factor = 10, velocity_scaling_factor = 100, steering_scaling_factor = 100, acceleration_scaling_factor = 100)
     
     # Split the dataset
     train_size = int(0.8 * len(dataset))
@@ -60,8 +61,8 @@ def train():
     test_loader = DataLoader(test_dataset, batch_size=batch_size, collate_fn=collate_fn)
     
     # Model initialization
-    #model = GraphTrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
-    model = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
+    model = GraphTrajectoryLSTM(input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len)
+    #odel = load_model(model_path, input_sizes, hidden_size, num_layers, input_seq_len, output_seq_len, device)
     
     # Training
     
