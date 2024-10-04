@@ -18,6 +18,7 @@ CONFIG = {
     'model_path': 'models/graph_trajectory_model.pth',
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     'num_samples': 20,
-    'sample_start_index': 20,
+    'sample_start_index': 40,
     'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_GNSS', 'Noisy_IMU', 'Noisy_Lidar']
+    #'conditions': ['Nominal']
 }
