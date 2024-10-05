@@ -47,22 +47,22 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     ax.scatter(pred_positions[:, 0], pred_positions[:, 1], c='red', s=30, label='Predicted future mean')
     
     # Visualize uncertainty as distributions
-    for i in range(len(pred_positions)):
-        x, y = np.mgrid[pred_positions[i, 0] - 3*np.sqrt(pred_variances[i, 0]):pred_positions[i, 0] + 3*np.sqrt(pred_variances[i, 0]):0.1, 
-                        pred_positions[i, 1] - 3*np.sqrt(pred_variances[i, 1]):pred_positions[i, 1] + 3*np.sqrt(pred_variances[i, 1]):0.1]
-        pos = np.dstack((x, y))
+    #for i in range(len(pred_positions)):
+    #    x, y = np.mgrid[pred_positions[i, 0] - 3*np.sqrt(pred_variances[i, 0]):pred_positions[i, 0] + 3*np.sqrt(pred_variances[i, 0]):0.1, 
+    #                    pred_positions[i, 1] - 3*np.sqrt(pred_variances[i, 1]):pred_positions[i, 1] + 3*np.sqrt(pred_variances[i, 1]):0.1]
+    #    pos = np.dstack((x, y))
 
-        rv = multivariate_normal([pred_positions[i, 0], pred_positions[i, 1]], [[pred_variances[i, 0], 0], [0, pred_variances[i, 1]]])
-        ax.contour(x, y, rv.pdf(pos), cmap="Oranges", alpha=0.5)
+    #    rv = multivariate_normal([pred_positions[i, 0], pred_positions[i, 1]], [[pred_variances[i, 0], 0], [0, pred_variances[i, 1]]])
+    #    ax.contour(x, y, rv.pdf(pos), cmap="Oranges", alpha=0.5)
 
     # Visualize uncertainty as ellipses
-    #for i in range(len(pred_positions)):
-    #    ellipse = Ellipse(xy=pred_positions[i], 
-    #                  width=6*np.sqrt(pred_variances[i, 0]), 
-    #                  height=6*np.sqrt(pred_variances[i, 1]),
-    #                  angle=0,  # Assuming no correlation between x and y uncertainties
-    #                  facecolor='red', alpha=0.3)
-    #    ax.add_patch(ellipse)
+    for i in range(len(pred_positions)):
+        ellipse = Ellipse(xy=pred_positions[i], 
+                      width=6*np.sqrt(pred_variances[i, 0]), 
+                      height=6*np.sqrt(pred_variances[i, 1]),
+                      angle=0,  # Assuming no correlation between x and y uncertainties
+                      facecolor='orange', alpha=0.3)
+        ax.add_patch(ellipse)
 
     # Visualize uncertainty as heatmaps
     #for i in range(len(pred_positions)):

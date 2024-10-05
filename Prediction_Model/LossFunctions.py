@@ -12,7 +12,7 @@ class CombinedLoss(nn.Module):
         
     def forward(self, pred, target):
         loss = 0
-        for key in ['position', 'velocity', 'steering']:
+        for key in ['position', 'velocity', 'steering', 'acceleration', 'object_distance']:
             mean_key = f'{key}_mean'
             var_key = f'{key}_var'
             if mean_key in pred and var_key in pred:
@@ -34,7 +34,7 @@ class CombinedLoss(nn.Module):
             elif key in pred:
                 loss += self.mse_loss(pred[key], target[key])
         
-        for key in ['object_in_path', 'traffic_light_detected']:
+        for key in ['traffic_light_detected']:
             if key in pred:
                 loss += self.bce_loss(pred[key], target[key])
         

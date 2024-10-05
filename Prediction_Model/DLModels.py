@@ -39,7 +39,8 @@ class GraphTrajectoryLSTM(nn.Module):
         self.lstm_position = nn.LSTM(input_sizes['position'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
         self.lstm_velocity = nn.LSTM(input_sizes['velocity'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
         self.lstm_steering = nn.LSTM(input_sizes['steering'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
-        self.lstm_object = nn.LSTM(input_sizes['object_in_path'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
+        self.lstm_acceleration = nn.LSTM(input_sizes['acceleration'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
+        self.lstm_object = nn.LSTM(input_sizes['object_distance'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
         self.lstm_traffic = nn.LSTM(input_sizes['traffic_light_detected'] + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout_rate)
         
         # Dropout layer after LSTM
@@ -85,11 +86,24 @@ class GraphTrajectoryLSTM(nn.Module):
             nn.Linear(hidden_size, input_sizes['steering'] * output_seq_len),
             nn.Softplus()  # Ensure positive variance
         )
+        self.fc_acceleration_mean = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_size, input_sizes['acceleration'] * output_seq_len)
+        )
+        self.fc_acceleration_var = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_size, input_sizes['acceleration'] * output_seq_len),
+            nn.Softplus()  # Ensure positive variance
+        )
         self.fc_object = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Dropout(dropout_rate),
-            nn.Linear(hidden_size, input_sizes['object_in_path'] * output_seq_len)
+            nn.Linear(hidden_size, input_sizes['object_distance'] * output_seq_len)
         )
         self.fc_traffic = nn.Sequential(
             nn.Linear(hidden_size, hidden_size),
@@ -140,7 +154,8 @@ class GraphTrajectoryLSTM(nn.Module):
         position_input = torch.cat((x['position'], graph_features), dim=-1)
         velocity_input = torch.cat((x['velocity'], graph_features), dim=-1)
         steering_input = torch.cat((x['steering'], graph_features), dim=-1)
-        object_input = torch.cat((x['object_in_path'], graph_features), dim=-1)
+        acceleration_input = torch.cat((x['acceleration'], graph_features), dim=-1)
+        object_input = torch.cat((x['object_distance'], graph_features), dim=-1)
         traffic_input = torch.cat((x['traffic_light_detected'], graph_features), dim=-1)
     
         # Process with LSTM layers and apply dropout
@@ -150,6 +165,8 @@ class GraphTrajectoryLSTM(nn.Module):
         velocity_out = self.dropout_lstm(velocity_out)
         steering_out, _ = self.lstm_steering(steering_input)
         steering_out = self.dropout_lstm(steering_out)
+        acceleration_out, _ = self.lstm_acceleration(acceleration_input)
+        acceleration_out = self.dropout_lstm(acceleration_out)
         object_out, _ = self.lstm_object(object_input)
         object_out = self.dropout_lstm(object_out)
         traffic_out, _ = self.lstm_traffic(traffic_input)
@@ -162,6 +179,8 @@ class GraphTrajectoryLSTM(nn.Module):
         velocity_var = self.fc_velocity_var(velocity_out[:, -1]).view(-1, self.output_seq_len, 2)
         steering_mean = self.fc_steering_mean(steering_out[:, -1]).view(-1, self.output_seq_len)
         steering_var = self.fc_steering_var(steering_out[:, -1]).view(-1, self.output_seq_len)
+        acceleration_mean = self.fc_acceleration_mean(acceleration_out[:, -1]).view(-1, self.output_seq_len)
+        acceleration_var = self.fc_acceleration_var(acceleration_out[:, -1]).view(-1, self.output_seq_len)
         object_pred = torch.sigmoid(self.fc_object(object_out[:, -1])).view(-1, self.output_seq_len)
         traffic_pred = torch.sigmoid(self.fc_traffic(traffic_out[:, -1])).view(-1, self.output_seq_len)
         
@@ -172,6 +191,8 @@ class GraphTrajectoryLSTM(nn.Module):
             'velocity_var': velocity_var,
             'steering_mean': steering_mean,
             'steering_var': steering_var,
+            'acceleration_mean': acceleration_mean,
+            'acceleration_var': acceleration_var,
             'object_in_path': object_pred,
             'traffic_light_detected': traffic_pred
         }
