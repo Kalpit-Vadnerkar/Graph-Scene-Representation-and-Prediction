@@ -97,6 +97,11 @@ class TrajectoryDataset(Dataset):
             'adj_matrix': adj_matrix
         }
 
+        # Add batch dimension to all tensors
+        #past_tensor = {k: v.unsqueeze(0) for k, v in past_tensor.items()}
+        #future_tensor = {k: v.unsqueeze(0) for k, v in future_tensor.items()}
+        #graph_tensor = {k: v.unsqueeze(0) for k, v in graph_tensor.items()}
+        
         graph_bounds = sequence['graph_bounds']
         
         return past_tensor, future_tensor, graph_tensor, graph_bounds

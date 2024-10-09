@@ -8,6 +8,11 @@ from Prediction_Model.model_utils import load_model, make_predictions
 from Visualization.visualizer import visualize_predictions
 from model_config import CONFIG
 
+#import warnings
+
+# Suppress the specific CuDNN warning
+#warnings.filterwarnings("ignore", message="Applied workaround for CuDNN issue")
+
 def create_data_loaders(dataset, batch_size, train_ratio=0.8):
     """Create train and test data loaders."""
     train_size = int(train_ratio * len(dataset))
@@ -42,20 +47,18 @@ def train(config):
     device = config['device']
     dataset = TrajectoryDataset(config['train_data_folder'], 
                                 position_scaling_factor=config['position_scaling_factor'], 
-                                velocity_scaling_factor=100, 
-                                steering_scaling_factor=100, 
-                                acceleration_scaling_factor=100)
+                                velocity_scaling_factor=config['velocity_scaling_factor'], 
+                                steering_scaling_factor=config['steering_scaling_factor'], 
+                                acceleration_scaling_factor=config['acceleration_scaling_factor'])
     
     train_loader, test_loader = create_data_loaders(dataset, config['batch_size'])
     
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
     
-    model = GraphTrajectoryLSTM(config['input_sizes'], 
-                                config['hidden_size'], 
-                                config['num_layers'], 
-                                config['input_seq_len'], 
-                                config['output_seq_len']).to(device)
+    model = GraphTrajectoryLSTM(config).to(device)
+
+    model = load_model(config).to(device)
     
     trainer = Trainer(model, train_loader, test_loader, config['learning_rate'], device)
     trained_model = trainer.train(config['num_epochs'])
@@ -68,8 +71,9 @@ def visualize(config):
     device = config['device']
     dataset = TrajectoryDataset(config['test_data_folder'], 
                                 position_scaling_factor=config['position_scaling_factor'], 
-                                velocity_scaling_factor=100, 
-                                steering_scaling_factor=100)
+                                velocity_scaling_factor=config['velocity_scaling_factor'], 
+                                steering_scaling_factor=config['steering_scaling_factor'], 
+                                acceleration_scaling_factor=config['acceleration_scaling_factor'])
     
     model = load_model(config)
     predictions, sampled_indices = make_predictions(model, dataset, config)

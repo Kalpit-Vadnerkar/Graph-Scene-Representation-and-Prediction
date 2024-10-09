@@ -2,13 +2,14 @@ import torch
 from Prediction_Model.DLModels import GraphTrajectoryLSTM
 
 def load_model(config):
-    model = GraphTrajectoryLSTM(
-        config['input_sizes'],
-        config['hidden_size'],
-        config['num_layers'],
-        config['input_seq_len'],
-        config['output_seq_len']
-    )
+    model = GraphTrajectoryLSTM(config)
+    #model = GraphTrajectoryLSTM(
+    #    config['input_sizes'],
+    #    config['hidden_size'],
+    #    config['num_layers'],
+    #    config['input_seq_len'],
+    #    config['output_seq_len']
+    #)
     model.load_state_dict(torch.load(config['model_path'], map_location=config['device']))
     model.to(config['device'])
     model.eval()

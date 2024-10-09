@@ -17,6 +17,8 @@ tf_file = "_tf.json"
 main_folder = input("Enter data folder name: ")
 raw_data_folder = os.path.join(main_folder, "Raw_Dataset")
 cleaned_data_folder = os.path.join(main_folder, "Cleaned_Dataset")
+
+data_points_per_second = 10
 max_stopped_duration = 3  # seconds
 
 # Initialize metrics
@@ -133,12 +135,12 @@ def process_data(data_by_timestamp, common_timestamps):
         for filename in files_to_clean:
             file_data = data_by_timestamp[filename][timestamp]
             
-            if len(file_data) < 10:
-                # If we have fewer than 10 points, use all available points and pad if necessary
-                processed_points = file_data + [file_data[-1]] * (10 - len(file_data))
+            if len(file_data) < data_points_per_second:
+                # If we have fewer than 'data_points_per_second' points, use all available points and pad if necessary
+                processed_points = file_data + [file_data[-1]] * (data_points_per_second - len(file_data))
             else:
-                # Select 10 evenly spaced points
-                indices = np.linspace(0, len(file_data) - 1, 10, dtype=int)
+                # Select 'data_points_per_second' evenly spaced points
+                indices = np.linspace(0, len(file_data) - 1, data_points_per_second, dtype=int)
                 processed_points = [file_data[i] for i in indices]
             
             processed_data[filename].extend(processed_points)

@@ -1,5 +1,7 @@
 import torch
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import os
 from Prediction_Model.LossFunctions import CombinedLoss
 
 class Trainer:
@@ -11,10 +13,12 @@ class Trainer:
         self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min')
         self.device = device
+        self.train_losses = []
+        self.val_losses = []
 
     def train_epoch(self):
         self.model.train()
-        train_loss = 0.0
+        epoch_losses = {}
         
         for past, future, graph in tqdm(self.train_loader, desc="Training"):
             past = {k: v.to(self.device) for k, v in past.items()}
@@ -24,19 +28,21 @@ class Trainer:
             self.optimizer.zero_grad()
             predictions = self.model(past, graph)
             
-            loss = self.criterion(predictions, future)
+            losses, loss = self.criterion(predictions, future)
             loss.backward()
             self.optimizer.step()
             
-            train_loss += loss.item()
+            for key, value in losses.items():
+                epoch_losses[key] = epoch_losses.get(key, 0) + value
         
-        self.scheduler.step(train_loss)
+        # Average the losses over the epoch
+        epoch_losses = {k: v / len(self.train_loader) for k, v in epoch_losses.items()}
         
-        return train_loss / len(self.train_loader)
-
+        return epoch_losses
+    
     def validate(self):
         self.model.eval()
-        val_loss = 0.0
+        val_losses = {}
         with torch.no_grad():
             for past, future, graph in self.val_loader:
                 past = {k: v.to(self.device) for k, v in past.items()}
@@ -45,16 +51,62 @@ class Trainer:
                 
                 predictions = self.model(past, graph)
                 
-                loss = self.criterion(predictions, future)
-                val_loss += loss.item()
+                losses, _ = self.criterion(predictions, future)
+                
+                for key, value in losses.items():
+                    val_losses[key] = val_losses.get(key, 0) + value
         
-        return val_loss / len(self.val_loader)
+        # Average the losses over the validation set
+        val_losses = {k: v / len(self.val_loader) for k, v in val_losses.items()}
+        
+        return val_losses
 
     def train(self, num_epochs):
         for epoch in range(num_epochs):
-            train_loss = self.train_epoch()
-            val_loss = self.validate()
+            train_losses = self.train_epoch()
+            val_losses = self.validate()
             
-            print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+            self.train_losses.append(train_losses)
+            self.val_losses.append(val_losses)
+            
+            print(f"Epoch {epoch+1}/{num_epochs}")
+            print(f"Train Loss: {train_losses['total_loss']}")
+            print(f"validation Loss: {val_losses['total_loss']}")
+            #print("Train Losses:")
+            #for key, value in train_losses.items():
+            #    print(f"  {key}: {value:.4f}")
+            #print("Validation Losses:")
+            #for key, value in val_losses.items():
+            #    print(f"  {key}: {value:.4f}")
+            
+            self.scheduler.step(val_losses['total_loss'])
         
+        self.plot_losses()
         return self.model
+
+    def plot_losses(self):
+        os.makedirs('Model_Training_Results', exist_ok=True)
+        
+        # Plot total loss
+        plt.figure(figsize=(10, 6))
+        plt.plot([losses['total_loss'] for losses in self.train_losses], label='Train')
+        plt.plot([losses['total_loss'] for losses in self.val_losses], label='Validation')
+        plt.title('Total Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.savefig('Model_Training_Results/total_loss.png')
+        plt.close()
+
+        # Plot individual losses
+        loss_keys = [key for key in self.train_losses[0].keys() if key != 'total_loss']
+        for key in loss_keys:
+            plt.figure(figsize=(10, 6))
+            plt.plot([losses[key] for losses in self.train_losses], label='Train')
+            plt.plot([losses[key] for losses in self.val_losses], label='Validation')
+            plt.title(f'{key} Loss')
+            plt.xlabel('Epoch')
+            plt.ylabel('Loss')
+            plt.legend()
+            plt.savefig(f'Model_Training_Results/{key}_loss.png')
+            plt.close()

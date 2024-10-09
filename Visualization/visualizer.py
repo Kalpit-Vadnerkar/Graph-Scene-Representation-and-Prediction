@@ -34,35 +34,40 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
 
     # Plot past trajectory
     past_positions = np.array([scaler.restore_position(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) for step in sequence['past']])
-    ax.scatter(past_positions[:, 0], past_positions[:, 1], c='lightblue', s=30, label='Past positions')
+    ax.scatter(past_positions[:, 0], past_positions[:, 1], c='darkgreen', s=10, label='Past positions')
 
     # Plot actual future trajectory
     future_positions = np.array([scaler.restore_position(step['position'][0] * scaling_factor, step['position'][1] * scaling_factor) for step in sequence['future']])
-    ax.scatter(future_positions[:, 0], future_positions[:, 1], c='blue', s=30, label='Actual future')
+    ax.scatter(future_positions[:, 0], future_positions[:, 1], c='blue', s=10, label='Actual future')
 
     # Plot predicted future trajectory with uncertainty
     pred_positions = np.array([scaler.restore_mean(x, y) for x, y in predicted_future['position_mean']])
     pred_variances = np.array([scaler.restore_variance(x, y) for x, y in predicted_future['position_var']])
 
-    ax.scatter(pred_positions[:, 0], pred_positions[:, 1], c='red', s=30, label='Predicted future mean')
+    #print(f"Position Variances: {predicted_future['position_var']}")
+    #print(f"Velocity Variances: {predicted_future['velocity_var']}")
+    #print(f"Steering Variances: {predicted_future['steering_var']}")
+    #print(f"Acceleration Variances: {predicted_future['acceleration_var']}")
+
+    ax.scatter(pred_positions[:, 0], pred_positions[:, 1], c='black', s=10, label='Predicted future mean')
     
     # Visualize uncertainty as distributions
-    #for i in range(len(pred_positions)):
-    #    x, y = np.mgrid[pred_positions[i, 0] - 3*np.sqrt(pred_variances[i, 0]):pred_positions[i, 0] + 3*np.sqrt(pred_variances[i, 0]):0.1, 
-    #                    pred_positions[i, 1] - 3*np.sqrt(pred_variances[i, 1]):pred_positions[i, 1] + 3*np.sqrt(pred_variances[i, 1]):0.1]
-    #    pos = np.dstack((x, y))
+    for i in range(len(pred_positions)):
+        x, y = np.mgrid[pred_positions[i, 0] - 3*np.sqrt(pred_variances[i, 0]):pred_positions[i, 0] + 3*np.sqrt(pred_variances[i, 0]):0.1, 
+                       pred_positions[i, 1] - 3*np.sqrt(pred_variances[i, 1]):pred_positions[i, 1] + 3*np.sqrt(pred_variances[i, 1]):0.1]
+        pos = np.dstack((x, y))
 
-    #    rv = multivariate_normal([pred_positions[i, 0], pred_positions[i, 1]], [[pred_variances[i, 0], 0], [0, pred_variances[i, 1]]])
-    #    ax.contour(x, y, rv.pdf(pos), cmap="Oranges", alpha=0.5)
+        rv = multivariate_normal([pred_positions[i, 0], pred_positions[i, 1]], [[pred_variances[i, 0], 0], [0, pred_variances[i, 1]]])
+        ax.contour(x, y, rv.pdf(pos), cmap="RdYlGn", alpha=0.2)
 
     # Visualize uncertainty as ellipses
-    for i in range(len(pred_positions)):
-        ellipse = Ellipse(xy=pred_positions[i], 
-                      width=6*np.sqrt(pred_variances[i, 0]), 
-                      height=6*np.sqrt(pred_variances[i, 1]),
-                      angle=0,  # Assuming no correlation between x and y uncertainties
-                      facecolor='orange', alpha=0.3)
-        ax.add_patch(ellipse)
+    #for i in range(len(pred_positions)):
+    #    ellipse = Ellipse(xy=pred_positions[i], 
+    #                  width=6*np.sqrt(pred_variances[i, 0]), 
+    #                  height=6*np.sqrt(pred_variances[i, 1]),
+    #                  angle=0,  # Assuming no correlation between x and y uncertainties
+    #                  facecolor='orange', alpha=0.3)
+    #    ax.add_patch(ellipse)
 
     # Visualize uncertainty as heatmaps
     #for i in range(len(pred_positions)):
