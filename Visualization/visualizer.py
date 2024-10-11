@@ -136,7 +136,7 @@ def plot_pos_distributions_by_timestep(predictions, past_positions, future_posit
 
     for timestep in range(num_timesteps):
         ax = fig.add_subplot(rows, cols, timestep + 1, projection='3d')
-        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 3)]
+        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 20)]
 
         future_pos_for_timestep = []
         for seq_idx in relevant_sequences:
@@ -146,7 +146,7 @@ def plot_pos_distributions_by_timestep(predictions, past_positions, future_posit
 
         if future_pos_for_timestep:
             mean_future_pos = np.mean(future_pos_for_timestep, axis=0)
-            padding = 100
+            padding = 10
             x = np.linspace(mean_future_pos[0] - padding, mean_future_pos[0] + padding, 100)
             y = np.linspace(mean_future_pos[1] - padding, mean_future_pos[1] + padding, 100)
             X, Y = np.meshgrid(x, y)
@@ -166,10 +166,13 @@ def plot_pos_distributions_by_timestep(predictions, past_positions, future_posit
                     mean += mean_shift
 
                     Z = multivariate_normal.pdf(np.dstack((X, Y)), mean=mean, cov=cov)
+                    
+                    Z = Z / np.sum(Z) 
                     Z = Z * 1000
-                    ax.plot_surface(X, Y, Z, cmap=colors[seq_idx % 3], alpha=0.3)
-                    ax.scatter(mean[0], mean[1], 0, c='r', marker='x',
-                               label='Predicted Mean' if seq_idx == relevant_sequences[0] else "")
+
+                    ax.plot_surface(X, Y, Z, cmap='plasma', alpha=(t+1)/20)
+                    #ax.scatter(mean[0], mean[1], 0, c='r', marker='x',
+                    #           label='Predicted Mean' if seq_idx == relevant_sequences[0] else "")
 
             ax.scatter(mean_future_pos[0], mean_future_pos[1], 0, c='g', marker='o', label='Mean Ground Truth')
 
@@ -196,7 +199,7 @@ def plot_vel_distributions_by_timestep(predictions, past_velocities, future_velo
 
     for timestep in range(num_timesteps):
         ax = fig.add_subplot(rows, cols, timestep + 1, projection='3d')
-        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 3)]
+        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 20)]
 
         future_vel_for_timestep = []
         for seq_idx in relevant_sequences:
@@ -206,12 +209,12 @@ def plot_vel_distributions_by_timestep(predictions, past_velocities, future_velo
         if future_vel_for_timestep:
             mean_future_vel = np.mean(future_vel_for_timestep, axis=0)
             
-            #padding = 10
-            #x = np.linspace(mean_future_vel[0] - padding, mean_future_vel[0] + padding, 100)
-            #y = np.linspace(mean_future_vel[1] - padding, mean_future_vel[1] + padding, 100)
+            padding = 1
+            x = np.linspace(mean_future_vel[0] - padding, mean_future_vel[0] + padding, 100)
+            y = np.linspace(mean_future_vel[1] - padding, mean_future_vel[1] + padding, 100)
 
-            x = np.linspace(0, 100, 100)
-            y = np.linspace(0, 100, 100)
+            #x = np.linspace(0, 10, 100)
+            #y = np.linspace(0, 10, 100)
             
             X, Y = np.meshgrid(x, y)
         
@@ -229,6 +232,7 @@ def plot_vel_distributions_by_timestep(predictions, past_velocities, future_velo
                     mean += mean_shift
 
                     Z = multivariate_normal.pdf(np.dstack((X, Y)), mean=mean, cov=cov)
+                    Z = Z / np.sum(Z)
                     Z = Z * 100
                     ax.plot_surface(X, Y, Z, cmap=colors[seq_idx % 3], alpha=0.3)
                     ax.scatter(mean[0], mean[1], 0, c='r', marker='x',
@@ -239,7 +243,7 @@ def plot_vel_distributions_by_timestep(predictions, past_velocities, future_velo
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Probability')
-        ax.set_zlim(0, 1)
+        ax.set_zlim(0, 0.6)
         ax.legend()
         ax.set_title(f'Timestep {timestep + 1}')
 
@@ -255,18 +259,21 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
     
     fig = plt.figure(figsize=(5*cols, 5*rows))
 
-    colors = ['red', 'orange', 'yellow']
+    colors = []
+    for i in range(20):
+        hex_color = '#%02x0000' % (10 + 3 * i)  # Generates hex codes from #100000 to #680000
+        colors.append(hex_color)
 
     for timestep in range(num_timesteps):
         ax = fig.add_subplot(rows, cols, timestep + 1)
-        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 3)]
+        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 20)]
 
         future_ste_for_timestep = []
         for seq_idx in relevant_sequences:
             future_ste = np.array([s for s in future_steering[seq_idx]])
             
             # Rescaling steer values down to -0.5 to 0.5
-            future_ste = -0.5 + future_ste / 100
+            future_ste = -0.5 + future_ste / 10
             
             future_ste_for_timestep.append(future_ste[timestep - seq_idx])
         
@@ -274,7 +281,6 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
         if future_ste_for_timestep:
             mean_future_ste = np.mean(future_ste_for_timestep, axis=0)
 
-            X = np.linspace(0, 100, 100)
             X = np.linspace(-0.5, 0.5, 100)
 
             for seq_idx in relevant_sequences:
@@ -282,8 +288,8 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
                 pred_var = predictions[seq_idx]['steering_var']
 
                 # Rescaling steer values down to -0.5 to 0.5
-                pred_mean = -0.5 + pred_mean / 100
-                pred_var = pred_var * (0.01)**2
+                pred_mean = -0.5 + pred_mean / 10
+                pred_var = pred_var * (0.1)**2
 
                 t = timestep - seq_idx
                 if 0 <= t < len(pred_mean):
@@ -293,20 +299,21 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
                     original_future_ste = future_steering[seq_idx][t]
 
                     # Rescaling
-                    original_future_ste = -0.5 + original_future_ste / 100
+                    original_future_ste = -0.5 + original_future_ste / 10
 
                     mean_shift = mean_future_ste - original_future_ste
                     mean += mean_shift
 
                     Y = norm.pdf(X, mean, std_dev)
 
-                    Y = Y / 100
+                    # Normalize the PDF
+                    Y = Y / np.sum(Y) 
 
-                    ax.plot(X, Y)
+                    ax.plot(X, Y, c = 'red', alpha=(t+1)/20)
                     
-                    ax.vlines(mean, ymin=0, ymax=1, colors=colors[t], linestyles='--', label='Predicted Sequence ' + str(seq_idx+1))
+                    #ax.vlines(mean, ymin=0, ymax=1, colors=colors[t], linestyles='--', label='Predicted Sequence ' + str(seq_idx+1))
                     
-            ax.vlines(mean_future_ste, ymin=0, ymax=1, colors='g', linestyles='-', label='Ground Truth')
+            ax.vlines(mean_future_ste, ymin=0, ymax=0.1, colors='blue', linestyles='-', label='Ground Truth')
 
         ax.set_xlabel('Steering')
         ax.set_ylabel('Probability')
@@ -317,6 +324,81 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
 
     plt.tight_layout()
     plt.savefig(f"predictions/timestep_steering_{condition}.png")
+    plt.close()
+
+def plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition):
+    num_samples = len(predictions)
+    num_timesteps = num_samples + 2
+    rows = int(np.ceil(np.sqrt(num_timesteps)))
+    cols = int(np.ceil(num_timesteps / rows))
+    
+    fig = plt.figure(figsize=(5*cols, 5*rows))
+
+    colors = []
+    for i in range(20):
+        hex_color = '#%02x0000' % (10 + 3 * i)  # Generates hex codes from #100000 to #680000
+        colors.append(hex_color)
+
+    for timestep in range(num_timesteps):
+        ax = fig.add_subplot(rows, cols, timestep + 1)
+        relevant_sequences = [i for i in range(num_samples) if timestep in range(i, i + 20)]
+
+        future_ste_for_timestep = []
+        for seq_idx in relevant_sequences:
+            future_ste = np.array([s for s in future_acceleration[seq_idx]])
+            
+            # Rescaling steer values down to -1 to 1
+            future_ste = -1 + future_ste / 5
+            
+            future_ste_for_timestep.append(future_ste[timestep - seq_idx])
+        
+
+        if future_ste_for_timestep:
+            mean_future_ste = np.mean(future_ste_for_timestep, axis=0)
+
+            X = np.linspace(-1, 1, 100)
+
+            for seq_idx in relevant_sequences:
+                pred_mean = predictions[seq_idx]['acceleration_mean']
+                pred_var = predictions[seq_idx]['acceleration_var']
+
+                # Rescaling steer values down to -1 to 1
+                pred_mean = -1 + pred_mean / 5
+                pred_var = pred_var * (0.5)**2
+
+                t = timestep - seq_idx
+                if 0 <= t < len(pred_mean):
+                    mean = pred_mean[t]
+                    std_dev = np.sqrt(pred_var[t])
+                    
+                    original_future_ste = future_acceleration[seq_idx][t]
+
+                    # Rescaling
+                    original_future_ste = -1 + original_future_ste / 5
+
+                    mean_shift = mean_future_ste - original_future_ste
+                    mean += mean_shift
+
+                    Y = norm.pdf(X, mean, std_dev)
+
+                    # Normalize the PDF
+                    Y = Y / np.sum(Y) 
+
+                    ax.plot(X, Y, c = 'red', alpha=(t+1)/20)
+                    
+                    #ax.vlines(mean, ymin=0, ymax=1, colors=colors[t], linestyles='--', label='Predicted Sequence ' + str(seq_idx+1))
+                    
+            ax.vlines(mean_future_ste, ymin=0, ymax=0.1, colors='blue', linestyles='-', label='Ground Truth')
+
+        ax.set_xlabel('acceleration')
+        ax.set_ylabel('Probability')
+        ax.set_xlim(-0.5, 0.5)
+        ax.set_ylim(0, 0.2)
+        ax.legend()
+        ax.set_title(f'Timestep {timestep + 1}')
+
+    plt.tight_layout()
+    plt.savefig(f"predictions/timestep_acceleration_{condition}.png")
     plt.close()
 
 

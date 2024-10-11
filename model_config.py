@@ -15,10 +15,10 @@ CONFIG = {
         'traffic_light_detected': 1
     },
     'num_epochs': 100,
-    'batch_size': 256,
+    'batch_size': 128,
     'hidden_size': 128,
     'num_layers': 2,
-    'learning_rate': 0.005,
+    'learning_rate': 0.001,
     'input_seq_len': 20,
     'output_seq_len': 20,
     'dropout_rate': 0.2,
@@ -28,10 +28,10 @@ CONFIG = {
     'acceleration_scaling_factor':10,
     'train_data_folder': "Dataset/Sequence_Dataset", 
     'test_data_folder': "Test_Dataset/Sequence_Dataset/Nominal",
-    'model_path': 'models/graph_trajectory_model.pth',
+    'model_path': 'models/graph_trajectory_model(20_steps).pth',
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     'num_samples': 10,
-    'sample_start_index': 250,
+    'sample_start_index': 275,
     #'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_GNSS', 'Noisy_IMU', 'Noisy_Lidar']
     'conditions': ['Nominal']
 }
