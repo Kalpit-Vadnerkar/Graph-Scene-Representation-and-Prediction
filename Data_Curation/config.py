@@ -12,9 +12,9 @@ class Config:
         self.MIN_NODES = 150
         
         # Sequence processing
-        self.PAST_TRAJECTORY = 20
-        self.PREDICTION_HORIZON = 20
-        self.STRIDE = 10
+        self.PAST_TRAJECTORY = 30
+        self.PREDICTION_HORIZON = 30
+        self.STRIDE = 5
         
         #  Data augmentation
         self.NUM_ROTATIONS = 12  # Number of rotations to perform

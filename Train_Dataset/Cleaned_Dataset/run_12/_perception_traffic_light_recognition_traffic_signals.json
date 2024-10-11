@@ -1,0 +1,530 @@
+{"data": {"timestamp_sec": 224, "timestamp_ns": 59994991, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9325089454650879}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9342259764671326}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 169994989, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9325089454650879}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9342259764671326}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 279994986, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9338582754135132}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9333634972572327}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 389994984, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9284988045692444}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9324076771736145}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 499994982, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9284988045692444}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9324076771736145}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 609994979, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9313455820083618}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9320501685142517}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 719994977, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9276127815246582}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9351434707641602}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 829994974, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9283133745193481}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9351434707641602}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 939994972, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9283133745193481}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9351434707641602}]}}
+{"data": {"timestamp_sec": 224, "timestamp_ns": 939994972, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9283133745193481}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9351434707641602}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 49994969, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8417695760726929}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9359034299850464}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 159994967, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9307903051376343}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9340797662734985}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 379994962, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9335760474205017}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9346444010734558}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 489994959, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.929181694984436}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9349172711372375}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 599994957, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9312618374824524}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9352920055389404}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 709994954, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9324251413345337}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9352951645851135}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 819994952, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9326454401016235}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9353424310684204}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 929994950, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9322879910469055}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9353790879249573}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 929994950, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9322879910469055}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9353790879249573}]}}
+{"data": {"timestamp_sec": 225, "timestamp_ns": 929994950, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9322879910469055}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9353790879249573}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 39994947, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9296284317970276}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9353824853897095}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 149994945, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9294099807739258}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9371564388275146}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 259994942, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9267825484275818}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9372783899307251}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 369994940, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.929665207862854}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9374247193336487}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 479994937, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9284247159957886}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9352067708969116}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 589994935, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.931125819683075}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.935698926448822}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 699994932, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9321233034133911}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9358771443367004}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 809994930, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9270893335342407}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9367722868919373}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 919994927, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9299247860908508}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9372329711914062}]}}
+{"data": {"timestamp_sec": 226, "timestamp_ns": 919994927, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9299247860908508}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9372329711914062}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 29994925, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9326578974723816}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9355667233467102}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 139994923, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9231749176979065}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9348141551017761}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 249994920, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9279468655586243}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9353782534599304}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 359994918, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9289389252662659}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9354643821716309}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 469994915, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9314364790916443}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9372128844261169}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 579994913, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9277865886688232}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8996204733848572}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 689994910, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8900216817855835}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8915281891822815}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 799994908, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.932401180267334}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8958084583282471}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 909994905, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9306339025497437}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8472616076469421}]}}
+{"data": {"timestamp_sec": 227, "timestamp_ns": 909994905, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9306339025497437}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8472616076469421}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 19994903, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9297379851341248}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9356397390365601}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 129994900, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8877159357070923}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9345671534538269}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 239994898, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8877159357070923}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9345671534538269}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 349994895, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9325105547904968}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9358400702476501}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 459994893, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9325105547904968}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9358400702476501}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 569994891, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8391568660736084}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9340389370918274}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 679994888, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8460620641708374}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9340389370918274}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 789994886, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8185529708862305}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9325143098831177}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 899994883, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8185529708862305}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9323272705078125}]}}
+{"data": {"timestamp_sec": 228, "timestamp_ns": 899994883, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8185529708862305}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9323272705078125}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 9994881, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8040069937705994}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8058358430862427}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 119994878, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8246098160743713}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7682875394821167}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 229994876, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8246098160743713}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8238433003425598}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 339994873, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9308220148086548}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9327165484428406}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 449994871, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9292952418327332}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9327165484428406}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 559994868, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9302581548690796}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6580222249031067}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 669994866, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9241771697998047}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9332550168037415}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 779994864, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8502737283706665}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9310727119445801}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 889994861, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8502737283706665}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9313859939575195}]}}
+{"data": {"timestamp_sec": 229, "timestamp_ns": 999994859, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8435665369033813}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9333415031433105}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 109994856, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8392987251281738}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9323906898498535}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 219994854, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8392987251281738}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315729141235352}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 329994851, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.928489089012146}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9321949481964111}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 439994849, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.928489089012146}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9322452545166016}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 549994846, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8229501247406006}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.929275393486023}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 659994844, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8242976665496826}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6288294792175293}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 769994841, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8737574815750122}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315435290336609}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 879994839, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8737574815750122}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315435290336609}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 989994836, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8786819577217102}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9286335706710815}]}}
+{"data": {"timestamp_sec": 230, "timestamp_ns": 989994836, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8786819577217102}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9286335706710815}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 99994834, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9289842247962952}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6650856733322144}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 209994832, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9332718253135681}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9293804168701172}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 319994829, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9321638345718384}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9312498569488525}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 429994827, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9321638345718384}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9304894208908081}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 539994824, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8705311417579651}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315721392631531}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 649994822, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8862672448158264}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9316466450691223}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 759994819, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8679466843605042}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9314362406730652}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 869994817, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8300734162330627}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.774919331073761}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 979994814, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8300734162330627}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6556342244148254}]}}
+{"data": {"timestamp_sec": 231, "timestamp_ns": 979994814, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8300734162330627}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6556342244148254}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 89994812, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.845618724822998}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6973278522491455}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 199994809, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8881625533103943}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6525489091873169}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 309994807, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8522905111312866}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6554234623908997}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 419994805, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.802058756351471}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9321605563163757}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 529994802, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8320837616920471}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9313161373138428}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 639994800, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8288256525993347}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9313161373138428}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 749994797, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8482514023780823}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9313161373138428}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 859994795, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8995618224143982}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9332401156425476}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 969994792, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8128006458282471}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7023964524269104}]}}
+{"data": {"timestamp_sec": 232, "timestamp_ns": 969994792, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8128006458282471}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7023964524269104}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 79994790, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8936991691589355}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7023964524269104}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 189994787, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9033765196800232}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7335399985313416}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 299994785, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8981751799583435}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7252216935157776}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 409994782, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9293308854103088}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6658993363380432}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 519994780, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8548344373703003}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7405654788017273}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 629994777, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.7001338005065918}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7252811193466187}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 739994775, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8568840026855469}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7220088839530945}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 849994773, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8403607606887817}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7644875049591064}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 959994770, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9126144647598267}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7644875049591064}]}}
+{"data": {"timestamp_sec": 233, "timestamp_ns": 959994770, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9126144647598267}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7644875049591064}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 69994768, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9203417897224426}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.930084764957428}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 179994765, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.615946352481842}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9334684610366821}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 289994763, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5936424136161804}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9336172342300415}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 399994760, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9134865999221802}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315463900566101}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 509994758, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.4972580075263977}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.725963830947876}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 619994755, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8509053587913513}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7838606834411621}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 729994753, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.737094521522522}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9296854734420776}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 839994750, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8859456181526184}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7057241797447205}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 949994748, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6153362989425659}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7340624332427979}]}}
+{"data": {"timestamp_sec": 234, "timestamp_ns": 949994748, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6153362989425659}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7340624332427979}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 59994745, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6190601587295532}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7049576044082642}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 169994743, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9184034466743469}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315747618675232}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 279994741, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9092714786529541}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9315747618675232}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 389994738, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9050296545028687}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9320440292358398}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 499994736, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8942425847053528}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.724190354347229}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 609994733, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8949912190437317}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9293065071105957}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 719994731, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5782568454742432}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9324278831481934}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 829994728, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.4974517524242401}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9307664632797241}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 939994726, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.6878356337547302}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.932855486869812}]}}
+{"data": {"timestamp_sec": 235, "timestamp_ns": 939994726, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.6878356337547302}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.932855486869812}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 159994721, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5128676891326904}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.930411159992218}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 269994718, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6653338670730591}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.749984085559845}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 379994716, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6812117099761963}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.564468264579773}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 489994714, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5865867733955383}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.564468264579773}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 599994711, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.7006393671035767}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6533352732658386}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 709994709, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.560646653175354}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7501051425933838}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 819994706, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.6448659300804138}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8609008193016052}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 929994704, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.6663150787353516}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9101769328117371}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 929994704, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.6663150787353516}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9101769328117371}]}}
+{"data": {"timestamp_sec": 236, "timestamp_ns": 929994704, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.6663150787353516}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9101769328117371}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 39994701, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8799770474433899}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9101769328117371}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 149994699, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6645414233207703}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7058956027030945}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 259994696, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5357316136360168}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7409917116165161}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 369994694, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5800032019615173}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8467462062835693}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 479994691, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5411034822463989}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8467462062835693}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 589994689, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.7554528117179871}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9312528371810913}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 699994686, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5522836446762085}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9290761351585388}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 809994684, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.7294688820838928}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8721523880958557}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 919994682, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5403237342834473}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9016541838645935}]}}
+{"data": {"timestamp_sec": 237, "timestamp_ns": 919994682, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5403237342834473}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9016541838645935}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 139994677, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8078653812408447}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8638831377029419}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 249994674, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9216391444206238}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8638831377029419}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 359994672, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.5879610776901245}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.883431613445282}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 469994669, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.6290321350097656}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8342621922492981}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 579994667, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.8167935013771057}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8333043456077576}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 689994664, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 1, "status": 0, "confidence": 0.7521594762802124}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8346868753433228}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 799994662, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8678579330444336}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8346868753433228}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 909994659, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9168227910995483}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8346868753433228}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 909994659, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9168227910995483}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8346868753433228}]}}
+{"data": {"timestamp_sec": 238, "timestamp_ns": 909994659, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9168227910995483}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8346868753433228}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 19994657, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8646106123924255}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8462578058242798}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 129994655, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9179534912109375}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8462578058242798}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 239994652, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9315821528434753}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8538474440574646}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 349994650, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.848598301410675}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8040651082992554}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 459994647, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9196615815162659}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8040651082992554}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 569994645, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5650063753128052}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8863368630409241}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 679994642, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8795931935310364}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8863368630409241}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 789994640, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8543515801429749}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8920312523841858}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 899994637, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9273478984832764}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6850103735923767}]}}
+{"data": {"timestamp_sec": 239, "timestamp_ns": 899994637, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9273478984832764}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6850103735923767}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 9994635, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5420531630516052}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.7892515659332275}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 119994632, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.5516188144683838}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8291369676589966}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 229994630, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8621155619621277}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8291369676589966}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 339994627, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9113396406173706}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8133307099342346}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 449994625, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.8959329724311829}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8039339780807495}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 559994623, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9334331750869751}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.7661364674568176}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 669994620, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9220572710037231}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.7510308623313904}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 779994618, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9172472953796387}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.737727165222168}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 889994615, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.7532966136932373}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.7857780456542969}]}}
+{"data": {"timestamp_sec": 240, "timestamp_ns": 999994613, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9250972270965576}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8066111207008362}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 109994610, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9306532144546509}, {"map_primitive_id": 1769, "color": 1, "status": 0, "confidence": 0.8217900991439819}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 219994608, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.931257963180542}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9307472109794617}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 329994605, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9311653971672058}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9307825565338135}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 439994603, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9312489032745361}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.930880069732666}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 549994600, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9311186671257019}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8877358436584473}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 659994598, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9262235760688782}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8877358436584473}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 769994596, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9271019101142883}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9000441431999207}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 879994593, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9243168234825134}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.932869017124176}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 989994591, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9281363487243652}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.932465672492981}]}}
+{"data": {"timestamp_sec": 241, "timestamp_ns": 989994591, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9281363487243652}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.932465672492981}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 99994588, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9317579865455627}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8955811262130737}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 209994586, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9305036664009094}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.874996542930603}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 319994583, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9280283451080322}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8389774560928345}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 429994581, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9314219951629639}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8091717958450317}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 539994578, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9316338300704956}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8088685870170593}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 649994576, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.931516170501709}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9269906878471375}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 759994573, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.929997444152832}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9269906878471375}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 869994571, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9300462007522583}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8556360006332397}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 979994568, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9275455474853516}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8078270554542542}]}}
+{"data": {"timestamp_sec": 242, "timestamp_ns": 979994568, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9275455474853516}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8078270554542542}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 89994566, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9286893010139465}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8078270554542542}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 199994564, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9318810701370239}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8444660305976868}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 309994561, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9314171075820923}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7987285256385803}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 419994559, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9343578219413757}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7987285256385803}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 529994556, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.924532949924469}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8823263049125671}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 639994554, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9199079275131226}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8208212852478027}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 749994551, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9114910364151001}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8208212852478027}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 859994549, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9136108160018921}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.762263834476471}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 969994546, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9343822598457336}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.762263834476471}]}}
+{"data": {"timestamp_sec": 243, "timestamp_ns": 969994546, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9343822598457336}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.762263834476471}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 79994544, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9303686618804932}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7102459669113159}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 189994541, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9317846894264221}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.743408739566803}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 299994539, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9320112466812134}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.5561062693595886}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 409994537, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.934974730014801}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.5561062693595886}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 519994534, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9353182315826416}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6624475717544556}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 629994532, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9296188950538635}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6192022562026978}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 739994529, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9298293590545654}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6192022562026978}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 849994527, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.9310986995697021}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.4797951877117157}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 959994524, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.928341269493103}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.4797951877117157}]}}
+{"data": {"timestamp_sec": 244, "timestamp_ns": 959994524, "num_lights": 2, "lights": [{"map_primitive_id": 1767, "color": 16, "status": 0, "confidence": 0.928341269493103}, {"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.4797951877117157}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 69994522, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.5855152606964111}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 179994519, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6607630252838135}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 289994517, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6353338360786438}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 399994514, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.6353338360786438}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 509994512, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.554878294467926}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 619994509, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.6401405930519104}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 729994507, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.5275554060935974}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 839994505, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8308627009391785}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 949994502, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8674831986427307}]}}
+{"data": {"timestamp_sec": 245, "timestamp_ns": 949994502, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.8674831986427307}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 59994500, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.5876208543777466}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 169994497, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.755530595779419}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 279994495, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.5700860023498535}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 389994492, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7780473232269287}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 499994490, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.5164706707000732}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 609994487, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.546786367893219}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 719994485, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7674852609634399}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 829994482, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.590181291103363}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 939994480, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7185013890266418}]}}
+{"data": {"timestamp_sec": 246, "timestamp_ns": 939994480, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.7185013890266418}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 49994478, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.701785683631897}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 159994475, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.6131295561790466}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 269994473, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.5219193696975708}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 379994470, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.8039487600326538}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 489994468, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7630695104598999}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 599994465, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7250478863716125}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 709994463, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.9424765706062317}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 819994460, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7925237417221069}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 929994458, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.8092482089996338}]}}
+{"data": {"timestamp_sec": 247, "timestamp_ns": 929994458, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.8092482089996338}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 39994455, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7282041311264038}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 149994453, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.8118295669555664}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 259994450, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.7893452644348145}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 479994446, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 3, "status": 0, "confidence": 0.8440648317337036}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 589994443, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9290065169334412}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 699994441, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9206518530845642}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 809994438, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9362137317657471}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 919994436, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9354974627494812}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 919994436, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9354974627494812}]}}
+{"data": {"timestamp_sec": 248, "timestamp_ns": 919994436, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9354974627494812}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 29994433, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9355796575546265}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 139994431, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9358388781547546}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 249994428, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9312024712562561}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 359994426, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9273648262023926}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 469994423, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9235002994537354}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 579994421, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9219098091125488}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 689994418, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.936012864112854}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 799994416, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9196869730949402}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 909994414, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9321531653404236}]}}
+{"data": {"timestamp_sec": 249, "timestamp_ns": 909994414, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9321531653404236}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 19994411, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9312127232551575}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 129994409, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9305705428123474}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 239994406, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9364688992500305}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 349994404, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9330304861068726}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 459994401, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9331312775611877}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 569994399, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9388561844825745}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 679994396, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9383569359779358}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 789994394, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9388059973716736}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 899994391, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9383106231689453}]}}
+{"data": {"timestamp_sec": 250, "timestamp_ns": 899994391, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9383106231689453}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 9994389, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9375412464141846}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 119994387, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9382743239402771}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 229994384, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9380481243133545}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 339994382, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9387450218200684}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 449994379, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9385086297988892}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 559994377, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9380819201469421}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 669994374, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9371635317802429}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 779994372, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9383785128593445}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 889994369, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9388722777366638}]}}
+{"data": {"timestamp_sec": 251, "timestamp_ns": 999994367, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9352376461029053}]}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 109994364, "num_lights": 1, "lights": [{"map_primitive_id": 1769, "color": 16, "status": 0, "confidence": 0.9374751448631287}]}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 329994359, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 439994357, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 549994355, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 659994352, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 769994350, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 879994347, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 989994345, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 989994345, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 252, "timestamp_ns": 989994345, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 99994342, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 209994340, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 319994337, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 429994335, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 539994332, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 649994330, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 759994328, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 869994325, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 979994323, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 253, "timestamp_ns": 979994323, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 89994320, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 199994318, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 309994315, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 419994313, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 529994310, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 639994308, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 749994305, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 859994303, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 969994300, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 254, "timestamp_ns": 969994300, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 79994298, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 189994296, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 299994293, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 409994291, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 519994288, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 629994286, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 739994283, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 849994281, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 959994278, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 255, "timestamp_ns": 959994278, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 69994276, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 179994273, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 289994271, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 399994269, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 509994266, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 619994264, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 729994261, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 839994259, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 949994256, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 256, "timestamp_ns": 949994256, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 59994254, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 169994251, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 279994249, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 389994246, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 499994244, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 609994241, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 719994239, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 829994237, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 939994234, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 257, "timestamp_ns": 939994234, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 49994232, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 159994229, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 269994227, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 379994224, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 489994222, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 599994219, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 709994217, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 819994214, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 929994212, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 258, "timestamp_ns": 929994212, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 39994210, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 149994207, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 259994205, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 369994202, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 479994200, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 589994197, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 699994195, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 809994192, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 919994190, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 259, "timestamp_ns": 919994190, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 29994187, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 139994185, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 249994182, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 359994180, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 469994178, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 579994175, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 689994173, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 799994170, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 909994168, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 260, "timestamp_ns": 909994168, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 19994165, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 129994163, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 239994160, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 349994158, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 459994155, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 569994153, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 679994150, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 789994148, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 899994146, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 261, "timestamp_ns": 899994146, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 9994143, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 119994141, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 229994138, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 339994136, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 449994133, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 559994131, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 669994128, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 779994126, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 889994123, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 262, "timestamp_ns": 999994121, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 109994119, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 219994116, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 329994114, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 439994111, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 549994109, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 659994106, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 769994104, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 879994101, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 989994099, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 263, "timestamp_ns": 989994099, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 99994096, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 209994094, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 319994091, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 429994089, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 539994087, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 649994084, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 759994082, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 869994079, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 979994077, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 264, "timestamp_ns": 979994077, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 89994074, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 199994072, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 309994069, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 419994067, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 529994064, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 639994062, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 749994060, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 859994057, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 969994055, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 265, "timestamp_ns": 969994055, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 79994052, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 189994050, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 299994047, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 409994045, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 519994042, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 629994040, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 739994037, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 849994035, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 959994032, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 266, "timestamp_ns": 959994032, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 69994030, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 179994028, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 289994025, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 399994023, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 509994020, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 619994018, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 729994015, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 839994013, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 949994010, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 267, "timestamp_ns": 949994010, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 59994008, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 169994005, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 279994003, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 389994001, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 499993998, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 609993996, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 719993993, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 829993991, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 939993988, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 268, "timestamp_ns": 939993988, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 49993986, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 159993983, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 269993981, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 379993978, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 489993976, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 599993973, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 709993971, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 819993969, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 929993966, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 269, "timestamp_ns": 929993966, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 39993964, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 149993961, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 259993959, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 369993956, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 479993954, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 589993951, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 699993949, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 809993946, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 919993944, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 270, "timestamp_ns": 919993944, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 29993942, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 139993939, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 249993937, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 359993934, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 469993932, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 579993929, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 689993927, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 799993924, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 799993924, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 271, "timestamp_ns": 799993924, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 19993919, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 129993917, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 239993914, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 349993912, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 459993910, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 569993907, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 679993905, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 789993902, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 899993900, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 272, "timestamp_ns": 899993900, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 9993897, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 119993895, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 229993892, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 339993890, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 449993887, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 559993885, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 669993882, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 779993880, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 889993878, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 273, "timestamp_ns": 999993875, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 109993873, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 219993870, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 329993868, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 439993865, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 549993863, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 659993860, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 769993858, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 879993855, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 989993853, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 274, "timestamp_ns": 989993853, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 99993851, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 209993848, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 319993846, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 429993843, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 539993841, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 649993838, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 759993836, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 869993833, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 979993831, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 275, "timestamp_ns": 979993831, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 89993828, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 199993826, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 309993823, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 419993821, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 529993819, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 639993816, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 639993816, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 639993816, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 639993816, "num_lights": 0, "lights": []}}
+{"data": {"timestamp_sec": 276, "timestamp_ns": 639993816, "num_lights": 0, "lights": []}}
