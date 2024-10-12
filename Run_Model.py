@@ -7,6 +7,7 @@ from Prediction_Model.Trainer import Trainer
 from Prediction_Model.model_utils import load_model, make_predictions
 from Visualization.visualizer import visualize_predictions, plot_vel_distributions_by_timestep, plot_steer_distributions_by_timestep, plot_pos_distributions_by_timestep, plot_acceleration_distributions_by_timestep
 from model_config import CONFIG
+import os
 
 #import warnings
 
@@ -69,48 +70,51 @@ def train(config):
 def visualize(config):
     """Visualize predictions from a trained model."""
     device = config['device']
-    dataset = TrajectoryDataset(config['test_data_folder'], 
-                                position_scaling_factor=config['position_scaling_factor'], 
-                                velocity_scaling_factor=config['velocity_scaling_factor'], 
-                                steering_scaling_factor=config['steering_scaling_factor'], 
-                                acceleration_scaling_factor=config['acceleration_scaling_factor'])
-    
     model = load_model(config)
-    predictions, sampled_indices = make_predictions(model, dataset, config)
+    for condition in config['conditions']:
+        data_folder = os.path.join(config['test_data_folder'], condition)
+        dataset = TrajectoryDataset(data_folder, 
+                                    position_scaling_factor=config['position_scaling_factor'], 
+                                    velocity_scaling_factor=config['velocity_scaling_factor'], 
+                                    steering_scaling_factor=config['steering_scaling_factor'], 
+                                    acceleration_scaling_factor=config['acceleration_scaling_factor'])
+        
+        predictions, sampled_indices = make_predictions(model, dataset, config)
 
-    # Extract past and future positions
-    past_positions = []
-    future_positions = []
-    past_velocities = []
-    future_velocities = []
-    past_steering = []
-    future_steering = []
-    past_acceleration = []
-    future_acceleration = []
-    all_graph_bounds = []
-    for i in range(CONFIG['sample_start_index'], CONFIG['sample_start_index'] + CONFIG['num_samples']):
-        past, future, graph, graph_bounds = dataset[i]
-        
-        past_positions.append(past['position'].numpy())
-        future_positions.append(future['position'].numpy())
-        
-        past_velocities.append(past['velocity'].numpy())
-        future_velocities.append(future['velocity'].numpy())
-        
-        past_steering.append(past['steering'].numpy())
-        future_steering.append(future['steering'].numpy())
+        # Extract past and future positions
+        past_positions = []
+        future_positions = []
+        past_velocities = []
+        future_velocities = []
+        past_steering = []
+        future_steering = []
+        past_acceleration = []
+        future_acceleration = []
+        all_graph_bounds = []
+        #for i in range(CONFIG['sample_start_index'], CONFIG['sample_start_index'] + CONFIG['num_samples']):
+        for i in range(len(dataset)):
+            past, future, graph, graph_bounds = dataset[i]
+            
+            past_positions.append(past['position'].numpy())
+            future_positions.append(future['position'].numpy())
+            
+            past_velocities.append(past['velocity'].numpy())
+            future_velocities.append(future['velocity'].numpy())
+            
+            past_steering.append(past['steering'].numpy())
+            future_steering.append(future['steering'].numpy())
 
-        past_acceleration.append(past['acceleration'].numpy())
-        future_acceleration.append(future['acceleration'].numpy())
-        
-        all_graph_bounds.append(graph_bounds)
+            past_acceleration.append(past['acceleration'].numpy())
+            future_acceleration.append(future['acceleration'].numpy())
+            
+            all_graph_bounds.append(graph_bounds)
 
-    #visualize_predictions(dataset, config['position_scaling_factor'], predictions, sampled_indices, "Visualization")
-    #plot_vel_distributions_by_timestep(predictions, past_velocities, future_velocities, "Visualization")
-    #plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, "Visualization")
-    #plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, "Visualization")
-    plot_pos_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, "Visualization")
-    print("Visualization complete. Check the 'predictions' folder for output.")
+        #visualize_predictions(dataset, config['position_scaling_factor'], predictions, sampled_indices, condition)
+        #plot_vel_distributions_by_timestep(predictions, past_velocities, future_velocities, condition)
+        plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
+        #plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition)
+        #plot_pos_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, condition)
+        print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")

@@ -18,7 +18,9 @@ def load_model(config):
 def make_predictions(model, dataset, config):
     model.eval()
     all_predictions = []
-    sampled_sequences = [i + config['sample_start_index'] for i in range(config['num_samples'])]
+    #sampled_sequences = [i + config['sample_start_index'] for i in range(config['num_samples'])]
+
+    sampled_sequences = [i for i in range(len(dataset))]
 
     with torch.no_grad():
         for idx in sampled_sequences:
