@@ -142,3 +142,90 @@ class GraphTrajectoryLSTM(nn.Module):
         }
 
         return predictions
+
+
+class TrajectoryLSTM(nn.Module):
+    def __init__(self, config):
+        super(TrajectoryLSTM, self).__init__()
+        self.hidden_size = config['hidden_size']
+        self.num_layers = config['num_layers']
+        self.input_seq_len = config['input_seq_len']
+        self.output_seq_len = config['output_seq_len']
+        self.dropout_rate = config['dropout_rate']
+        self.feature_sizes = config['feature_sizes']
+        
+        self.feature_types = list(config['feature_sizes'].keys())
+        
+        # Hidden layer for temporal features
+        self.total_feature_size = sum(self.feature_sizes.values())
+        self.temporal_hidden = nn.Linear(self.total_feature_size, self.hidden_size)
+        
+        # LSTM layers
+        self.position_lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout_rate)
+        self.velocity_lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout_rate)
+        self.steering_lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout_rate)
+        self.acceleration_lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout_rate)
+        self.object_lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout_rate)
+        self.traffic_lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, batch_first=True, dropout=self.dropout_rate)
+        
+        self.dropout_lstm = nn.Dropout(self.dropout_rate)
+        
+        # Output layers
+        self.position_output = nn.Linear(self.hidden_size, 4 * self.output_seq_len)
+        self.velocity_output = nn.Linear(self.hidden_size, 4 * self.output_seq_len)
+        self.steering_output = nn.Linear(self.hidden_size, 2 * self.output_seq_len)
+        self.acceleration_output = nn.Linear(self.hidden_size, 2 * self.output_seq_len)
+        self.object_distance_output = nn.Linear(self.hidden_size, self.output_seq_len)
+        self.traffic_light_output = nn.Linear(self.hidden_size, self.output_seq_len)
+
+    def forward(self, x, graph):
+        batch_size = x['position'].size(0)
+
+        # Ensure all input tensors have 3 dimensions
+        for key in x:
+            if x[key].dim() == 2:
+                x[key] = x[key].unsqueeze(-1)
+
+        # Process temporal features
+        temporal_features = torch.cat([x[f] for f in self.feature_types], dim=2)
+        temporal_features = self.temporal_hidden(temporal_features)
+
+        # Process features through separate LSTMs
+        position_output, _ = self.position_lstm(temporal_features)
+        velocity_output, _ = self.velocity_lstm(temporal_features)
+        steering_output, _ = self.steering_lstm(temporal_features)
+        acceleration_output, _ = self.acceleration_lstm(temporal_features)
+        object_output, _ = self.object_lstm(temporal_features)
+        traffic_output, _ = self.traffic_lstm(temporal_features)
+        
+        # Apply dropout
+        position_output = self.dropout_lstm(position_output[:, -1])
+        velocity_output = self.dropout_lstm(velocity_output[:, -1])
+        steering_output = self.dropout_lstm(steering_output[:, -1])
+        acceleration_output = self.dropout_lstm(acceleration_output[:, -1])
+        object_output = self.dropout_lstm(object_output[:, -1])
+        traffic_output = self.dropout_lstm(traffic_output[:, -1])
+
+        # Process predictions
+        position = self.position_output(position_output).view(batch_size, self.output_seq_len, 4)
+        velocity = self.velocity_output(velocity_output).view(batch_size, self.output_seq_len, 4)
+        steering = self.steering_output(steering_output).view(batch_size, self.output_seq_len, 2)
+        acceleration = self.acceleration_output(acceleration_output).view(batch_size, self.output_seq_len, 2)
+        object_distance = self.object_distance_output(object_output).view(batch_size, self.output_seq_len)
+        traffic_light = self.traffic_light_output(traffic_output).view(batch_size, self.output_seq_len)
+
+        # Split the outputs into mean and variance
+        predictions = {
+            'position_mean': position[..., :2],
+            'position_var': F.softplus(position[..., 2:]),
+            'velocity_mean': velocity[..., :2],
+            'velocity_var': F.softplus(velocity[..., 2:]),
+            'steering_mean': steering[..., 0],
+            'steering_var': F.softplus(steering[..., 1]),
+            'acceleration_mean': acceleration[..., 0],
+            'acceleration_var': F.softplus(acceleration[..., 1]),
+            'object_distance': torch.sigmoid(object_distance),
+            'traffic_light_detected': torch.sigmoid(traffic_light)
+        }
+
+        return predictions

@@ -3,10 +3,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CombinedLoss(nn.Module):
-    def __init__(self, min_var=1e-2, epsilon=1e-2):
+    def __init__(self, min_var=1e-2, epsilon=1e-2, reg_weights=None):
         super(CombinedLoss, self).__init__()
         self.min_var = min_var
         self.epsilon = epsilon
+        # Default weights: equal importance to all variables
+        self.reg_weights = reg_weights if reg_weights is not None else {
+            'position': 1.0, 
+            'velocity': 1.0, 
+            'steering': 1.0, 
+            'acceleration': 1.0, 
+            'object_distance': 1.0
+        }
 
     def forward(self, pred, target):
         losses = {}
@@ -17,16 +25,15 @@ class CombinedLoss(nn.Module):
             var_key = f'{key}_var'
             if mean_key in pred and var_key in pred:
                 variance = torch.clamp(pred[var_key], min=self.min_var)
-                
-                gnll_loss = 0.5 * (torch.log(variance + self.epsilon) +
+
+                gnll_loss = 0.5 * (torch.log(variance + self.epsilon) + 
                                    (target[key] - pred[mean_key])**2 / (variance + self.epsilon))
-                
-                # Sum over all dimensions except batch
                 gnll_loss = gnll_loss.sum(dim=tuple(range(1, gnll_loss.dim()))).mean()
-                
+
+                # Weighted regularization
                 regularization = torch.mean(1 / (variance + self.epsilon))
-                gnll_loss += 0.01 * regularization
-                
+                gnll_loss += 0.01 * self.reg_weights[key] * regularization 
+
                 losses[f'{key}_loss'] = gnll_loss.item()
                 total_loss += gnll_loss
             elif key in pred:

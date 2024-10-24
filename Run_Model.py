@@ -2,10 +2,12 @@ import argparse
 import torch
 from torch.utils.data import DataLoader, random_split
 from Prediction_Model.TrajectoryDataset import TrajectoryDataset
-from Prediction_Model.DLModels import GraphTrajectoryLSTM
+from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM
 from Prediction_Model.Trainer import Trainer
-from Prediction_Model.model_utils import load_model, make_predictions
+from Prediction_Model.model_utils import load_model, make_predictions, make_limited_predictions
 from Visualization.visualizer import visualize_predictions, plot_vel_distributions_by_timestep, plot_steer_distributions_by_timestep, plot_pos_distributions_by_timestep, plot_acceleration_distributions_by_timestep
+from Visualization.probability_viz import plot_probabilities, plot_probabilities2
+from Visualization.trajectory_results import position_result_metrics
 from model_config import CONFIG
 import os
 
@@ -59,6 +61,8 @@ def train(config):
     
     model = GraphTrajectoryLSTM(config).to(device)
 
+    #model = TrajectoryLSTM(config).to(device)
+
     model = load_model(config).to(device)
     
     trainer = Trainer(model, train_loader, test_loader, config['learning_rate'], device)
@@ -78,8 +82,6 @@ def visualize(config):
                                     velocity_scaling_factor=config['velocity_scaling_factor'], 
                                     steering_scaling_factor=config['steering_scaling_factor'], 
                                     acceleration_scaling_factor=config['acceleration_scaling_factor'])
-        
-        predictions, sampled_indices = make_predictions(model, dataset, config)
 
         # Extract past and future positions
         past_positions = []
@@ -109,11 +111,25 @@ def visualize(config):
             
             all_graph_bounds.append(graph_bounds)
 
+        predictions, sampled_indices = make_limited_predictions(model, dataset, config)
+
         #visualize_predictions(dataset, config['position_scaling_factor'], predictions, sampled_indices, condition)
+        
+        predictions, sampled_indices = make_predictions(model, dataset, config)
+
+        metrics = position_result_metrics(dataset, config['position_scaling_factor'], predictions, condition)
+
         #plot_vel_distributions_by_timestep(predictions, past_velocities, future_velocities, condition)
-        plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
+        #plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
         #plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition)
         #plot_pos_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, condition)
+        
+        #plot_probabilities(config, predictions, future_steering, condition, 'steering', scale=(0, 100))
+        #plot_probabilities(config, predictions, future_acceleration, condition, 'acceleration', scale=(0, 100))
+
+        #plot_probabilities2(config, predictions, future_positions, condition, 'position', scale=(0, 10))
+        #plot_probabilities2(config, predictions, future_velocities, condition, 'velocity', scale=(0, 10))
+
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 def main():
