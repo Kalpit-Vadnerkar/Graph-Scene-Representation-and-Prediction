@@ -44,7 +44,7 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     pred_positions = np.array([scaler.restore_mean(x, y) for x, y in predicted_future['position_mean']])
     pred_variances = np.array([scaler.restore_variance(x, y) for x, y in predicted_future['position_var']])
 
-    #print(f"Position Variances: {predicted_future['position_var']}")
+    print(f"Position Variances: {predicted_future['position_var']}")
     #print(f"Velocity Variances: {predicted_future['velocity_var']}")
     #print(f"Steering Variances: {predicted_future['steering_var']}")
     #print(f"Acceleration Variances: {predicted_future['acceleration_var']}")
@@ -283,7 +283,7 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
             mean_future_ste = np.mean(future_ste_for_timestep, axis=0)
 
             #X = np.linspace(-0.5, 0.5, 100)
-            X = np.linspace(0, 100, 100)
+            X = np.linspace(0, 10, 100)
 
             for seq_idx in relevant_sequences:
                 pred_mean = predictions[seq_idx]['steering_mean']
@@ -324,7 +324,7 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
         ax.set_xlabel('Steering')
         ax.set_ylabel('Probability')
         #ax.set_xlim(-0.5, 0.5)
-        ax.set_xlim(0, 100)
+        ax.set_xlim(0, 10)
         ax.set_ylim(0, 1)
         ax.legend()
         ax.set_title(f'Timestep {timestep + 1}')
@@ -363,7 +363,7 @@ def plot_acceleration_distributions_by_timestep(predictions, past_acceleration, 
         if future_ste_for_timestep:
             mean_future_ste = np.mean(future_ste_for_timestep, axis=0)
 
-            X = np.linspace(0, 100, 100)
+            X = np.linspace(0, 10, 100)
 
             for seq_idx in relevant_sequences:
                 pred_mean = predictions[seq_idx]['acceleration_mean']
@@ -401,7 +401,7 @@ def plot_acceleration_distributions_by_timestep(predictions, past_acceleration, 
 
         ax.set_xlabel('acceleration')
         ax.set_ylabel('Probability')
-        ax.set_xlim(0, 100)
+        ax.set_xlim(0, 10)
         ax.set_ylim(0, 1)
         ax.legend()
         ax.set_title(f'Timestep {timestep + 1}')

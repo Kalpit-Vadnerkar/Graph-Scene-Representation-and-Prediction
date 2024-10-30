@@ -2,7 +2,7 @@ import numpy as np
 
 from Visualization.Rescaler import GraphBoundsScaler
 
-def position_result_metrics(dataset, scaling_factor, predictions, condition, threshold=20.0):
+def position_result_metrics(dataset, scaling_factor, predictions, condition, threshold=2.0):
     """
     Calculate trajectory forecasting metrics:
     - minFDE (Final Displacement Error)
@@ -67,9 +67,7 @@ def position_result_metrics(dataset, scaling_factor, predictions, condition, thr
     }
     
     # Print metrics
-    print(f"Trajectory Forecasting Metrics:")
+    print(f"Trajectory Forecasting Metrics for {condition}:")
     print(f"minFDE: {metrics['minFDE']:.4f}")
     print(f"minADE: {metrics['minADE']:.4f}")
     print(f"Miss Rate: {metrics['MR']:.4f}")
-    
-    return metrics

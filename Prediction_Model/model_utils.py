@@ -1,9 +1,10 @@
 import torch
-from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM
+from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM, GraphAttentionLSTM
 
 def load_model(config):
+    model = GraphAttentionLSTM(config)
     #model = TrajectoryLSTM(config)
-    model = GraphTrajectoryLSTM(config)
+    #model = GraphTrajectoryLSTM(config)
     
     model.load_state_dict(torch.load(config['model_path'], map_location=config['device']))
     model.to(config['device'])
@@ -27,7 +28,7 @@ def make_predictions(model, dataset, config):
             predictions = model(past, graph)
             all_predictions.append({k: v.squeeze().cpu().numpy() for k, v in predictions.items()})
 
-    return all_predictions, sampled_sequences
+    return all_predictions
 
 def make_limited_predictions(model, dataset, config):
     model.eval()

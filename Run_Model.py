@@ -2,12 +2,13 @@ import argparse
 import torch
 from torch.utils.data import DataLoader, random_split
 from Prediction_Model.TrajectoryDataset import TrajectoryDataset
-from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM
+from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM, GraphAttentionLSTM
 from Prediction_Model.Trainer import Trainer
 from Prediction_Model.model_utils import load_model, make_predictions, make_limited_predictions
 from Visualization.visualizer import visualize_predictions, plot_vel_distributions_by_timestep, plot_steer_distributions_by_timestep, plot_pos_distributions_by_timestep, plot_acceleration_distributions_by_timestep
 from Visualization.probability_viz import plot_probabilities, plot_probabilities2
 from Visualization.trajectory_results import position_result_metrics
+from Model_Testing.FaultDetector import residuals_analysis
 from model_config import CONFIG
 import os
 
@@ -59,10 +60,13 @@ def train(config):
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
     
-    model = GraphTrajectoryLSTM(config).to(device)
+    model = GraphAttentionLSTM(config).to(device)
+
+    #model = GraphTrajectoryLSTM(config).to(device)
 
     #model = TrajectoryLSTM(config).to(device)
 
+    # load model for retraining
     model = load_model(config).to(device)
     
     trainer = Trainer(model, train_loader, test_loader, config['learning_rate'], device)
@@ -82,6 +86,8 @@ def visualize(config):
                                     velocity_scaling_factor=config['velocity_scaling_factor'], 
                                     steering_scaling_factor=config['steering_scaling_factor'], 
                                     acceleration_scaling_factor=config['acceleration_scaling_factor'])
+
+
 
         # Extract past and future positions
         past_positions = []
@@ -115,13 +121,15 @@ def visualize(config):
 
         #visualize_predictions(dataset, config['position_scaling_factor'], predictions, sampled_indices, condition)
         
-        predictions, sampled_indices = make_predictions(model, dataset, config)
+        predictions = make_predictions(model, dataset, config)
 
-        metrics = position_result_metrics(dataset, config['position_scaling_factor'], predictions, condition)
+        position_result_metrics(dataset, config['position_scaling_factor'], predictions, condition)
+
+        #residuals(dataset, predictions, config, condition)
 
         #plot_vel_distributions_by_timestep(predictions, past_velocities, future_velocities, condition)
-        #plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
-        #plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition)
+        plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
+        plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition)
         #plot_pos_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, condition)
         
         #plot_probabilities(config, predictions, future_steering, condition, 'steering', scale=(0, 100))
@@ -134,14 +142,16 @@ def visualize(config):
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
-    parser.add_argument('--mode', type=str, choices=['train', 'visualize'], required=True,
-                        help='Mode of operation: train a new model or visualize a saved model')
+    parser.add_argument('--mode', type=str, choices=['train', 'visualize', 'evaluate'], required=True,
+                        help='Mode of operation: train a new model or visualize or evaluate a saved model')
     args = parser.parse_args()
 
     if args.mode == 'train':
         train(CONFIG)
     elif args.mode == 'visualize':
         visualize(CONFIG)
+    elif args.mode == 'evaluate':
+        residuals_analysis(CONFIG)
 
 if __name__ == "__main__":
     main()

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class CombinedLoss(nn.Module):
-    def __init__(self, min_var=1e-2, epsilon=1e-2, reg_weights=None):
+    def __init__(self, min_var=1e-2, epsilon=0, reg_weights=None):
         super(CombinedLoss, self).__init__()
         self.min_var = min_var
         self.epsilon = epsilon
@@ -24,7 +24,8 @@ class CombinedLoss(nn.Module):
             mean_key = f'{key}_mean'
             var_key = f'{key}_var'
             if mean_key in pred and var_key in pred:
-                variance = torch.clamp(pred[var_key], min=self.min_var)
+                variance = pred[var_key]
+                #variance = torch.clamp(pred[var_key], min=self.min_var)
 
                 gnll_loss = 0.5 * (torch.log(variance + self.epsilon) + 
                                    (target[key] - pred[mean_key])**2 / (variance + self.epsilon))
