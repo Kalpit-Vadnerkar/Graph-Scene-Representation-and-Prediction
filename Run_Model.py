@@ -1,6 +1,3 @@
-import argparse
-import torch
-from torch.utils.data import DataLoader, random_split
 from Prediction_Model.TrajectoryDataset import TrajectoryDataset
 from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM, GraphAttentionLSTM
 from Prediction_Model.Trainer import Trainer
@@ -8,9 +5,16 @@ from Prediction_Model.model_utils import load_model, make_predictions, make_limi
 from Visualization.visualizer import visualize_predictions, plot_vel_distributions_by_timestep, plot_steer_distributions_by_timestep, plot_pos_distributions_by_timestep, plot_acceleration_distributions_by_timestep
 from Visualization.probability_viz import plot_probabilities, plot_probabilities2
 from Visualization.trajectory_results import position_result_metrics
-from Model_Testing.FaultDetector import residuals_analysis
+from Model_Testing.ResidualDataset import ResidualDataset
+from Model_Testing.ResidualClassifier import ResidualClassifier
 from model_config import CONFIG
+
+import argparse
+import torch
+from torch.utils.data import DataLoader, random_split
 import os
+import numpy as np
+from typing import Dict, List, Optional, Tuple, Any
 
 #import warnings
 
@@ -140,6 +144,58 @@ def visualize(config):
 
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
+def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Main function to run improved fault detection pipeline"""
+    
+    # Initialize components
+    dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
+    classifier = ResidualClassifier(n_estimators=100)
+    
+    # Load model
+    model = load_model(config).to(config['device'])
+    
+    # Process each condition
+    sequence_counter = 0
+    for condition in config['conditions']:
+        print(f"Processing condition: {condition}")
+        
+        # Load dataset
+        data_folder = os.path.join(config['test_data_folder'], condition)
+        dataset = TrajectoryDataset(
+            data_folder,
+            position_scaling_factor=config['position_scaling_factor'],
+            velocity_scaling_factor=config['velocity_scaling_factor'],
+            steering_scaling_factor=config['steering_scaling_factor'],
+            acceleration_scaling_factor=config['acceleration_scaling_factor']
+        )
+        
+        # Generate predictions
+        predictions = make_predictions(model, dataset, config)
+        
+        # Process sequence with unique sequence ID
+        dataset_processor.process_sequence(
+            dataset=dataset,
+            predictions=predictions,
+            condition=condition,
+            sequence_id=sequence_counter,
+            start_idx=0,
+            end_idx=len(dataset)
+        )
+        sequence_counter += 1
+    
+    print(f"Total features collected: {len(dataset_processor.features)}")
+    
+    if not dataset_processor.features:
+        raise ValueError("No features were generated from the sequences")
+    
+    # Train and evaluate classifier
+    results = classifier.train_and_evaluate(
+        features=dataset_processor.features,
+        labels=dataset_processor.labels
+    )
+    
+    return results
+
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
     parser.add_argument('--mode', type=str, choices=['train', 'visualize', 'evaluate'], required=True,
@@ -151,7 +207,13 @@ def main():
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode == 'evaluate':
-        residuals_analysis(CONFIG)
+        results = run_fault_detection(CONFIG)
+        # Print results
+        print("Classification Report:")
+        print(results['classification_report'])
+
+        print("\nTop 10 Most Important Features:")
+        print(results['feature_importance'].head(10))
 
 if __name__ == "__main__":
     main()

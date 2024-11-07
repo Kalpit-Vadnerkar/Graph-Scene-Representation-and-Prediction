@@ -14,7 +14,7 @@ CONFIG = {
         'object_distance': 1,
         'traffic_light_detected': 1
     },
-    'num_epochs': 50,
+    'num_epochs': 150,
     'batch_size': 128,
     'hidden_size': 256,
     'num_layers': 2,
