@@ -145,11 +145,11 @@ def visualize(config):
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
-    """Main function to run improved fault detection pipeline"""
+    """Main function to run improved fault detection pipeline with train-test split"""
     
     # Initialize components
     dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
-    classifier = ResidualClassifier(n_estimators=100)
+    classifier = ResidualClassifier(test_size=0.2)  # 80-20 train-test split
     
     # Load model
     model = load_model(config).to(config['device'])
@@ -191,8 +191,24 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
     # Train and evaluate classifier
     results = classifier.train_and_evaluate(
         features=dataset_processor.features,
-        labels=dataset_processor.labels
+        labels=dataset_processor.labels,
+        sequence_ids=dataset_processor.sequence_ids
     )
+    
+    # Print detailed results
+    print("\nCross-validation Results (Training Set):")
+    for metric, value in results['cv_results'].items():
+        print(f"{metric}: {value:.3f}")
+    
+    print(f"\nData Split:")
+    print(f"Train set size: {results['data_split']['train_size']}")
+    print(f"Test set size: {results['data_split']['test_size']}")
+        
+    print("\nTest Set Results:")
+    print(results['test_results']['classification_report'])
+    
+    print("\nTop 10 Most Important Features:")
+    print(results['feature_importance'].head(10))
     
     return results
 
@@ -208,12 +224,6 @@ def main():
         visualize(CONFIG)
     elif args.mode == 'evaluate':
         results = run_fault_detection(CONFIG)
-        # Print results
-        print("Classification Report:")
-        print(results['classification_report'])
-
-        print("\nTop 10 Most Important Features:")
-        print(results['feature_importance'].head(10))
 
 if __name__ == "__main__":
     main()

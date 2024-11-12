@@ -1,96 +1,169 @@
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Any, Tuple
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import cross_validate, StratifiedKFold, train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import GroupKFold
+from sklearn.feature_selection import VarianceThreshold
 import pandas as pd
 import numpy as np
+from collections import Counter
 
 class ResidualClassifier:
-    def __init__(self, n_estimators: int = 100, n_splits: int = 5):
-        self.n_estimators = n_estimators
+    def __init__(self, 
+                 n_estimators: int = 100,
+                 n_splits: int = 5,
+                 test_size: float = 0.2,
+                 random_state: int = 47):
         self.n_splits = n_splits
-        self.scaler = StandardScaler()
-        self.label_encoder = LabelEncoder()
-        self.classifier = RandomForestClassifier(
-            n_estimators=n_estimators,
-            random_state=42,
-            class_weight='balanced'
-        )
+        self.test_size = test_size
+        self.random_state = random_state
         
-    def prepare_data(self, features: List[Dict[str, float]]) -> Tuple[np.ndarray, List[str]]:
+        # Create pipeline with preprocessing and classifier
+        self.pipeline = Pipeline([
+            ('variance_selector', VarianceThreshold(threshold=0.01)),
+            ('scaler', StandardScaler()),
+            ('classifier', RandomForestClassifier(
+                n_estimators=n_estimators,
+                random_state=random_state,
+                class_weight='balanced',
+                max_features='sqrt',
+                min_samples_leaf=5
+            ))
+        ])
+        
+        self.label_encoder = LabelEncoder()
+    
+    def prepare_data(self, features: List[Dict[str, float]]) -> tuple[np.ndarray, list[str]]:
         """Convert feature dictionaries to numpy array"""
         df = pd.DataFrame(features)
         
-        # Separate sequence tracking columns
-        sequence_ids = df['sequence_id'].values
-        timestamps = df['timestamp'].values
-        
-        # Remove tracking columns and convert to feature matrix
+        # Extract feature columns
         feature_cols = [col for col in df.columns 
                        if col not in ['sequence_id', 'timestamp']]
-        X = df[feature_cols].values
         
-        return X, sequence_ids, timestamps
+        return df[feature_cols].values, feature_cols
+    
+    def split_data(self, 
+                   X: np.ndarray, 
+                   y: np.ndarray, 
+                   sequence_ids: List[int]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Split data into train and test sets by splitting each condition separately
+        """
+        # Create a DataFrame with all relevant information
+        df = pd.DataFrame({
+            'X_index': range(len(X)),
+            'sequence_id': sequence_ids,
+            'label': y
+        })
         
+        # Print initial data distribution
+        print("\nInitial data distribution:")
+        for label in np.unique(y):
+            condition_mask = df['label'] == label
+            n_samples = condition_mask.sum()
+            print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {n_samples} samples")
+            
+        # Simple random split if the number of samples per condition is too small
+        train_indices, test_indices = train_test_split(
+            df.index,
+            test_size=self.test_size,
+            random_state=self.random_state,
+            stratify=y  # Stratify by condition
+        )
+        
+        # Print distribution information
+        print("\nSample distribution in splits:")
+        print("Training set:")
+        train_counts = Counter(y[train_indices])
+        for label, count in train_counts.items():
+            print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {count} samples")
+        
+        print("\nTest set:")
+        test_counts = Counter(y[test_indices])
+        for label, count in test_counts.items():
+            print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {count} samples")
+        
+        return (X[train_indices], X[test_indices],
+                y[train_indices], y[test_indices])
+    
     def train_and_evaluate(self, 
                           features: List[Dict[str, float]],
-                          labels: List[str]) -> Dict[str, Any]:
-        """Train and evaluate with proper cross-validation"""
+                          labels: List[str],
+                          sequence_ids: List[int]) -> Dict[str, Any]:
+        """Train and evaluate using both train-test split and cross-validation"""
         
         # Prepare data
-        X, sequence_ids, timestamps = self.prepare_data(features)
+        X, feature_names = self.prepare_data(features)
         y = self.label_encoder.fit_transform(labels)
         
-        # Initialize group k-fold
-        group_kfold = GroupKFold(n_splits=self.n_splits)
+        # Split data into train and test sets
+        X_train, X_test, y_train, y_test = self.split_data(X, y, sequence_ids)
         
-        # Track results
-        fold_results = []
-        feature_importance = np.zeros(X.shape[1])
+        # Define cross-validation strategy for training set
+        cv = StratifiedKFold(
+            n_splits=self.n_splits,
+            shuffle=True,
+            random_state=self.random_state
+        )
         
-        # Perform cross-validation
-        for fold, (train_idx, test_idx) in enumerate(group_kfold.split(X, y, sequence_ids)):
-            # Split data
-            X_train, X_test = X[train_idx], X[test_idx]
-            y_train, y_test = y[train_idx], y[test_idx]
-            
-            # Scale features
-            X_train_scaled = self.scaler.fit_transform(X_train)
-            X_test_scaled = self.scaler.transform(X_test)
-            
-            # Train classifier
-            self.classifier.fit(X_train_scaled, y_train)
-            
-            # Make predictions
-            y_pred = self.classifier.predict(X_test_scaled)
-            
-            # Record results
-            fold_results.append({
-                'fold': fold,
-                'classification_report': classification_report(
-                    self.label_encoder.inverse_transform(y_test),
-                    self.label_encoder.inverse_transform(y_pred)
-                ),
-                'confusion_matrix': confusion_matrix(y_test, y_pred)
-            })
-            
-            # Accumulate feature importance
-            feature_importance += self.classifier.feature_importances_
-            
-        # Average feature importance across folds
-        feature_importance /= self.n_splits
+        # Define scoring metrics
+        scoring = {
+            'accuracy': 'accuracy',
+            'f1_weighted': 'f1_weighted',
+            'precision_weighted': 'precision_weighted',
+            'recall_weighted': 'recall_weighted'
+        }
+        
+        # Perform cross-validation on training set
+        cv_results = cross_validate(
+            self.pipeline,
+            X_train, y_train,
+            cv=cv,
+            scoring=scoring,
+            return_train_score=True,
+            return_estimator=True
+        )
+        
+        # Train final model on all training data and evaluate on test set
+        self.pipeline.fit(X_train, y_train)
+        y_pred_test = self.pipeline.predict(X_test)
+        
+        # Get feature importances
+        feature_importance = np.zeros(len(feature_names))
+        selector_mask = self.pipeline.named_steps['variance_selector'].get_support()
+        importances = self.pipeline.named_steps['classifier'].feature_importances_
+        feature_importance[selector_mask] = importances
         
         # Create feature importance DataFrame
-        df = pd.DataFrame(features[0])
-        feature_cols = [col for col in df.columns 
-                       if col not in ['sequence_id', 'timestamp']]
         importance_df = pd.DataFrame({
-            'feature': feature_cols,
+            'feature': feature_names,
             'importance': feature_importance
         }).sort_values('importance', ascending=False)
         
         return {
-            'fold_results': fold_results,
-            'feature_importance': importance_df
+            'cv_results': {
+                'mean_accuracy': cv_results['test_accuracy'].mean(),
+                'std_accuracy': cv_results['test_accuracy'].std(),
+                'mean_f1': cv_results['test_f1_weighted'].mean(),
+                'std_f1': cv_results['test_f1_weighted'].std(),
+                'mean_precision': cv_results['test_precision_weighted'].mean(),
+                'std_precision': cv_results['test_precision_weighted'].std(),
+                'mean_recall': cv_results['test_recall_weighted'].mean(),
+                'std_recall': cv_results['test_recall_weighted'].std()
+            },
+            'test_results': {
+                'classification_report': classification_report(
+                    self.label_encoder.inverse_transform(y_test),
+                    self.label_encoder.inverse_transform(y_pred_test)
+                ),
+                'confusion_matrix': confusion_matrix(y_test, y_pred_test),
+                'accuracy': (y_test == y_pred_test).mean()
+            },
+            'feature_importance': importance_df,
+            'data_split': {
+                'train_size': len(X_train),
+                'test_size': len(X_test)
+            }
         }

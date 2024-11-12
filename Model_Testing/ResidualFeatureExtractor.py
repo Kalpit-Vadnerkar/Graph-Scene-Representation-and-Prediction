@@ -72,4 +72,5 @@ class ResidualFeatureExtractor:
         for name, data in uncertainty_components:
             features.update(self.compute_statistical_features(data, name))
             
+        # Remove condition from features as it should be a label
         return features
