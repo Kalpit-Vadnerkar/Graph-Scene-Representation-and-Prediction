@@ -14,10 +14,10 @@ class Config:
         # Sequence processing
         self.PAST_TRAJECTORY = 30
         self.PREDICTION_HORIZON = 30
-        self.STRIDE = 5
+        self.STRIDE = 1
         
         #  Data augmentation
-        self.NUM_ROTATIONS = 12  # Number of rotations to perform
+        self.NUM_ROTATIONS = 0  # Number of rotations to perform
         self.MIRRORS = ['x', 'y']
         
         # Reference points for coordinate conversion
