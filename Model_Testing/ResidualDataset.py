@@ -23,7 +23,6 @@ class ResidualDataset:
                         sequence_id: int,
                         start_idx: int,
                         end_idx: int) -> None:
-        """Process a sequence with proper tracking of sequence IDs"""
         
         for t in range(start_idx, end_idx - self.horizon):
             window_residuals = []

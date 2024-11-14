@@ -6,7 +6,6 @@ from sklearn.metrics import classification_report, confusion_matrix
 import torch
 
 class ResidualOutput(NamedTuple):
-    """Structured output for residuals and uncertainties"""
     residuals: Dict[str, np.ndarray]
     uncertainties: Dict[str, np.ndarray]
     sequence_id: int
@@ -14,7 +13,6 @@ class ResidualOutput(NamedTuple):
 
 @dataclass
 class ResidualFeatures:
-    """Features computed from residuals for a specific time window"""
     sequence_id: int
     time: int
     position_residuals: np.ndarray      # Shape: [window_size, 2]
@@ -36,15 +34,7 @@ class ResidualGenerator:
                          ground_truth: Dict[str, torch.Tensor],
                          sequence_id: int,
                          timestamp: int) -> ResidualOutput:
-        """
-        Compute residuals between predictions and ground truth
-        
-        Args:
-            predictions: Dictionary with numpy arrays
-            ground_truth: Dictionary with PyTorch tensors
-            sequence_id: Identifier for the sequence
-            timestamp: Current timestamp in the sequence
-        """
+    
         residuals = {}
         uncertainties = {}
         

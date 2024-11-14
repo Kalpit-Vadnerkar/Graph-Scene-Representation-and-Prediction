@@ -9,7 +9,6 @@ from scipy import stats
 class ResidualFeatureExtractor:
     @staticmethod
     def compute_statistical_features(values: np.ndarray, prefix: str) -> Dict[str, float]:
-        """Compute statistical features with proper error handling"""
         if len(values) == 0:
             return {}
             
@@ -40,13 +39,8 @@ class ResidualFeatureExtractor:
         return features
     
     def extract_features(self, residuals: ResidualFeatures) -> Dict[str, Any]:
-        """Extract features with sequence tracking"""
-        features = {
-            'sequence_id': residuals.sequence_id,
-            'timestamp': residuals.time
-        }
+        features = {}
         
-        # Process each component
         components = [
             ('position_x', residuals.position_residuals[:, 0]),
             ('position_y', residuals.position_residuals[:, 1]),
@@ -59,7 +53,6 @@ class ResidualFeatureExtractor:
         for name, data in components:
             features.update(self.compute_statistical_features(data, name))
             
-        # Process uncertainties
         uncertainty_components = [
             ('position_x_uncertainty', residuals.position_uncertainties[:, 0]),
             ('position_y_uncertainty', residuals.position_uncertainties[:, 1]),
@@ -72,5 +65,4 @@ class ResidualFeatureExtractor:
         for name, data in uncertainty_components:
             features.update(self.compute_statistical_features(data, name))
             
-        # Remove condition from features as it should be a label
         return features

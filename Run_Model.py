@@ -145,7 +145,6 @@ def visualize(config):
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
-    """Main function to run improved fault detection pipeline with train-test split"""
     
     # Initialize components
     dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
@@ -172,7 +171,7 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
         # Generate predictions
         predictions = make_predictions(model, dataset, config)
         
-        # Process sequence with unique sequence ID
+        # Process sequence
         dataset_processor.process_sequence(
             dataset=dataset,
             predictions=predictions,
