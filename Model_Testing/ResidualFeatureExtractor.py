@@ -24,14 +24,14 @@ class ResidualFeatureExtractor:
                 f'{prefix}_range': float(np.ptp(flat_values))
             })
             
-            if len(flat_values) > 1:
-                features[f'{prefix}_trend'] = float(np.polyfit(time_steps, flat_values, 1)[0])
+            #if len(flat_values) > 1:
+            #    features[f'{prefix}_trend'] = float(np.polyfit(time_steps, flat_values, 1)[0])
             
-            if len(flat_values) > 2:
-                features[f'{prefix}_skew'] = float(stats.skew(flat_values))
+            #if len(flat_values) > 2:
+            #    features[f'{prefix}_skew'] = float(stats.skew(flat_values))
                 
-            if len(flat_values) > 3:
-                features[f'{prefix}_kurtosis'] = float(stats.kurtosis(flat_values))
+            #if len(flat_values) > 3:
+            #    features[f'{prefix}_kurtosis'] = float(stats.kurtosis(flat_values))
                 
         except Exception as e:
             print(f"Error computing features for {prefix}: {str(e)}")
@@ -41,16 +41,32 @@ class ResidualFeatureExtractor:
     def extract_features(self, residuals: ResidualFeatures) -> Dict[str, Any]:
         features = {}
         
-        components = [
+        residual_components = [
             ('position_x', residuals.position_residuals[:, 0]),
             ('position_y', residuals.position_residuals[:, 1]),
             ('velocity_x', residuals.velocity_residuals[:, 0]),
             ('velocity_y', residuals.velocity_residuals[:, 1]),
             ('steering', residuals.steering_residuals.squeeze()),
-            ('acceleration', residuals.acceleration_residuals.squeeze())
+            ('acceleration', residuals.acceleration_residuals.squeeze()),
+            ('object_distance', residuals.object_distance_residuals.squeeze()),
+            ('traffic_light_detected', residuals.traffic_light_detected_residuals.squeeze())
         ]
         
-        for name, data in components:
+        for name, data in residual_components:
+            features.update(self.compute_statistical_features(data, name))
+
+        standardized_residual_components = [
+            ('position_x_norm', residuals.position_std_residuals[:, 0]),
+            ('position_y_norm', residuals.position_std_residuals[:, 1]),
+            ('velocity_x_norm', residuals.velocity_std_residuals[:, 0]),
+            ('velocity_y_norm', residuals.velocity_std_residuals[:, 1]),
+            ('steering_norm', residuals.steering_std_residuals.squeeze()),
+            ('acceleration_norm', residuals.acceleration_std_residuals.squeeze()),
+            ('object_distance', residuals.object_distance_std_residuals.squeeze()),
+            ('traffic_light_detected', residuals.traffic_light_detected_std_residuals.squeeze())
+        ]
+        
+        for name, data in standardized_residual_components:
             features.update(self.compute_statistical_features(data, name))
             
         uncertainty_components = [
@@ -59,7 +75,9 @@ class ResidualFeatureExtractor:
             ('velocity_x_uncertainty', residuals.velocity_uncertainties[:, 0]),
             ('velocity_y_uncertainty', residuals.velocity_uncertainties[:, 1]),
             ('steering_uncertainty', residuals.steering_uncertainties.squeeze()),
-            ('acceleration_uncertainty', residuals.acceleration_uncertainties.squeeze())
+            ('acceleration_uncertainty', residuals.acceleration_uncertainties.squeeze()),
+            ('object_distance', residuals.object_distance_uncertainties.squeeze()),
+            ('traffic_light_detected', residuals.traffic_light_detected_uncertainties.squeeze())
         ]
         
         for name, data in uncertainty_components:

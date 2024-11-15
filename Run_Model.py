@@ -1,7 +1,7 @@
 from Prediction_Model.TrajectoryDataset import TrajectoryDataset
 from Prediction_Model.DLModels import GraphTrajectoryLSTM, TrajectoryLSTM, GraphAttentionLSTM
 from Prediction_Model.Trainer import Trainer
-from Prediction_Model.model_utils import load_model, make_predictions, make_limited_predictions
+from Prediction_Model.model_utils import load_model, make_predictions, make_limited_predictions, print_model_summary
 from Visualization.visualizer import visualize_predictions, plot_vel_distributions_by_timestep, plot_steer_distributions_by_timestep, plot_pos_distributions_by_timestep, plot_acceleration_distributions_by_timestep
 from Visualization.probability_viz import plot_probabilities, plot_probabilities2
 from Visualization.trajectory_results import position_result_metrics
@@ -154,7 +154,6 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
     model = load_model(config).to(config['device'])
     
     # Process each condition
-    sequence_counter = 0
     for condition in config['conditions']:
         print(f"Processing condition: {condition}")
         
@@ -175,12 +174,8 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
         dataset_processor.process_sequence(
             dataset=dataset,
             predictions=predictions,
-            condition=condition,
-            sequence_id=sequence_counter,
-            start_idx=0,
-            end_idx=len(dataset)
+            condition=condition
         )
-        sequence_counter += 1
     
     print(f"Total features collected: {len(dataset_processor.features)}")
     
@@ -191,7 +186,6 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
     results = classifier.train_and_evaluate(
         features=dataset_processor.features,
         labels=dataset_processor.labels,
-        sequence_ids=dataset_processor.sequence_ids
     )
     
     # Print detailed results
@@ -206,6 +200,8 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
     print("\nTest Set Results:")
     print(results['test_results']['classification_report'])
     
+    print(f'\nNumber of Features: {len(results['feature_importance'])}')
+
     print("\nTop 10 Most Important Features:")
     print(results['feature_importance'].head(10))
     
@@ -213,16 +209,20 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
-    parser.add_argument('--mode', type=str, choices=['train', 'visualize', 'evaluate'], required=True,
-                        help='Mode of operation: train a new model or visualize or evaluate a saved model')
+    parser.add_argument('--mode', type=str, 
+                       choices=['train', 'visualize', 'evaluate', 'summary'], 
+                       required=True,
+                       help='Mode of operation: train, visualize, evaluate, or show model summary')
     args = parser.parse_args()
 
-    if args.mode == 'train':
+    if args.mode == 'summary':
+        model = load_model(CONFIG)
+        print_model_summary(model, CONFIG)
+    elif args.mode == 'train':
         train(CONFIG)
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode == 'evaluate':
         results = run_fault_detection(CONFIG)
-
 if __name__ == "__main__":
     main()

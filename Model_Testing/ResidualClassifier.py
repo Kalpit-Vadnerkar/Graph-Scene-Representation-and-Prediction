@@ -1,6 +1,6 @@
 from typing import Dict, List, Any, Tuple
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder, RobustScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_validate, StratifiedKFold, train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
@@ -12,7 +12,7 @@ from collections import Counter
 class ResidualClassifier:
     def __init__(self, 
                  n_estimators: int = 100,
-                 n_splits: int = 5,
+                 n_splits: int = 10,
                  test_size: float = 0.2,
                  random_state: int = 47):
         self.n_splits = n_splits
@@ -21,21 +21,19 @@ class ResidualClassifier:
         
         # Create pipeline with preprocessing and classifier
         self.pipeline = Pipeline([
-            ('variance_selector', VarianceThreshold(threshold=0.01)),
-            ('scaler', StandardScaler()),
+            ('variance_selector', VarianceThreshold(threshold=0.1)),
+            ('scaler', RobustScaler()),
             ('classifier', RandomForestClassifier(
                 n_estimators=n_estimators,
                 random_state=random_state,
-                class_weight='balanced',
                 max_features='sqrt',
-                min_samples_leaf=5
+                min_samples_leaf=50
             ))
         ])
         
         self.label_encoder = LabelEncoder()
     
     def prepare_data(self, features: List[Dict[str, float]]) -> tuple[np.ndarray, list[str]]:
-        """Convert feature dictionaries to numpy array"""
         df = pd.DataFrame(features)
         
         # Extract feature columns
@@ -46,15 +44,13 @@ class ResidualClassifier:
     
     def split_data(self, 
                    X: np.ndarray, 
-                   y: np.ndarray, 
-                   sequence_ids: List[int]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+                   y: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Split data into train and test sets by splitting each condition separately
         """
         # Create a DataFrame with all relevant information
         df = pd.DataFrame({
             'X_index': range(len(X)),
-            'sequence_id': sequence_ids,
             'label': y
         })
         
@@ -65,7 +61,6 @@ class ResidualClassifier:
             n_samples = condition_mask.sum()
             print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {n_samples} samples")
             
-        # Simple random split if the number of samples per condition is too small
         train_indices, test_indices = train_test_split(
             df.index,
             test_size=self.test_size,
@@ -90,16 +85,17 @@ class ResidualClassifier:
     
     def train_and_evaluate(self, 
                           features: List[Dict[str, float]],
-                          labels: List[str],
-                          sequence_ids: List[int]) -> Dict[str, Any]:
+                          labels: List[str]) -> Dict[str, Any]:
         """Train and evaluate using both train-test split and cross-validation"""
         
         # Prepare data
         X, feature_names = self.prepare_data(features)
         y = self.label_encoder.fit_transform(labels)
         
+        print(f'Number of features: {len(feature_names)}')
+
         # Split data into train and test sets
-        X_train, X_test, y_train, y_test = self.split_data(X, y, sequence_ids)
+        X_train, X_test, y_train, y_test = self.split_data(X, y)
         
         # Define cross-validation strategy for training set
         cv = StratifiedKFold(
