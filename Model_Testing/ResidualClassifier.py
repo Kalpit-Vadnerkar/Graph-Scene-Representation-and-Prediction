@@ -27,7 +27,7 @@ class ResidualClassifier:
                 n_estimators=n_estimators,
                 random_state=random_state,
                 max_features='sqrt',
-                min_samples_leaf=50
+                min_samples_leaf=100
             ))
         ])
         
@@ -92,7 +92,7 @@ class ResidualClassifier:
         X, feature_names = self.prepare_data(features)
         y = self.label_encoder.fit_transform(labels)
         
-        print(f'Number of features: {len(feature_names)}')
+        print(f'Features used: {feature_names}')
 
         # Split data into train and test sets
         X_train, X_test, y_train, y_test = self.split_data(X, y)

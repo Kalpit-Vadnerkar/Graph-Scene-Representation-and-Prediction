@@ -1,4 +1,9 @@
 from Model_Testing.ResidualGenerator import ResidualFeatures
+from Model_Testing.FaultDetectionConfig import (
+    FEATURE_COMPONENTS,
+    STATISTICAL_METRICS,
+    RESIDUAL_TYPES
+)
 
 from dataclasses import dataclass
 from typing import Dict, List, Any
@@ -13,25 +18,18 @@ class ResidualFeatureExtractor:
             return {}
             
         flat_values = values.reshape(-1)
-        time_steps = np.arange(len(flat_values))
         
         features = {}
         try:
-            features.update({
-                f'{prefix}_mean': float(np.mean(flat_values)),
-                f'{prefix}_std': float(np.std(flat_values)),
-                f'{prefix}_max': float(np.max(np.abs(flat_values))),
-                f'{prefix}_range': float(np.ptp(flat_values))
-            })
-            
-            #if len(flat_values) > 1:
-            #    features[f'{prefix}_trend'] = float(np.polyfit(time_steps, flat_values, 1)[0])
-            
-            #if len(flat_values) > 2:
-            #    features[f'{prefix}_skew'] = float(stats.skew(flat_values))
-                
-            #if len(flat_values) > 3:
-            #    features[f'{prefix}_kurtosis'] = float(stats.kurtosis(flat_values))
+            for metric in STATISTICAL_METRICS:
+                if metric == 'mean':
+                    features[f'{prefix}_mean'] = float(np.mean(flat_values))
+                elif metric == 'std':
+                    features[f'{prefix}_std'] = float(np.std(flat_values))
+                elif metric == 'max':
+                    features[f'{prefix}_max'] = float(np.max(np.abs(flat_values)))
+                elif metric == 'range':
+                    features[f'{prefix}_range'] = float(np.ptp(flat_values))
                 
         except Exception as e:
             print(f"Error computing features for {prefix}: {str(e)}")
@@ -41,46 +39,27 @@ class ResidualFeatureExtractor:
     def extract_features(self, residuals: ResidualFeatures) -> Dict[str, Any]:
         features = {}
         
-        residual_components = [
-            ('position_x', residuals.position_residuals[:, 0]),
-            ('position_y', residuals.position_residuals[:, 1]),
-            ('velocity_x', residuals.velocity_residuals[:, 0]),
-            ('velocity_y', residuals.velocity_residuals[:, 1]),
-            ('steering', residuals.steering_residuals.squeeze()),
-            ('acceleration', residuals.acceleration_residuals.squeeze()),
-            ('object_distance', residuals.object_distance_residuals.squeeze()),
-            ('traffic_light_detected', residuals.traffic_light_detected_residuals.squeeze())
-        ]
-        
-        for name, data in residual_components:
-            features.update(self.compute_statistical_features(data, name))
-
-        standardized_residual_components = [
-            ('position_x_norm', residuals.position_std_residuals[:, 0]),
-            ('position_y_norm', residuals.position_std_residuals[:, 1]),
-            ('velocity_x_norm', residuals.velocity_std_residuals[:, 0]),
-            ('velocity_y_norm', residuals.velocity_std_residuals[:, 1]),
-            ('steering_norm', residuals.steering_std_residuals.squeeze()),
-            ('acceleration_norm', residuals.acceleration_std_residuals.squeeze()),
-            ('object_distance', residuals.object_distance_std_residuals.squeeze()),
-            ('traffic_light_detected', residuals.traffic_light_detected_std_residuals.squeeze())
-        ]
-        
-        for name, data in standardized_residual_components:
-            features.update(self.compute_statistical_features(data, name))
+        # Process each type of residual
+        for residual_type in RESIDUAL_TYPES:
+            if residual_type == 'raw':
+                residual_data = residuals.raw_residuals
+            elif residual_type == 'normalized':
+                residual_data = residuals.normalized_residuals
+            else:  # uncertainty
+                residual_data = residuals.uncertainties
             
-        uncertainty_components = [
-            ('position_x_uncertainty', residuals.position_uncertainties[:, 0]),
-            ('position_y_uncertainty', residuals.position_uncertainties[:, 1]),
-            ('velocity_x_uncertainty', residuals.velocity_uncertainties[:, 0]),
-            ('velocity_y_uncertainty', residuals.velocity_uncertainties[:, 1]),
-            ('steering_uncertainty', residuals.steering_uncertainties.squeeze()),
-            ('acceleration_uncertainty', residuals.acceleration_uncertainties.squeeze()),
-            ('object_distance', residuals.object_distance_uncertainties.squeeze()),
-            ('traffic_light_detected', residuals.traffic_light_detected_uncertainties.squeeze())
-        ]
-        
-        for name, data in uncertainty_components:
-            features.update(self.compute_statistical_features(data, name))
-            
+            # Process each feature and its components
+            for feature, components in FEATURE_COMPONENTS.items():
+                data = residual_data[feature]
+                
+                if len(components) == 1:
+                    # Single component feature (e.g., steering)
+                    prefix = f"{components[0]}_{residual_type}"
+                    features.update(self.compute_statistical_features(data.squeeze(), prefix))
+                else:
+                    # Multi-component feature (e.g., position with x,y)
+                    for idx, component in enumerate(components):
+                        prefix = f"{component}_{residual_type}"
+                        features.update(self.compute_statistical_features(data[:, idx], prefix))
+                        
         return features

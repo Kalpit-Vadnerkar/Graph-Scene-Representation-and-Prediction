@@ -1,5 +1,6 @@
 from Model_Testing.ResidualGenerator import ResidualGenerator, ResidualFeatures
 from Model_Testing.ResidualFeatureExtractor import ResidualFeatureExtractor
+from Model_Testing.FaultDetectionConfig import FEATURE_NAMES
 
 from typing import Dict, List, Any
 from torch.utils.data import Dataset, DataLoader
@@ -24,12 +25,11 @@ class ResidualDataset:
         end_idx = len(dataset)
         for t in range(start_idx, end_idx - self.horizon):
             window_residuals = []
-            window_std_residuals = []
+            window_normalized_residuals = [] 
             window_uncertainties = []
             
             try:
                 # Only look at past horizon steps for feature extraction
-                # This prevents data leakage from future steps
                 for h in range(-self.horizon + 1, 1):
                     if t + h < start_idx or t + h >= end_idx:
                         continue
@@ -46,35 +46,30 @@ class ResidualDataset:
                             pred, truth, t+h
                         )
                         window_residuals.append(residual_output.residuals)
-                        window_std_residuals.append(residual_output.standardized_residuals)
+                        window_normalized_residuals.append(residual_output.normalized_residuals)
                         window_uncertainties.append(residual_output.uncertainties)
                 
                 if len(window_residuals) == self.horizon:
-                    features = ResidualFeatures(
+                    # Create dictionaries to store all residual types for each feature
+                    residuals_dict = {
+                        feature: np.array([r[feature] for r in window_residuals])
+                        for feature in FEATURE_NAMES
+                    }
+                    normalized_dict = {
+                        feature: np.array([r[feature] for r in window_normalized_residuals])
+                        for feature in FEATURE_NAMES
+                    }
+                    uncertainties_dict = {
+                        feature: np.array([r[feature] for r in window_uncertainties])
+                        for feature in FEATURE_NAMES
+                    }
+                    
+                    features = ResidualFeatures.create_from_data(
                         time=t,
-                        
-                        position_residuals=np.array([r['position'] for r in window_residuals]),
-                        velocity_residuals=np.array([r['velocity'] for r in window_residuals]),
-                        steering_residuals=np.array([r['steering'] for r in window_residuals]),
-                        acceleration_residuals=np.array([r['acceleration'] for r in window_residuals]),
-                        object_distance_residuals=np.array([r['object_distance'] for r in window_residuals]),
-                        traffic_light_detected_residuals=np.array([r['traffic_light_detected'] for r in window_residuals]),
-
-                        position_std_residuals=np.array([sr['position'] for sr in window_std_residuals]),
-                        velocity_std_residuals=np.array([sr['velocity'] for sr in window_std_residuals]),
-                        steering_std_residuals=np.array([sr['steering'] for sr in window_std_residuals]),
-                        acceleration_std_residuals=np.array([sr['acceleration'] for sr in window_std_residuals]),
-                        object_distance_std_residuals=np.array([sr['object_distance'] for sr in window_std_residuals]),
-                        traffic_light_detected_std_residuals=np.array([sr['traffic_light_detected'] for sr in window_std_residuals]),
-                        
-                        position_uncertainties=np.array([u['position'] for u in window_uncertainties]),
-                        velocity_uncertainties=np.array([u['velocity'] for u in window_uncertainties]),
-                        steering_uncertainties=np.array([u['steering'] for u in window_uncertainties]),
-                        acceleration_uncertainties=np.array([u['acceleration'] for u in window_uncertainties]),
-                        object_distance_uncertainties=np.array([u['object_distance'] for u in window_uncertainties]),
-                        traffic_light_detected_uncertainties=np.array([u['traffic_light_detected'] for u in window_uncertainties]),
-                        
-                        condition=condition
+                        condition=condition,
+                        residuals=residuals_dict,
+                        normalized_residuals=normalized_dict,
+                        uncertainties=uncertainties_dict
                     )
                     
                     feature_dict = self.feature_extractor.extract_features(features)

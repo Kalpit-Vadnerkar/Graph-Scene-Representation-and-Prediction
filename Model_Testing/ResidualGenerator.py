@@ -1,42 +1,40 @@
-import os
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Any, NamedTuple
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
 import torch
+from Model_Testing.FaultDetectionConfig import FEATURE_NAMES, FEATURE_CONFIGS
 
 class ResidualOutput(NamedTuple):
     residuals: Dict[str, np.ndarray]
-    standardized_residuals: Dict[str, np.ndarray]
+    normalized_residuals: Dict[str, np.ndarray]  
     uncertainties: Dict[str, np.ndarray]
     timestamp: int
 
 @dataclass
 class ResidualFeatures:
     time: int
-    
-    position_residuals: np.ndarray      # Shape: [window_size, 2]
-    velocity_residuals: np.ndarray      # Shape: [window_size, 2]
-    steering_residuals: np.ndarray      # Shape: [window_size, 1]
-    acceleration_residuals: np.ndarray  # Shape: [window_size, 1]
-    object_distance_residuals: np.ndarray  # Shape: [window_size, 1]
-    traffic_light_detected_residuals: np.ndarray  # Shape: [window_size, 1]
-
-    position_std_residuals: np.ndarray      # Shape: [window_size, 2]
-    velocity_std_residuals: np.ndarray      # Shape: [window_size, 2]
-    steering_std_residuals: np.ndarray      # Shape: [window_size, 1]
-    acceleration_std_residuals: np.ndarray  # Shape: [window_size, 1]
-    object_distance_std_residuals: np.ndarray  # Shape: [window_size, 1]
-    traffic_light_detected_std_residuals: np.ndarray  # Shape: [window_size, 1]
-
-    position_uncertainties: np.ndarray  # Shape: [window_size, 2]
-    velocity_uncertainties: np.ndarray  # Shape: [window_size, 2]
-    steering_uncertainties: np.ndarray  # Shape: [window_size, 1]
-    acceleration_uncertainties: np.ndarray  # Shape: [window_size, 1]
-    object_distance_uncertainties: np.ndarray  # Shape: [window_size, 1]
-    traffic_light_detected_uncertainties: np.ndarray  # Shape: [window_size, 1]
-    
     condition: str
+    
+    # Initialize dictionaries to store different types of residuals for each feature
+    raw_residuals: Dict[str, np.ndarray]
+    normalized_residuals: Dict[str, np.ndarray]  
+    uncertainties: Dict[str, np.ndarray]
+    
+    @classmethod
+    def create_from_data(cls, 
+                        time: int, 
+                        condition: str,
+                        residuals: Dict[str, np.ndarray],
+                        normalized_residuals: Dict[str, np.ndarray],
+                        uncertainties: Dict[str, np.ndarray]) -> 'ResidualFeatures':
+        return cls(
+            time=time,
+            condition=condition,
+            raw_residuals=residuals,
+            normalized_residuals=normalized_residuals,
+            uncertainties=uncertainties
+        )
 
 class ResidualGenerator:
     def __init__(self, horizon: int):
@@ -48,10 +46,10 @@ class ResidualGenerator:
                          timestamp: int) -> ResidualOutput:
     
         residuals = {}
-        standardized_residuals = {}
+        normalized_residuals = {}
         uncertainties = {}
         
-        for feature in ['position', 'velocity', 'steering', 'acceleration', 'object_distance', 'traffic_light_detected']:
+        for feature in FEATURE_NAMES:
             mean_key = f'{feature}_mean'
             var_key = f'{feature}_var'
             
@@ -62,7 +60,7 @@ class ResidualGenerator:
                 
                 # Remove singleton dimensions and ensure consistent shapes
                 truth_np = truth_np.squeeze()
-                if feature in ['steering', 'acceleration']:
+                if FEATURE_CONFIGS[feature].dimensions == 1:
                     if len(pred_mean.shape) == 1:
                         pred_mean = pred_mean.reshape(-1, 1)
                     if len(pred_var.shape) == 1:
@@ -71,7 +69,7 @@ class ResidualGenerator:
                         truth_np = truth_np.reshape(-1, 1)
                 
                 residuals[feature] = pred_mean - truth_np
-                standardized_residuals[feature] = (pred_mean - truth_np) / np.sqrt(pred_var)
+                normalized_residuals[feature] = (pred_mean - truth_np) / np.sqrt(pred_var)
                 uncertainties[feature] = pred_var
             else:
                 truth_np = ground_truth[feature].detach().cpu().numpy()
@@ -79,15 +77,16 @@ class ResidualGenerator:
                 pred_var = predictions[feature] / predictions[feature] 
 
                 truth_np = truth_np.squeeze()
-                if len(pred_mean.shape) == 1:
-                    pred_mean = pred_mean.reshape(-1, 1)
-                if len(pred_var.shape) == 1:
-                    pred_var = pred_var.reshape(-1, 1)
-                if len(truth_np.shape) == 1:
-                    truth_np = truth_np.reshape(-1, 1)
+                if FEATURE_CONFIGS[feature].dimensions == 1:
+                    if len(pred_mean.shape) == 1:
+                        pred_mean = pred_mean.reshape(-1, 1)
+                    if len(pred_var.shape) == 1:
+                        pred_var = pred_var.reshape(-1, 1)
+                    if len(truth_np.shape) == 1:
+                        truth_np = truth_np.reshape(-1, 1)
                 
                 residuals[feature] = pred_mean - truth_np
-                standardized_residuals[feature] = (pred_mean - truth_np) / np.sqrt(pred_var)
+                normalized_residuals[feature] = (pred_mean - truth_np) / np.sqrt(pred_var)
                 uncertainties[feature] = pred_var
                 
-        return ResidualOutput(residuals, standardized_residuals, uncertainties, timestamp)
+        return ResidualOutput(residuals, normalized_residuals, uncertainties, timestamp)
