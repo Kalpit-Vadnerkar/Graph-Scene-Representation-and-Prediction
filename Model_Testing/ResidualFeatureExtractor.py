@@ -14,6 +14,7 @@ from scipy import stats
 class ResidualFeatureExtractor:
     @staticmethod
     def compute_statistical_features(values: np.ndarray, prefix: str) -> Dict[str, float]:
+        """Compute statistical features for a given array of values"""
         if len(values) == 0:
             return {}
             
@@ -37,29 +38,25 @@ class ResidualFeatureExtractor:
         return features
     
     def extract_features(self, residuals: ResidualFeatures) -> Dict[str, Any]:
+        """Extract features from all residual types for each feature component"""
         features = {}
         
-        # Process each type of residual
-        for residual_type in RESIDUAL_TYPES:
-            if residual_type == 'raw':
-                residual_data = residuals.raw_residuals
-            elif residual_type == 'normalized':
-                residual_data = residuals.normalized_residuals
-            else:  # uncertainty
-                residual_data = residuals.uncertainties
+        # Process each feature and its components
+        for feature, components in FEATURE_COMPONENTS.items():
+            feature_residuals = residuals.residuals[feature]
             
-            # Process each feature and its components
-            for feature, components in FEATURE_COMPONENTS.items():
-                data = residual_data[feature]
-                
-                if len(components) == 1:
-                    # Single component feature (e.g., steering)
+            if len(components) == 1:
+                # Single component feature (e.g., steering)
+                for residual_type in feature_residuals:
                     prefix = f"{components[0]}_{residual_type}"
-                    features.update(self.compute_statistical_features(data.squeeze(), prefix))
-                else:
-                    # Multi-component feature (e.g., position with x,y)
-                    for idx, component in enumerate(components):
+                    values = feature_residuals[residual_type].squeeze()
+                    features.update(self.compute_statistical_features(values, prefix))
+            else:
+                # Multi-component feature (e.g., position with x,y)
+                for idx, component in enumerate(components):
+                    for residual_type in feature_residuals:
                         prefix = f"{component}_{residual_type}"
-                        features.update(self.compute_statistical_features(data[:, idx], prefix))
+                        values = feature_residuals[residual_type][:, idx]
+                        features.update(self.compute_statistical_features(values, prefix))
                         
         return features

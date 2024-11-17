@@ -145,7 +145,6 @@ def visualize(config):
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
-    
     # Initialize components
     dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
     classifier = ResidualClassifier(test_size=0.2)  # 80-20 train-test split
@@ -188,22 +187,33 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
         labels=dataset_processor.labels,
     )
     
-    # Print detailed results
+    # Print multi-class results
+    print("\nMulti-class Classification Results:")
     print("\nCross-validation Results (Training Set):")
-    for metric, value in results['cv_results'].items():
+    for metric, value in results['multi_class']['cv_results'].items():
         print(f"{metric}: {value:.3f}")
     
     print(f"\nData Split:")
-    print(f"Train set size: {results['data_split']['train_size']}")
-    print(f"Test set size: {results['data_split']['test_size']}")
-        
-    print("\nTest Set Results:")
-    print(results['test_results']['classification_report'])
+    print(f"Train set size: {results['multi_class']['data_split']['train_size']}")
+    print(f"Test set size: {results['multi_class']['data_split']['test_size']}")
     
-    print(f'\nNumber of Features: {len(results['feature_importance'])}')
-
-    print("\nTop 10 Most Important Features:")
-    print(results['feature_importance'].head(10))
+    print("\nTest Set Results:")
+    print(results['multi_class']['test_results']['classification_report'])
+    
+    print("\nTop 10 Most Important Features (Multi-class):")
+    print(results['multi_class']['feature_importance'].head(10))
+    
+    # Print binary classification results
+    print("\nBinary Classification Results:")
+    print("\nCross-validation Results (Training Set):")
+    for metric, value in results['binary']['cv_results'].items():
+        print(f"{metric}: {value:.3f}")
+    
+    print("\nTest Set Results:")
+    print(results['binary']['test_results']['classification_report'])
+    
+    print("\nTop 10 Most Important Features (Binary):")
+    print(results['binary']['feature_importance'].head(10))
     
     return results
 

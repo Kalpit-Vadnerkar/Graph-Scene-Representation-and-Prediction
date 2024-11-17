@@ -38,16 +38,19 @@ class ResidualClassifier:
         
         # Extract feature columns
         feature_cols = [col for col in df.columns 
-                       if col not in ['sequence_id', 'timestamp']]
+                       if col not in ['timestamp']]
         
         return df[feature_cols].values, feature_cols
     
+    def create_binary_labels(self, labels: List[str]) -> List[str]:
+        """Convert multi-class labels to binary (Nominal vs Fault)"""
+        return ['Nominal' if label == 'Nominal' else 'Fault' for label in labels]
+    
     def split_data(self, 
                    X: np.ndarray, 
-                   y: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Split data into train and test sets by splitting each condition separately
-        """
+                   y: np.ndarray,
+                   is_binary: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Split data into train and test sets by splitting each condition separately"""
         # Create a DataFrame with all relevant information
         df = pd.DataFrame({
             'X_index': range(len(X)),
@@ -59,13 +62,14 @@ class ResidualClassifier:
         for label in np.unique(y):
             condition_mask = df['label'] == label
             n_samples = condition_mask.sum()
-            print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {n_samples} samples")
+            label_name = self.label_encoder.inverse_transform([label])[0]
+            print(f"{'Class' if is_binary else 'Condition'} {label_name}: {n_samples} samples")
             
         train_indices, test_indices = train_test_split(
             df.index,
             test_size=self.test_size,
             random_state=self.random_state,
-            stratify=y  # Stratify by condition
+            stratify=y
         )
         
         # Print distribution information
@@ -73,12 +77,14 @@ class ResidualClassifier:
         print("Training set:")
         train_counts = Counter(y[train_indices])
         for label, count in train_counts.items():
-            print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {count} samples")
+            label_name = self.label_encoder.inverse_transform([label])[0]
+            print(f"{'Class' if is_binary else 'Condition'} {label_name}: {count} samples")
         
         print("\nTest set:")
         test_counts = Counter(y[test_indices])
         for label, count in test_counts.items():
-            print(f"Condition {self.label_encoder.inverse_transform([label])[0]}: {count} samples")
+            label_name = self.label_encoder.inverse_transform([label])[0]
+            print(f"{'Class' if is_binary else 'Condition'} {label_name}: {count} samples")
         
         return (X[train_indices], X[test_indices],
                 y[train_indices], y[test_indices])
@@ -86,16 +92,40 @@ class ResidualClassifier:
     def train_and_evaluate(self, 
                           features: List[Dict[str, float]],
                           labels: List[str]) -> Dict[str, Any]:
-        """Train and evaluate using both train-test split and cross-validation"""
+        """Train and evaluate using both multi-class and binary classification"""
         
         # Prepare data
         X, feature_names = self.prepare_data(features)
-        y = self.label_encoder.fit_transform(labels)
         
-        print(f'Features used: {feature_names}')
+        results = {}
+        
+        # Multi-class classification
+        print("\n=== Multi-class Classification ===")
+        y_multi = self.label_encoder.fit_transform(labels)
+        results['multi_class'] = self._train_and_evaluate_single(
+            X, y_multi, feature_names, is_binary=False
+        )
+        
+        # Binary classification
+        print("\n=== Binary Classification ===")
+        y_binary = self.label_encoder.fit_transform(self.create_binary_labels(labels))
+        results['binary'] = self._train_and_evaluate_single(
+            X, y_binary, feature_names, is_binary=True
+        )
+        
+        return results
+    
+    def _train_and_evaluate_single(self,
+                                 X: np.ndarray,
+                                 y: np.ndarray,
+                                 feature_names: List[str],
+                                 is_binary: bool) -> Dict[str, Any]:
+        """Helper method to train and evaluate a single classification task"""
+        
+        #print(f'\nFeatures used: {feature_names}')
 
         # Split data into train and test sets
-        X_train, X_test, y_train, y_test = self.split_data(X, y)
+        X_train, X_test, y_train, y_test = self.split_data(X, y, is_binary)
         
         # Define cross-validation strategy for training set
         cv = StratifiedKFold(
@@ -111,6 +141,13 @@ class ResidualClassifier:
             'precision_weighted': 'precision_weighted',
             'recall_weighted': 'recall_weighted'
         }
+        
+        if is_binary:
+            scoring.update({
+                'f1_binary': 'f1',
+                'precision_binary': 'precision',
+                'recall_binary': 'recall'
+            })
         
         # Perform cross-validation on training set
         cv_results = cross_validate(
@@ -138,17 +175,26 @@ class ResidualClassifier:
             'importance': feature_importance
         }).sort_values('importance', ascending=False)
         
+        cv_metrics = {
+            'mean_accuracy': cv_results['test_accuracy'].mean(),
+            'std_accuracy': cv_results['test_accuracy'].std(),
+            'mean_f1': cv_results['test_f1_weighted'].mean(),
+            'std_f1': cv_results['test_f1_weighted'].std(),
+            'mean_precision': cv_results['test_precision_weighted'].mean(),
+            'std_precision': cv_results['test_precision_weighted'].std(),
+            'mean_recall': cv_results['test_recall_weighted'].mean(),
+            'std_recall': cv_results['test_recall_weighted'].std()
+        }
+        
+        if is_binary:
+            cv_metrics.update({
+                'mean_f1_binary': cv_results['test_f1_binary'].mean(),
+                'mean_precision_binary': cv_results['test_precision_binary'].mean(),
+                'mean_recall_binary': cv_results['test_recall_binary'].mean()
+            })
+        
         return {
-            'cv_results': {
-                'mean_accuracy': cv_results['test_accuracy'].mean(),
-                'std_accuracy': cv_results['test_accuracy'].std(),
-                'mean_f1': cv_results['test_f1_weighted'].mean(),
-                'std_f1': cv_results['test_f1_weighted'].std(),
-                'mean_precision': cv_results['test_precision_weighted'].mean(),
-                'std_precision': cv_results['test_precision_weighted'].std(),
-                'mean_recall': cv_results['test_recall_weighted'].mean(),
-                'std_recall': cv_results['test_recall_weighted'].std()
-            },
+            'cv_results': cv_metrics,
             'test_results': {
                 'classification_report': classification_report(
                     self.label_encoder.inverse_transform(y_test),

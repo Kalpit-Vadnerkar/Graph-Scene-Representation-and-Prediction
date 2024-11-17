@@ -40,5 +40,6 @@ STATISTICAL_METRICS: List[str] = [
 RESIDUAL_TYPES: List[str] = [
     'raw',           # Raw residuals
     'normalized',    # Previously called standardized
-    'uncertainty'    # Uncertainty values
+    'uncertainty',   # Uncertainty values
+    'kl_divergence'  # KL divergence between predicted and empirical distributions
 ]
