@@ -15,6 +15,9 @@ from torch.utils.data import DataLoader, random_split
 import os
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
+from tabulate import tabulate
+import matplotlib.pyplot as plt
+from collections import defaultdict
 
 #import warnings
 
@@ -144,19 +147,126 @@ def visualize(config):
 
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
-def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
-    # Initialize components
-    dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
-    classifier = ResidualClassifier(test_size=0.2)  # 80-20 train-test split
+
+def merge_dataset_statistics(stats_by_condition: Dict[str, Any]) -> Dict[str, Any]:
+    """Merge statistics from all conditions into a single summary."""
+    total_samples = 0
+    combined_distribution = defaultdict(int)
+    num_features = None
     
-    # Load model
+    for condition, stats in stats_by_condition.items():
+        if "error" in stats:
+            continue
+            
+        total_samples += stats["total_samples"]
+        for label, count in stats["label_distribution"].items():
+            combined_distribution[label] += count
+            
+        if num_features is None:
+            num_features = stats["num_features"]
+    
+    return {
+        "total_samples": total_samples,
+        "label_distribution": dict(combined_distribution),
+        "num_features": num_features
+    }
+
+def display_classification_results(results: Dict[str, Any], classification_type: str) -> None:
+    """Display classification results with improved formatting."""
+    print(f"\n{'='*20} {classification_type} Classification Results {'='*20}")
+    
+    # Format cross-validation results with ± for standard deviations
+    cv_metrics = []
+    for metric, value in results['cv_results'].items():
+        if metric.startswith('mean_'):
+            base_metric = metric[5:]  # Remove 'mean_' prefix
+            std_metric = f'std_{base_metric}'
+            if std_metric in results['cv_results']:
+                formatted_value = f"{value:.3f} ± {results['cv_results'][std_metric]:.3f}"
+                cv_metrics.append([base_metric.replace('_', ' ').title(), formatted_value])
+    
+    print("\nCross-validation Results (Training Set):")
+    print(tabulate(cv_metrics, headers=["Metric", "Value (mean ± std)"], tablefmt="grid"))
+    
+    # Data split information
+    split_data = [
+        ["Train set size", results['data_split']['train_size']],
+        ["Test set size", results['data_split']['test_size']]
+    ]
+    print("\nData Split Information:")
+    print(tabulate(split_data, headers=["Split", "Size"], tablefmt="grid"))
+    
+    # Test set results
+    print("\nTest Set Results:")
+    print(results['test_results']['classification_report'])
+    
+    # Feature importance
+    print("\nTop 10 Most Important Features:")
+    print(tabulate(
+        results['feature_importance'].head(10).values,
+        headers=results['feature_importance'].columns,
+        tablefmt="grid"
+    ))
+
+def display_merged_dataset_statistics(train_stats: Dict[str, Any], test_stats: Dict[str, Any]) -> None:
+    """Display merged statistics for both training and test sets."""
+    print("\n=== Dataset Statistics ===")
+    
+    # Basic stats table
+    basic_stats = [
+        ["Total Training Samples", train_stats["total_samples"]],
+        ["Total Test Samples", test_stats["total_samples"]],
+        ["Number of Features", train_stats["num_features"]]
+    ]
+    print(tabulate(basic_stats, headers=["Metric", "Value"], tablefmt="grid"))
+    
+    # Create side-by-side pie charts for train/test distribution
+    if train_stats["label_distribution"] and test_stats["label_distribution"]:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+        
+        # Training set distribution
+        train_labels = list(train_stats["label_distribution"].keys())
+        train_sizes = list(train_stats["label_distribution"].values())
+        ax1.pie(train_sizes, labels=train_labels, autopct='%1.1f%%')
+        ax1.set_title("Training Set Distribution")
+        
+        # Test set distribution
+        test_labels = list(test_stats["label_distribution"].keys())
+        test_sizes = list(test_stats["label_distribution"].values())
+        ax2.pie(test_sizes, labels=test_labels, autopct='%1.1f%%')
+        ax2.set_title("Test Set Distribution")
+        
+        plt.savefig('predictions/dataset_distributions.png')
+        plt.close()
+    
+    # Print label distribution in table format
+    print("\nLabel Distribution:")
+    distribution_data = []
+    for label in train_stats["label_distribution"]:
+        distribution_data.append([
+            label,
+            train_stats["label_distribution"][label],
+            test_stats["label_distribution"][label],
+            train_stats["label_distribution"][label] + test_stats["label_distribution"][label]
+        ])
+    
+    print(tabulate(distribution_data, 
+                  headers=["Label", "Train Count", "Test Count", "Total"],
+                  tablefmt="grid"))
+
+
+def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Modified fault detection function with improved result visualization."""
+    dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
+    classifier = ResidualClassifier(test_size=0.2)
     model = load_model(config).to(config['device'])
+    
+    combined_stats = {}
     
     # Process each condition
     for condition in config['conditions']:
-        print(f"Processing condition: {condition}")
+        print(f"\nProcessing condition: {condition}")
         
-        # Load dataset
         data_folder = os.path.join(config['test_data_folder'], condition)
         dataset = TrajectoryDataset(
             data_folder,
@@ -166,56 +276,60 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
             acceleration_scaling_factor=config['acceleration_scaling_factor']
         )
         
-        # Generate predictions
         predictions = make_predictions(model, dataset, config)
-        
-        # Process sequence
-        dataset_processor.process_sequence(
-            dataset=dataset,
-            predictions=predictions,
-            condition=condition
-        )
+        dataset_processor.process_sequence(dataset=dataset, predictions=predictions, condition=condition)
     
-    print(f"Total features collected: {len(dataset_processor.features)}")
+    # Get dataset statistics before classification
+    stats = dataset_processor.get_dataset_statistics()
+    total_features = len(dataset_processor.features)
+    num_features = stats["num_features"] if "num_features" in stats else len(dataset_processor.features[0].keys())
+    
+    print(f"\nTotal features collected across all conditions: {total_features}")
     
     if not dataset_processor.features:
         raise ValueError("No features were generated from the sequences")
     
     # Train and evaluate classifier
-    results = classifier.train_and_evaluate(
+    classification_results = classifier.train_and_evaluate(
         features=dataset_processor.features,
         labels=dataset_processor.labels,
     )
     
-    # Print multi-class results
-    print("\nMulti-class Classification Results:")
-    print("\nCross-validation Results (Training Set):")
-    for metric, value in results['multi_class']['cv_results'].items():
-        print(f"{metric}: {value:.3f}")
+    # Create train/test statistics with proper structure
+    train_stats = {
+        "total_samples": classification_results['multi_class']['data_split']['train_size'],
+        "num_features": num_features,
+        "label_distribution": {}
+    }
     
-    print(f"\nData Split:")
-    print(f"Train set size: {results['multi_class']['data_split']['train_size']}")
-    print(f"Test set size: {results['multi_class']['data_split']['test_size']}")
+    test_stats = {
+        "total_samples": classification_results['multi_class']['data_split']['test_size'],
+        "num_features": num_features,
+        "label_distribution": {}
+    }
     
-    print("\nTest Set Results:")
-    print(results['multi_class']['test_results']['classification_report'])
+    # Extract label distribution from classification report
+    report_lines = classification_results['multi_class']['test_results']['classification_report'].split('\n')
+    for line in report_lines[1:-5]:  # Skip header and footer lines
+        if line.strip():
+            parts = line.split()
+            if len(parts) >= 5:  # Ensure line has enough parts
+                label = parts[0]
+                support = int(parts[4])
+                total = train_stats["total_samples"] + test_stats["total_samples"]
+                train_count = int(support * train_stats["total_samples"] / total)
+                test_count = int(support * test_stats["total_samples"] / total)
+                
+                train_stats["label_distribution"][label] = train_count
+                test_stats["label_distribution"][label] = test_count
     
-    print("\nTop 10 Most Important Features (Multi-class):")
-    print(results['multi_class']['feature_importance'].head(10))
+    # Display merged statistics and classification results
+    display_merged_dataset_statistics(train_stats, test_stats)
+    display_classification_results(classification_results['multi_class'], "Multi-class")
+    display_classification_results(classification_results['binary'], "Binary")
     
-    # Print binary classification results
-    print("\nBinary Classification Results:")
-    print("\nCross-validation Results (Training Set):")
-    for metric, value in results['binary']['cv_results'].items():
-        print(f"{metric}: {value:.3f}")
-    
-    print("\nTest Set Results:")
-    print(results['binary']['test_results']['classification_report'])
-    
-    print("\nTop 10 Most Important Features (Binary):")
-    print(results['binary']['feature_importance'].head(10))
-    
-    return results
+    return classification_results, (train_stats, test_stats)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
@@ -233,6 +347,7 @@ def main():
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode == 'evaluate':
-        results = run_fault_detection(CONFIG)
+       results, (train_stats, test_stats) = run_fault_detection(CONFIG)
+
 if __name__ == "__main__":
     main()
