@@ -27,6 +27,7 @@ class ResidualClassifier:
                 n_estimators=n_estimators,
                 random_state=random_state,
                 max_features='sqrt',
+                #max_depth=2
                 min_samples_leaf=100
             ))
         ])
