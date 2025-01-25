@@ -38,11 +38,11 @@ STATISTICAL_METRICS: List[str] = [
 
 # Types of residual analysis
 RESIDUAL_TYPES: List[str] = [
-    'raw',           # Raw residuals
-    'normalized',    # Previously called standardized
-    'uncertainty',   # Uncertainty values
+    #'raw',           # Raw residuals
+    #'normalized',    # Previously called standardized
+    #'uncertainty',   # Uncertainty values
     'kl_divergence',  # KL divergence between predicted and empirical distributions
     #'shewhart',
-    'cusum', 
+    #'cusum', 
     #'sprt'
 ]

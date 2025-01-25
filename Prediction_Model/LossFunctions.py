@@ -35,7 +35,7 @@ class CombinedLoss(nn.Module):
                 regularization = torch.mean(1 / (variance + self.epsilon))
                 gnll_loss += 0.01 * self.reg_weights[key] * regularization 
 
-                losses[f'{key}_loss'] = gnll_loss.item()
+                losses[f'{key}_loss'] = gnll_loss.item() + 100
                 total_loss += gnll_loss
             elif key in pred:
                 mse_loss = torch.mean((pred[key] - target[key])**2)

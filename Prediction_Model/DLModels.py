@@ -47,7 +47,7 @@ class GraphAttentionLSTM(nn.Module):
         # Main attention layer for combined features
         self.feature_attention = nn.MultiheadAttention(
             embed_dim=self.combined_feature_size,
-            num_heads=8,
+            num_heads=4,
             dropout=self.dropout_rate,
             batch_first=True
         )

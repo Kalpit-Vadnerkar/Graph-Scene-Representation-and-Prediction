@@ -2,7 +2,7 @@ import numpy as np
 
 from Visualization.Rescaler import GraphBoundsScaler
 
-def position_result_metrics(dataset, scaling_factor, predictions, condition, threshold=2.0):
+def position_result_metrics(dataset, scaling_factor, predictions, condition, threshold=2):
     """
     Calculate trajectory forecasting metrics:
     - minFDE (Final Displacement Error)
@@ -32,14 +32,16 @@ def position_result_metrics(dataset, scaling_factor, predictions, condition, thr
         # Get ground truth future positions
         future_positions = np.array([
             scaler.restore_position(
-                step['position'][0] * scaling_factor,
-                step['position'][1] * scaling_factor
+                #step['position'][0] * scaling_factor,
+                #step['position'][1] * scaling_factor
+                step['position'][0],
+                step['position'][1]
             ) for step in sequence['future']
         ])
         
         # Get predicted positions
         pred_positions = np.array([
-            scaler.restore_mean(x, y) 
+            scaler.restore_mean(x / scaling_factor, y / scaling_factor) 
             for x, y in pred['position_mean']
         ])
         

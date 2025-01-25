@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import seaborn as sns
 
 #import warnings
 
@@ -74,7 +75,7 @@ def train(config):
     #model = TrajectoryLSTM(config).to(device)
 
     # load model for retraining
-    model = load_model(config).to(device)
+    #model = load_model(config).to(device)
     
     trainer = Trainer(model, train_loader, test_loader, config['learning_rate'], device)
     trained_model = trainer.train(config['num_epochs'])
@@ -135,8 +136,8 @@ def visualize(config):
         #residuals(dataset, predictions, config, condition)
 
         #plot_vel_distributions_by_timestep(predictions, past_velocities, future_velocities, condition)
-        plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
-        plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition)
+        #plot_steer_distributions_by_timestep(predictions, past_steering, future_steering, condition)
+        #plot_acceleration_distributions_by_timestep(predictions, past_acceleration, future_acceleration, condition)
         #plot_pos_distributions_by_timestep(predictions, past_positions, future_positions, all_graph_bounds, condition)
         
         #plot_probabilities(config, predictions, future_steering, condition, 'steering', scale=(0, 100))
@@ -199,6 +200,21 @@ def display_classification_results(results: Dict[str, Any], classification_type:
     # Test set results
     print("\nTest Set Results:")
     print(results['test_results']['classification_report'])
+
+    # Confusion Matrix Visualization
+    confusion_mat = results['test_results']['confusion_matrix']
+    class_labels = list(results['test_results']['classification_report'].split('\n')[0].split())
+    
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(confusion_mat, annot=True, fmt='d', cmap='Blues',
+                xticklabels=class_labels if len(class_labels) > 1 else ['Negative', 'Positive'],
+                yticklabels=class_labels if len(class_labels) > 1 else ['Negative', 'Positive'])
+    plt.title(f'{classification_type} Classification Confusion Matrix')
+    plt.ylabel('True Label')
+    plt.xlabel('Predicted Label')
+    plt.tight_layout()
+    plt.savefig(f'predictions/{classification_type.lower()}_confusion_matrix.png')
+    plt.close()
     
     # Feature importance
     print("\nTop 10 Most Important Features:")

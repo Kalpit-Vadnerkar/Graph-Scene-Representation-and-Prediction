@@ -1,0 +1,196 @@
+
+Processing condition: Nominal
+Loaded 1591 sequences
+
+Processing condition: Noisy_Camera
+Loaded 1281 sequences
+
+Processing condition: Noisy_IMU
+Loaded 1751 sequences
+
+Processing condition: Noisy_Lidar
+Loaded 901 sequences
+
+Total features collected across all conditions: 5288
+
+=== Multi-class Classification ===
+
+Initial data distribution:
+Condition Noisy_Camera: 1222 samples
+Condition Noisy_IMU: 1692 samples
+Condition Noisy_Lidar: 842 samples
+Condition Nominal: 1532 samples
+
+Sample distribution in splits:
+Training set:
+Condition Noisy_Camera: 978 samples
+Condition Noisy_IMU: 1353 samples
+Condition Noisy_Lidar: 674 samples
+Condition Nominal: 1225 samples
+
+Test set:
+Condition Noisy_Lidar: 168 samples
+Condition Nominal: 307 samples
+Condition Noisy_IMU: 339 samples
+Condition Noisy_Camera: 244 samples
+
+=== Binary Classification ===
+
+Initial data distribution:
+Class Fault: 3756 samples
+Class Nominal: 1532 samples
+
+Sample distribution in splits:
+Training set:
+Class Fault: 3005 samples
+Class Nominal: 1225 samples
+
+Test set:
+Class Fault: 751 samples
+Class Nominal: 307 samples
+
+=== Dataset Statistics ===
++------------------------+---------+
+| Metric                 |   Value |
++========================+=========+
+| Total Training Samples |    4230 |
++------------------------+---------+
+| Total Test Samples     |    1058 |
++------------------------+---------+
+| Number of Features     |      32 |
++------------------------+---------+
+
+Label Distribution:
++--------------+---------------+--------------+---------+
+| Label        |   Train Count |   Test Count |   Total |
++==============+===============+==============+=========+
+| Noisy_Camera |           195 |           48 |     243 |
++--------------+---------------+--------------+---------+
+| Noisy_IMU    |           271 |           67 |     338 |
++--------------+---------------+--------------+---------+
+| Noisy_Lidar  |           134 |           33 |     167 |
++--------------+---------------+--------------+---------+
+| Nominal      |           245 |           61 |     306 |
++--------------+---------------+--------------+---------+
+
+==================== Multi-class Classification Results ====================
+
+Cross-validation Results (Training Set):
++-----------+----------------------+
+| Metric    | Value (mean ± std)   |
++===========+======================+
+| Accuracy  | 0.742 ± 0.020        |
++-----------+----------------------+
+| F1        | 0.736 ± 0.021        |
++-----------+----------------------+
+| Precision | 0.752 ± 0.018        |
++-----------+----------------------+
+| Recall    | 0.742 ± 0.020        |
++-----------+----------------------+
+
+Data Split Information:
++----------------+--------+
+| Split          |   Size |
++================+========+
+| Train set size |   4230 |
++----------------+--------+
+| Test set size  |   1058 |
++----------------+--------+
+
+Test Set Results:
+              precision    recall  f1-score   support
+
+Noisy_Camera       0.74      0.67      0.70       244
+   Noisy_IMU       0.74      0.94      0.83       339
+ Noisy_Lidar       0.97      0.67      0.79       168
+     Nominal       0.73      0.68      0.70       307
+
+    accuracy                           0.76      1058
+   macro avg       0.79      0.74      0.76      1058
+weighted avg       0.77      0.76      0.76      1058
+
+
+Top 10 Most Important Features:
++----------------------------------+--------------+
+| feature                          |   importance |
++==================================+==============+
+| steering_raw_range               |    0.126012  |
++----------------------------------+--------------+
+| steering_raw_max                 |    0.0861317 |
++----------------------------------+--------------+
+| position_x_raw_range             |    0.0744753 |
++----------------------------------+--------------+
+| position_x_raw_max               |    0.0688901 |
++----------------------------------+--------------+
+| position_y_raw_max               |    0.0682609 |
++----------------------------------+--------------+
+| acceleration_raw_max             |    0.0635162 |
++----------------------------------+--------------+
+| traffic_light_detected_raw_range |    0.0535187 |
++----------------------------------+--------------+
+| acceleration_raw_range           |    0.0530341 |
++----------------------------------+--------------+
+| velocity_x_raw_max               |    0.051042  |
++----------------------------------+--------------+
+| velocity_y_raw_max               |    0.0471502 |
++----------------------------------+--------------+
+
+==================== Binary Classification Results ====================
+
+Cross-validation Results (Training Set):
++-----------+----------------------+
+| Metric    | Value (mean ± std)   |
++===========+======================+
+| Accuracy  | 0.788 ± 0.014        |
++-----------+----------------------+
+| F1        | 0.740 ± 0.023        |
++-----------+----------------------+
+| Precision | 0.834 ± 0.009        |
++-----------+----------------------+
+| Recall    | 0.788 ± 0.014        |
++-----------+----------------------+
+
+Data Split Information:
++----------------+--------+
+| Split          |   Size |
++================+========+
+| Train set size |   4230 |
++----------------+--------+
+| Test set size  |   1058 |
++----------------+--------+
+
+Test Set Results:
+              precision    recall  f1-score   support
+
+       Fault       0.80      1.00      0.89       751
+     Nominal       0.99      0.37      0.54       307
+
+    accuracy                           0.82      1058
+   macro avg       0.89      0.69      0.71      1058
+weighted avg       0.85      0.82      0.79      1058
+
+
+Top 10 Most Important Features:
++----------------------------------+--------------+
+| feature                          |   importance |
++==================================+==============+
+| acceleration_raw_max             |    0.131841  |
++----------------------------------+--------------+
+| steering_raw_range               |    0.0881676 |
++----------------------------------+--------------+
+| steering_raw_max                 |    0.0853859 |
++----------------------------------+--------------+
+| acceleration_raw_range           |    0.0733012 |
++----------------------------------+--------------+
+| position_x_raw_max               |    0.0685618 |
++----------------------------------+--------------+
+| position_y_raw_max               |    0.0604703 |
++----------------------------------+--------------+
+| traffic_light_detected_raw_range |    0.0572535 |
++----------------------------------+--------------+
+| position_y_raw_range             |    0.0503687 |
++----------------------------------+--------------+
+| position_x_raw_range             |    0.0430648 |
++----------------------------------+--------------+
+| object_distance_raw_max          |    0.0422282 |
++----------------------------------+--------------+

@@ -315,7 +315,8 @@ def plot_steer_distributions_by_timestep(predictions, past_steering, future_stee
                         Y = None
                     #Y = Y / 10
                     if Y is not None:
-                        ax.plot(X, Y, c = 'red', alpha=(t+1)/30)
+                        #ax.plot(X, Y, c = 'red', alpha=(t+1)/30)
+                        ax.plot(X, Y, c = 'red', alpha=(30-t)/30)
                     
                     #ax.vlines(mean, ymin=0, ymax=1, colors=colors[t], linestyles='--', label='Predicted Sequence ' + str(seq_idx+1))
                     
@@ -393,8 +394,9 @@ def plot_acceleration_distributions_by_timestep(predictions, past_acceleration, 
                     # Normalize the PDF
                     Y = Y / np.sum(Y) 
 
-                    ax.plot(X, Y, c = 'red', alpha=(t+1)/30)
-                    
+                    #ax.plot(X, Y, c = 'red', alpha=(t+1)/30)
+                    ax.plot(X, Y, c = 'red', alpha=(30-t)/30)
+
                     #ax.vlines(mean, ymin=0, ymax=1, colors=colors[t], linestyles='--', label='Predicted Sequence ' + str(seq_idx+1))
                     
             ax.vlines(mean_future_ste, ymin=0, ymax=0.1, colors='blue', linestyles='-', label='Ground Truth')
