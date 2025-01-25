@@ -1,5 +1,5 @@
-from Data_Curation.Point import Point
-from Data_Curation.config import config
+from Data_Curator.Point import Point
+from Data_Curator.config import config
 
 class SequenceProcessor:
     def __init__(self, window_size, prediction_horizon, reference_points):

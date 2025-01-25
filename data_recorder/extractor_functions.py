@@ -4,6 +4,14 @@ def extract_steering_data(msg):
     return {"timestamp_sec": msg.stamp.sec,
             "timestamp_ns": msg.stamp.nanosec,
             "steering_angle": msg.steering_tire_angle}
+            
+def extract_control_data(msg):
+    return {"timestamp_sec": msg.stamp.sec,
+            "timestamp_ns": msg.stamp.nanosec,
+            "steering_angle": msg.lateral.steering_tire_angle,
+            "speed": msg.longitudinal.speed,
+            "acceleration": msg.longitudinal.acceleration,
+            "jerk": msg.longitudinal.jerk}
 
 def extract_velocity_data(msg):
     return {"timestamp_sec": msg.header.stamp.sec,

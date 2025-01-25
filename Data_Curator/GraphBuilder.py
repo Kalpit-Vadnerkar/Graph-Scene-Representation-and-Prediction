@@ -1,5 +1,5 @@
 import networkx as nx
-from Data_Curation.Point import Point
+from Data_Curator.Point import Point
 
 class GraphBuilder:
     def __init__(self, map_data, route, min_dist_between_node, connection_threshold, max_nodes, min_nodes):

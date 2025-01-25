@@ -3,6 +3,7 @@ from rclpy.node import Node
 from rosbag2_py import SequentialWriter, StorageOptions, ConverterOptions, TopicMetadata
 from autoware_planning_msgs.msg import LaneletRoute
 from autoware_auto_vehicle_msgs.msg import SteeringReport, VelocityReport
+from autoware_auto_control_msgs.msg import AckermannControlCommand
 from tf2_msgs.msg import TFMessage
 from autoware_auto_perception_msgs.msg import TrackedObjects, TrafficSignalArray
 from autoware_auto_mapping_msgs.msg import HADMapBin
@@ -61,6 +62,7 @@ def make_callback(topic_name, data_extractor=None):
 
 topics_to_record = {
     "/vehicle/status/steering_status": SteeringReport,
+    "/system/emergency/control_cmd": AckermannControlCommand,
     "/vehicle/status/velocity_status": VelocityReport,
     "/tf": TFMessage,
     "/perception/object_recognition/tracking/objects": TrackedObjects,
@@ -73,6 +75,8 @@ for topic, msg_type in topics_to_record.items():
         data_extractor = None
         if topic == "/vehicle/status/steering_status":
             data_extractor = extract_steering_data
+        elif topic == "/system/emergency/control_cmd": 
+            data_extractor = extract_control_data
         elif topic == "/vehicle/status/velocity_status": 
             data_extractor = extract_velocity_data
         elif topic == "/perception/object_recognition/tracking/objects": 

@@ -1,6 +1,6 @@
 import os
-from Data_Curation.DataProcessor import DataProcessor
-from Data_Curation.config import config
+from Data_Curator.DataProcessor import DataProcessor
+from Data_Curator.config import config
 from tqdm import tqdm
 
 user_folder = input("Please provide folder name: ")

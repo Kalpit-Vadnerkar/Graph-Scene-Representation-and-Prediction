@@ -1,7 +1,7 @@
 import lanelet2
 import json
 import os
-from Data_Curation.config import config
+from Data_Curator.config import config
 
 class MapProcessor:
     def __init__(self):
