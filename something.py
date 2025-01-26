@@ -1,9 +1,16 @@
 import rclpy
 from Data_Curator.config import Config
-from Data_Curator.MapProcessor import MapProcessor
+from model_config import CONFIG
+
 from Observer.ROSRecorder import ROSObserver, StreamObserver
 from Observer.MessageCleaner import MessageCleaner
 from Observer.DataStreamer import DataStreamer
+
+from State_Estimator.MapProcessor import MapProcessor
+from State_Estimator.SequenceProcessor import SequenceProcessor
+from State_Estimator.StateEstimator import StateEstimator, SequenceProcessor
+from Digital_Twin.DigitalTwin import DigitalTwin
+
 
 ####################################################################################
 ########################## OFFLINE MODE ############################################
@@ -28,16 +35,21 @@ from Observer.DataStreamer import DataStreamer
 
 
 def initialize_streaming():
-    # Initialize ROS node
     rclpy.init()
+    config = Config()
     
-    config = Config()  # Your config class
-    map_processor = MapProcessor()
-    observer = StreamObserver(stream_mode=True)
-    streamer = DataStreamer(config, map_processor)
-    observer.set_data_streamer(streamer)
+    observer = StreamObserver()
+    cleaner = MessageCleaner(stream_mode=True)
+    streamer = DataStreamer(config)
+    observer.set_components(cleaner, streamer)
+
+    estimator = StateEstimator(config)
+
+
+    digital_twin = DigitalTwin(CONFIG)
+
+    observer.attach(estimator, digital_twin)
     
-    # Initialize ROS node spin 
     rclpy.spin(observer)
     observer.destroy_node()
     rclpy.shutdown()

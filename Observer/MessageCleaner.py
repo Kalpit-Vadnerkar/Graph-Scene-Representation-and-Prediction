@@ -181,13 +181,21 @@ class MessageCleaner:
         if not all(field in current_data for field in required_fields):
             return None
 
-        # Get reference timestamp from TF data
-        reference_timestamp = current_data['/tf'].get('timestamp_sec')
+        # Validate TF data
+        tf_data = current_data['/tf']
+        if isinstance(tf_data, list):
+            if tf_data[0] == 'Transform not found':
+                return None
+        elif isinstance(tf_data, dict):
+            reference_timestamp = tf_data.get('timestamp_sec')
+
         if reference_timestamp is None:
             return None
             
         # Verify all topics have matching timestamps
         for topic, data in current_data.items():
+            if topic == '/tf':
+                continue
             timestamp = data.get('timestamp_sec')
             if timestamp is None or timestamp != reference_timestamp:
                 return None

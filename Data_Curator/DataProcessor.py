@@ -2,12 +2,12 @@ import os
 import pickle
 import math
 from tqdm import tqdm
-from Data_Curator.MapProcessor import MapProcessor
-from Data_Curator.SequenceProcessor import SequenceProcessor
+from State_Estimator.MapProcessor import MapProcessor
+from State_Estimator.SequenceProcessor import SequenceProcessor
 from Data_Curator.SequenceAugmenter import SequenceAugmenter
-from Data_Curator.GraphBuilder import GraphBuilder
+from State_Estimator.GraphBuilder import GraphBuilder
 from Data_Curator.DataReader import DataReader
-from config import config
+from Data_Curator.config import config
 
 class DataProcessor:
     def __init__(self, config):

@@ -1,64 +1,53 @@
 from Data_Curator.Point import Point
+from State_Estimator.MapProcessor import MapProcessor
+from State_Estimator.GraphBuilder import GraphBuilder
+from State_Estimator.SequenceProcessor import SequenceProcessor
 
 class StateEstimator:
-    def __init__(self, window_size, reference_points, graph_builder):
-        self.window_size = window_size
-        self.reference_points = reference_points
-        self.graph_builder = graph_builder
-        
-    def extract_ego_data(self, data_dict):
-        ego_pos = Point.convert_coordinate_frame(
-            data_dict['ego']['position']["x"], 
-            data_dict['ego']['position']["y"], 
-            self.reference_points
+    def __init__(self, config):
+        self.config = config
+        self.map_processor = MapProcessor()
+        self.sequence_processor = SequenceProcessor(
+            config.PAST_TRAJECTORY,
+            config.PREDICTION_HORIZON,
+            config.REFERENCE_POINTS
         )
-        
-        ego_vel = Point(data_dict['ego']['velocity']["longitudinal"], 
-                       data_dict['ego']['velocity']["lateral"])
-        
-        return {
-            'position': ego_pos,
-            'velocity': ego_vel,
-            'orientation': data_dict['ego']['orientation'],
-            'steering': data_dict['ego']['steering'],
-            'acceleration': data_dict['ego']['acceleration'],
-            'yaw_rate': data_dict['ego']['velocity']["yaw_rate"]
-        }
+        self.graph_builder = None
+        self.route = None
+        self._initialize()
 
-    def process_timestep(self, data_dict, G, x_min, x_max, y_min, y_max):
-        ego_data = self.extract_ego_data(data_dict)
-        objects = self.extract_object_data(data_dict)
-        
-        scaled_ego_position = self.scale_position(ego_data['position'], x_min, x_max, y_min, y_max)
-        scaled_objects = [self.scale_object(obj, x_min, x_max, y_min, y_max) for obj in objects]
-        
-        object_distance = self.closest_object_distance(scaled_ego_position, scaled_objects)
-        traffic_light_detected = self.check_traffic_light_detected(G, scaled_ego_position)
-        
-        return {
-            'position': scaled_ego_position,
-            'velocity': self.scale_velocity(ego_data['velocity']),
-            'steering': self.scale_steering(ego_data['steering']),
-            'acceleration': self.scale_acceleration(ego_data['acceleration']),
-            'object_distance': object_distance,
-            'traffic_light_detected': traffic_light_detected,
-            'objects': scaled_objects
-        }
+    def _initialize(self):
+        self.graph_builder = GraphBuilder(
+            self.map_processor.map_data,
+            self.route,
+            self.config.MIN_DIST_BETWEEN_NODE,
+            self.config.CONNECTION_THRESHOLD,
+            self.config.MAX_NODES,
+            self.config.MIN_NODES
+        )
+
+    def update_route(self, route):
+        self.route = route
+        self.map_processor.route = route
+        self._initialize()
 
     def estimate_state(self, data_buffer, timestamp):
-        if len(data_buffer) < self.window_size:
+        if not self.route or len(data_buffer) < self.config.PAST_TRAJECTORY:
             return None
-            
-        initial_position = self.extract_ego_data(data_buffer[0])['position']
-        final_position = self.extract_ego_data(data_buffer[-1])['position']
+
+        initial_position = self.sequence_processor.extract_ego_data(data_buffer[0])['position']
+        final_position = self.sequence_processor.extract_ego_data(data_buffer[-1])['position']
         
         G = self.graph_builder.create_expanded_graph(initial_position, final_position)
-        G, x_min, x_max, y_min, y_max = self.scale_graph(G)
+        G, x_min, x_max, y_min, y_max = self.sequence_processor.scale_graph(G)
         
         past_sequence = []
-        for data in data_buffer[-self.window_size:]:
+        for data in data_buffer[-self.config.PAST_TRAJECTORY:]:
             past_sequence.append(
-                self.process_timestep(data, G, x_min, x_max, y_min, y_max)
+                self.sequence_processor.process_timestep(
+                    data, G, x_min, x_max, y_min, y_max, 
+                    is_past=True  # Added parameter for SequenceProcessor compatibility
+                )
             )
         
         return {

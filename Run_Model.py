@@ -7,6 +7,7 @@ from Visualization.probability_viz import plot_probabilities, plot_probabilities
 from Visualization.trajectory_results import position_result_metrics
 from Model_Testing.ResidualDataset import ResidualDataset
 from Model_Testing.ResidualClassifier import ResidualClassifier
+from Risk_Assessment import display_classification_results, analyze_residual_impact, merge_dataset_statistics, display_merged_dataset_statistics
 from model_config import CONFIG
 
 import argparse
@@ -85,8 +86,7 @@ def train(config):
 
 def visualize(config):
     """Visualize predictions from a trained model."""
-    device = config['device']
-    model = load_model(config)
+    model = load_model(config).to(config['device'])
     for condition in config['conditions']:
         data_folder = os.path.join(config['test_data_folder'], condition)
         dataset = TrajectoryDataset(data_folder, 
@@ -149,140 +149,18 @@ def visualize(config):
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 
-def merge_dataset_statistics(stats_by_condition: Dict[str, Any]) -> Dict[str, Any]:
-    """Merge statistics from all conditions into a single summary."""
-    total_samples = 0
-    combined_distribution = defaultdict(int)
-    num_features = None
-    
-    for condition, stats in stats_by_condition.items():
-        if "error" in stats:
-            continue
-            
-        total_samples += stats["total_samples"]
-        for label, count in stats["label_distribution"].items():
-            combined_distribution[label] += count
-            
-        if num_features is None:
-            num_features = stats["num_features"]
-    
-    return {
-        "total_samples": total_samples,
-        "label_distribution": dict(combined_distribution),
-        "num_features": num_features
-    }
-
-def display_classification_results(results: Dict[str, Any], classification_type: str) -> None:
-    """Display classification results with improved formatting."""
-    print(f"\n{'='*20} {classification_type} Classification Results {'='*20}")
-    
-    # Format cross-validation results with ± for standard deviations
-    cv_metrics = []
-    for metric, value in results['cv_results'].items():
-        if metric.startswith('mean_'):
-            base_metric = metric[5:]  # Remove 'mean_' prefix
-            std_metric = f'std_{base_metric}'
-            if std_metric in results['cv_results']:
-                formatted_value = f"{value:.3f} ± {results['cv_results'][std_metric]:.3f}"
-                cv_metrics.append([base_metric.replace('_', ' ').title(), formatted_value])
-    
-    print("\nCross-validation Results (Training Set):")
-    print(tabulate(cv_metrics, headers=["Metric", "Value (mean ± std)"], tablefmt="grid"))
-    
-    # Data split information
-    split_data = [
-        ["Train set size", results['data_split']['train_size']],
-        ["Test set size", results['data_split']['test_size']]
-    ]
-    print("\nData Split Information:")
-    print(tabulate(split_data, headers=["Split", "Size"], tablefmt="grid"))
-    
-    # Test set results
-    print("\nTest Set Results:")
-    print(results['test_results']['classification_report'])
-
-    # Confusion Matrix Visualization
-    confusion_mat = results['test_results']['confusion_matrix']
-    class_labels = list(results['test_results']['classification_report'].split('\n')[0].split())
-    
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(confusion_mat, annot=True, fmt='d', cmap='Blues',
-                xticklabels=class_labels if len(class_labels) > 1 else ['Negative', 'Positive'],
-                yticklabels=class_labels if len(class_labels) > 1 else ['Negative', 'Positive'])
-    plt.title(f'{classification_type} Classification Confusion Matrix')
-    plt.ylabel('True Label')
-    plt.xlabel('Predicted Label')
-    plt.tight_layout()
-    plt.savefig(f'predictions/{classification_type.lower()}_confusion_matrix.png')
-    plt.close()
-    
-    # Feature importance
-    print("\nTop 10 Most Important Features:")
-    print(tabulate(
-        results['feature_importance'].head(10).values,
-        headers=results['feature_importance'].columns,
-        tablefmt="grid"
-    ))
-
-def display_merged_dataset_statistics(train_stats: Dict[str, Any], test_stats: Dict[str, Any]) -> None:
-    """Display merged statistics for both training and test sets."""
-    print("\n=== Dataset Statistics ===")
-    
-    # Basic stats table
-    basic_stats = [
-        ["Total Training Samples", train_stats["total_samples"]],
-        ["Total Test Samples", test_stats["total_samples"]],
-        ["Number of Features", train_stats["num_features"]]
-    ]
-    print(tabulate(basic_stats, headers=["Metric", "Value"], tablefmt="grid"))
-    
-    # Create side-by-side pie charts for train/test distribution
-    if train_stats["label_distribution"] and test_stats["label_distribution"]:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-        
-        # Training set distribution
-        train_labels = list(train_stats["label_distribution"].keys())
-        train_sizes = list(train_stats["label_distribution"].values())
-        ax1.pie(train_sizes, labels=train_labels, autopct='%1.1f%%')
-        ax1.set_title("Training Set Distribution")
-        
-        # Test set distribution
-        test_labels = list(test_stats["label_distribution"].keys())
-        test_sizes = list(test_stats["label_distribution"].values())
-        ax2.pie(test_sizes, labels=test_labels, autopct='%1.1f%%')
-        ax2.set_title("Test Set Distribution")
-        
-        plt.savefig('predictions/dataset_distributions.png')
-        plt.close()
-    
-    # Print label distribution in table format
-    print("\nLabel Distribution:")
-    distribution_data = []
-    for label in train_stats["label_distribution"]:
-        distribution_data.append([
-            label,
-            train_stats["label_distribution"][label],
-            test_stats["label_distribution"][label],
-            train_stats["label_distribution"][label] + test_stats["label_distribution"][label]
-        ])
-    
-    print(tabulate(distribution_data, 
-                  headers=["Label", "Train Count", "Test Count", "Total"],
-                  tablefmt="grid"))
-
-
-def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
-    """Modified fault detection function with improved result visualization."""
+def run_fault_detection(config: Dict[str, Any]) -> Tuple[Dict[str, Any], Tuple[Dict[str, Any], Dict[str, Any]], Dict[str, Dict[str, float]]]:
+    """Run fault detection with residual impact analysis."""
+    model = load_model(config).to(config['device'])
     dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
     classifier = ResidualClassifier(test_size=0.2)
-    model = load_model(config).to(config['device'])
     
-    combined_stats = {}
+    # Store datasets and predictions
+    datasets_by_condition = {}
+    predictions_by_condition = {}
     
-    # Process each condition
     for condition in config['conditions']:
         print(f"\nProcessing condition: {condition}")
-        
         data_folder = os.path.join(config['test_data_folder'], condition)
         dataset = TrajectoryDataset(
             data_folder,
@@ -293,25 +171,23 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
         )
         
         predictions = make_predictions(model, dataset, config)
+        
+        # Store for reuse
+        datasets_by_condition[condition] = dataset
+        predictions_by_condition[condition] = predictions
+        
         dataset_processor.process_sequence(dataset=dataset, predictions=predictions, condition=condition)
     
-    # Get dataset statistics before classification
-    stats = dataset_processor.get_dataset_statistics()
-    total_features = len(dataset_processor.features)
-    num_features = stats["num_features"] if "num_features" in stats else len(dataset_processor.features[0].keys())
-    
-    print(f"\nTotal features collected across all conditions: {total_features}")
-    
-    if not dataset_processor.features:
-        raise ValueError("No features were generated from the sequences")
-    
-    # Train and evaluate classifier
     classification_results = classifier.train_and_evaluate(
         features=dataset_processor.features,
         labels=dataset_processor.labels,
     )
     
-    # Create train/test statistics with proper structure
+    # Create statistics
+    stats = dataset_processor.get_dataset_statistics()
+    total_features = len(dataset_processor.features)
+    num_features = stats["num_features"] if "num_features" in stats else len(dataset_processor.features[0].keys())
+    
     train_stats = {
         "total_samples": classification_results['multi_class']['data_split']['train_size'],
         "num_features": num_features,
@@ -324,12 +200,11 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
         "label_distribution": {}
     }
     
-    # Extract label distribution from classification report
     report_lines = classification_results['multi_class']['test_results']['classification_report'].split('\n')
-    for line in report_lines[1:-5]:  # Skip header and footer lines
+    for line in report_lines[1:-5]:
         if line.strip():
             parts = line.split()
-            if len(parts) >= 5:  # Ensure line has enough parts
+            if len(parts) >= 5:
                 label = parts[0]
                 support = int(parts[4])
                 total = train_stats["total_samples"] + test_stats["total_samples"]
@@ -338,14 +213,14 @@ def run_fault_detection(config: Dict[str, Any]) -> Dict[str, Any]:
                 
                 train_stats["label_distribution"][label] = train_count
                 test_stats["label_distribution"][label] = test_count
+
+    residual_impact = analyze_residual_impact(predictions_by_condition, datasets_by_condition, config)
     
-    # Display merged statistics and classification results
     display_merged_dataset_statistics(train_stats, test_stats)
     display_classification_results(classification_results['multi_class'], "Multi-class")
     display_classification_results(classification_results['binary'], "Binary")
     
-    return classification_results, (train_stats, test_stats)
-
+    return classification_results, (train_stats, test_stats), residual_impact
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
@@ -363,7 +238,7 @@ def main():
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode == 'evaluate':
-       results, (train_stats, test_stats) = run_fault_detection(CONFIG)
+       results, stats, residual_impact = run_fault_detection(CONFIG)
 
 if __name__ == "__main__":
     main()

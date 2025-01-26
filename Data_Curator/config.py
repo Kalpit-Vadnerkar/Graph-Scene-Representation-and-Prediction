@@ -9,7 +9,7 @@ class Config:
         self.MIN_DIST_BETWEEN_NODE = 5
         self.CONNECTION_THRESHOLD = 5
         self.MAX_NODES = 300
-        self.MIN_NODES = 150
+        self.MIN_NODES = 256
         
         # Sequence processing
         self.PAST_TRAJECTORY = 30

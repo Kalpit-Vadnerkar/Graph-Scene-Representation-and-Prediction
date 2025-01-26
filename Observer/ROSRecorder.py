@@ -1,13 +1,19 @@
-from rclpy.node import Node
 from autoware_planning_msgs.msg import LaneletRoute
 from autoware_auto_vehicle_msgs.msg import SteeringReport, VelocityReport
 from autoware_auto_control_msgs.msg import AckermannControlCommand
-from tf2_msgs.msg import TFMessage
 from autoware_auto_perception_msgs.msg import TrackedObjects, TrafficSignalArray
+
+from rclpy.node import Node
+from tf2_msgs.msg import TFMessage
+
 import json
 import os
 from Observer.MessageExtractor import MessageExtractor
 from Observer.MessageCleaner import MessageCleaner
+from Observer.DataStreamer import DataStreamer
+
+from State_Estimator.StateEstimator import StateEstimator
+from Digital_Twin.DigitalTwin import DigitalTwin
 
 class ROSObserver(Node):
     def __init__(self, output_folder = None):
@@ -80,36 +86,68 @@ class ROSObserver(Node):
         return callback
 
 class StreamObserver(ROSObserver):
-    def __init__(self, output_folder=None, stream_mode=True):
-        self.stream_mode = stream_mode
+    def __init__(self, output_folder=None):
+        self._callbacks = {}  # Cache callbacks
+
         super().__init__(output_folder)
+    
         self.current_data = {}
         self.data_streamer = None
-        self.message_cleaner = MessageCleaner(stream_mode=True)
-        print("Observer running in STREAMING mode")
+        self.message_cleaner = None
+        self.estimator = None
+        self.digital_twin = None
     
-    def set_data_streamer(self, streamer):
+    def set_components(self, cleaner: MessageCleaner, streamer: DataStreamer):
+        self.message_cleaner = cleaner
         self.data_streamer = streamer
+
+    def attach(self, estimator: StateEstimator, digital_twin: DigitalTwin):
+        self.estimator = estimator   
+        self.digital_twin = digital_twin 
+
+
+    def _route_callback(self, msg):
+        """Handle route message"""
+        route_data = self.data_extractor.ensure_json_serializable(
+            self.data_extractor.extract_route(msg)
+        )
+        route = [primitive['id'] for segment in route_data['route_segments'] 
+                for primitive in segment['primitives'] 
+                if primitive['primitive_type'] == 'lane']
+        
+        self.estimator.update_route(route)
+        print("Route Updated!")
+    
     
     def _create_callback(self, topic_name, extractor):
-        if self.stream_mode:
-            def callback(msg):
-                data_to_write = msg
-                if extractor:
-                    data_to_write = self.data_extractor.ensure_json_serializable(extractor(msg))
-                self.current_data[topic_name] = data_to_write
-                if self._check_data_complete() and self.data_streamer:
-                    # Clean the data before processing
-                    cleaned_data = self.message_cleaner.clean_data(self.current_data)
-                    if cleaned_data:  # Only process if data passes cleaning
-                        self.data_streamer.process_current_data(cleaned_data)
-                    self.current_data = {}
-        else:
-            return super()._create_callback(topic_name, extractor)
-        
+        if topic_name in self._callbacks:
+            return self._callbacks[topic_name]
+            
+        def callback(msg):
+            data = self.data_extractor.ensure_json_serializable(extractor(msg)) if extractor else msg
+            self.current_data[topic_name] = data
+            
+            if len(self.current_data) == len(self.topics_to_record):
+                self._process_complete_data()
+                self.current_data.clear()
+                
+        self._callbacks[topic_name] = callback
         return callback
-    
-    def _check_data_complete(self):
-        required_topics = set(self.topics_to_record.keys())
-        current_topics = set(self.current_data.keys())
-        return required_topics.issubset(current_topics)
+        
+    def _process_complete_data(self):
+        if not all([self.data_streamer, self.estimator, self.digital_twin]):
+            return
+            
+        cleaned_data = self.message_cleaner.clean_data(self.current_data)
+        if not cleaned_data:
+            return
+            
+        data_buffer, timestamp = self.data_streamer.process_current_data(cleaned_data)
+        if not (data_buffer and timestamp):
+            return
+            
+        state = self.estimator.estimate_state(data_buffer, timestamp)
+        if not state:
+            return
+        
+        self.digital_twin.update_state(state)

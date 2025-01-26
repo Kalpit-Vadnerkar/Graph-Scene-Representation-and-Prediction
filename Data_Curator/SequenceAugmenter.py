@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from Data_Curation.config import config
+from Data_Curator.config import config
 
 class SequenceAugmenter:
     def __init__(self, sequence):

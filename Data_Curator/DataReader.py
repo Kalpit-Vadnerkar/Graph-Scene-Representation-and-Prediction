@@ -2,16 +2,17 @@ import os
 import json
 
 class DataReader:
-    def __init__(self, folder_path):
-        self.folder_path = folder_path
-        self.file_paths = {
+    def __init__(self, folder_path = None):
+        if folder_path:
+            self.folder_path = folder_path
+            self.file_paths = {
             'tf': os.path.join(folder_path, '_tf.json'),
             'objects': os.path.join(folder_path, '_perception_object_recognition_tracking_objects.json'),
             'traffic_lights': os.path.join(folder_path, '_perception_traffic_light_recognition_traffic_signals.json'),
             'velocity': os.path.join(folder_path, '_vehicle_status_velocity_status.json'),
             #'steering': os.path.join(folder_path, '_vehicle_status_steering_status.json'),
             'control': os.path.join(folder_path, '_system_emergency_control_cmd.json')
-        }
+            }
 
     def _process_objects(self, objects_data):
         return [{

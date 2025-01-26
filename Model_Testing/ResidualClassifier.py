@@ -34,7 +34,7 @@ class ResidualClassifier:
         
         self.label_encoder = LabelEncoder()
     
-    def prepare_data(self, features: List[Dict[str, float]]) -> tuple[np.ndarray, list[str]]:
+    def prepare_data(self, features: List[Dict[str, float]]):
         df = pd.DataFrame(features)
         
         # Extract feature columns
@@ -43,14 +43,14 @@ class ResidualClassifier:
         
         return df[feature_cols].values, feature_cols
     
-    def create_binary_labels(self, labels: List[str]) -> List[str]:
+    def create_binary_labels(self, labels: List[str]):
         """Convert multi-class labels to binary (Nominal vs Fault)"""
         return ['Nominal' if label == 'Nominal' else 'Fault' for label in labels]
     
     def split_data(self, 
                    X: np.ndarray, 
                    y: np.ndarray,
-                   is_binary: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+                   is_binary: bool = False):
         """Split data into train and test sets by splitting each condition separately"""
         # Create a DataFrame with all relevant information
         df = pd.DataFrame({
@@ -92,7 +92,7 @@ class ResidualClassifier:
     
     def train_and_evaluate(self, 
                           features: List[Dict[str, float]],
-                          labels: List[str]) -> Dict[str, Any]:
+                          labels: List[str]):
         """Train and evaluate using both multi-class and binary classification"""
         
         # Prepare data
@@ -120,7 +120,7 @@ class ResidualClassifier:
                                  X: np.ndarray,
                                  y: np.ndarray,
                                  feature_names: List[str],
-                                 is_binary: bool) -> Dict[str, Any]:
+                                 is_binary: bool):
         """Helper method to train and evaluate a single classification task"""
         
         #print(f'\nFeatures used: {feature_names}')

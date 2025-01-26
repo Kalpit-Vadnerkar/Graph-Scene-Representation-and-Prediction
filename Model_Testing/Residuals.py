@@ -59,7 +59,7 @@ class ShewartResidual(BaseResidual):
         if len(self.buffer) > self.window_size:
             self.buffer.pop(0)
     
-    def calculate_control_limits(self) -> tuple[float, float, float]:
+    def calculate_control_limits(self):
         """
         Calculate control limits based on current buffer.
         

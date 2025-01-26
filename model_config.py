@@ -3,7 +3,7 @@ import torch
 CONFIG = {
     'graph_sizes': {
         'node_features': 4,
-        'number_of_nodes': 150
+        'number_of_nodes': 256
     },
 
     'feature_sizes': {
@@ -14,7 +14,7 @@ CONFIG = {
         'object_distance': 1,
         'traffic_light_detected': 1
     },
-    'num_epochs': 300,
+    'num_epochs': 3,
     'batch_size': 128,
     #'hidden_size': 128, # LSTM
     'hidden_size': 256, # GAT
@@ -29,7 +29,7 @@ CONFIG = {
     'acceleration_scaling_factor': 10,
     'train_data_folder': "Train_Dataset/Sequence_Dataset", 
     'test_data_folder': "Test_Dataset/Sequence_Dataset",
-    'model_path': 'models/graph_attention_network.pth', #GAT
+    'model_path': 'models/graph_attention_network_test.pth', #GAT
     #'model_path': 'models/lstm_trajectory_model.pth', #LSTM
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     'num_samples': 50,

@@ -1,44 +1,31 @@
-from Data_Curator.SequenceProcessor import SequenceProcessor
-from Data_Curator.GraphBuilder import GraphBuilder
 from Data_Curator.DataReader import DataReader
 
 from collections import defaultdict
 import numpy as np
 
 class DataStreamer:
-    def __init__(self, config, map_processor):
+    def __init__(self, config):
         self.config = config
-        self.map_processor = map_processor
-        self.graph_builder = None
-        self.sequence_processor = SequenceProcessor(
-            config.PAST_TRAJECTORY, 
-            config.PREDICTION_HORIZON,
-            config.REFERENCE_POINTS
-        )
         self.data_points_per_second = 10
         self.topic_buffers = defaultdict(list)
         self.current_timestamp = None
         self.points_in_current_second = 0
-        
-    def initialize_graph_builder(self, route):
-        self.map_processor.route = route
-        self.graph_builder = GraphBuilder(
-            self.map_processor.map_data,
-            self.map_processor.get_route(),
-            self.config.MIN_DIST_BETWEEN_NODE,
-            self.config.CONNECTION_THRESHOLD,
-            self.config.MAX_NODES,
-            self.config.MIN_NODES
-        )
-    
+        self.data_buffer = []
+
     def process_current_data(self, current_data):
-        timestamp_sec = current_data['/tf'].get('timestamp_sec')
+        '''
+        Input -> Cleaned ROS Message Stream
+        Output -> Structured Timestamp Data used for State Estimation
+        '''
+        tf_data = current_data['/tf']
+        timestamp_sec = tf_data[0].get('timestamp_sec') if isinstance(tf_data, list) else tf_data.get('timestamp_sec')
+        
         if timestamp_sec is None:
             return
             
         if self.current_timestamp is None:
             self.current_timestamp = timestamp_sec
-                
+            
         if timestamp_sec > self.current_timestamp:
             if self.points_in_current_second < self.data_points_per_second:
                 last_point = {topic: buffer[-1] for topic, buffer in self.topic_buffers.items()}
@@ -54,17 +41,27 @@ class DataStreamer:
             
             self.current_timestamp = timestamp_sec
             self.points_in_current_second = 0
-                
+            
         for topic, data in current_data.items():
             self.topic_buffers[topic].append(data)
         self.points_in_current_second += 1
         
-        # Process if buffer is full
-        if all(len(buffer) >= self.config.PAST_TRAJECTORY for buffer in self.topic_buffers.values()):
-            processed_data = self._process_timestep_data(current_data)
-            if processed_data:
-                self.sequence_processor.process_timestep(processed_data)
+        processed_data = self._process_timestep_data(current_data)
+        if processed_data:
+            self.data_buffer.append(processed_data)
             
-            # Remove oldest point from each buffer
-            for topic in self.topic_buffers:
-                self.topic_buffers[topic].pop(0)
+            if len(self.data_buffer) > self.config.PAST_TRAJECTORY:
+                self.data_buffer.pop(0)
+                
+            return self.data_buffer, timestamp_sec
+        return None, None
+    
+    def _process_timestep_data(self, data):
+        reader = DataReader(None)
+        return reader._process_timestamp_data(
+            {'data': data.get('/tf', {})},
+            {'data': data.get('/perception/object_recognition/tracking/objects', {})},
+            {'data': data.get('/perception/traffic_light_recognition/traffic_signals', {})},
+            {'data': data.get('/vehicle/status/velocity_status', {})},
+            {'data': data.get('/system/emergency/control_cmd', {})}
+        )
