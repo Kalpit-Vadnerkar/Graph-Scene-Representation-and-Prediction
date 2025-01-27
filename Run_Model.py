@@ -106,8 +106,8 @@ def visualize(config):
         past_acceleration = []
         future_acceleration = []
         all_graph_bounds = []
-        #for i in range(CONFIG['sample_start_index'], CONFIG['sample_start_index'] + CONFIG['num_samples']):
-        for i in range(len(dataset)):
+        for i in range(CONFIG['sample_start_index'], CONFIG['sample_start_index'] + CONFIG['num_samples']):
+        #for i in range(len(dataset)):
             past, future, graph, graph_bounds = dataset[i]
             
             past_positions.append(past['position'].numpy())

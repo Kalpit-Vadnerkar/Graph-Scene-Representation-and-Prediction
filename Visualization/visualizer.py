@@ -44,7 +44,7 @@ def plot_graph_and_trajectories(sequence, scaling_factor, predicted_future, ax):
     pred_positions = np.array([scaler.restore_mean(x, y) for x, y in predicted_future['position_mean']])
     pred_variances = np.array([scaler.restore_variance(x, y) for x, y in predicted_future['position_var']])
 
-    print(f"Position Variances: {predicted_future['position_var']}")
+    #print(f"Position Variances: {predicted_future['position_var']}")
     #print(f"Velocity Variances: {predicted_future['velocity_var']}")
     #print(f"Steering Variances: {predicted_future['steering_var']}")
     #print(f"Acceleration Variances: {predicted_future['acceleration_var']}")

@@ -1,4 +1,5 @@
 import os
+import torch
 
 class Config:
     def __init__(self):
@@ -9,7 +10,7 @@ class Config:
         self.MIN_DIST_BETWEEN_NODE = 5
         self.CONNECTION_THRESHOLD = 5
         self.MAX_NODES = 300
-        self.MIN_NODES = 256
+        self.MIN_NODES = 150
         self.NODE_FEATURES = 4
         
         # Sequence processing
@@ -38,6 +39,12 @@ class Config:
         self.MIN_STEERING = -0.5  # radians, adjust as needed
         self.MIN_ACCELERATION = -1.0 # m/s^2
         self.MAX_ACCELERATION = 1.0 # m/s^2
+
+        # Prediction Model values
+        self.MAX_GRAPH_NODES = 150
+        self.MODEL_PATH = 'models/graph_attention_network.pth'   #GAT
+        #self.model_path = 'models/lstm_trajectory_model.pth'        #LSTM
+        self.DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
     def set_folders(self, user_folder):
         self.INPUT_FOLDER = os.path.join(user_folder, "Cleaned_Dataset")

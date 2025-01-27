@@ -79,10 +79,10 @@ class TrajectoryDataset(Dataset):
             
         # Process graph data
         G = sequence['graph']
-        node_features = torch.zeros((config.MIN_NODES, config.NODE_FEATURES), dtype=torch.float32)
+        node_features = torch.zeros((config.MAX_GRAPH_NODES, config.NODE_FEATURES), dtype=torch.float32)
         #node_features = torch.zeros((150, 4), dtype=torch.float32)
         for node, data in G.nodes(data=True):
-            if node < config.MIN_NODES:  # Ensure we don't exceed config.MIN_NODES nodes
+            if node < config.MAX_GRAPH_NODES:  # Ensure we don't exceed config.MAX_GRAPH_NODES nodes
                 node_features[node] = torch.tensor([
                     data['x'] * self.position_scaling_factor,
                     data['y'] * self.position_scaling_factor,
@@ -92,7 +92,7 @@ class TrajectoryDataset(Dataset):
         
         # Create adjacency matrix
         adj_matrix = nx.to_numpy_array(G)
-        adj_matrix = adj_matrix[:config.MIN_NODES, :config.MIN_NODES]  # Ensure we don't exceed config.MIN_NODES nodes
+        adj_matrix = adj_matrix[:config.MAX_GRAPH_NODES, :config.MAX_GRAPH_NODES]  # Ensure we don't exceed config.MAX_GRAPH_NODES nodes
         adj_matrix = torch.tensor(adj_matrix, dtype=torch.float32)
         
         graph_tensor = {
