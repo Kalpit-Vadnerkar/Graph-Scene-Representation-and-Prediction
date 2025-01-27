@@ -1,5 +1,5 @@
-from Model_Testing.ResidualGenerator import ResidualFeatures
-from Model_Testing.FaultDetectionConfig import (
+from Risk_Assessment.ResidualGenerator import ResidualFeatures
+from Risk_Assessment.FaultDetectionConfig import (
     FEATURE_COMPONENTS,
     STATISTICAL_METRICS,
     RESIDUAL_TYPES

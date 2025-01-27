@@ -11,7 +11,7 @@ from collections import Counter
 
 class ResidualClassifier:
     def __init__(self, 
-                 n_estimators: int = 100,
+                 n_estimators: int = 10,
                  n_splits: int = 10,
                  test_size: float = 0.2,
                  random_state: int = 47):

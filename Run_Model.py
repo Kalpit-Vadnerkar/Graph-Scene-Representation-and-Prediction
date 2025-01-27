@@ -5,10 +5,9 @@ from Prediction_Model.model_utils import load_model, make_predictions, make_limi
 from Visualization.visualizer import visualize_predictions, plot_vel_distributions_by_timestep, plot_steer_distributions_by_timestep, plot_pos_distributions_by_timestep, plot_acceleration_distributions_by_timestep
 from Visualization.probability_viz import plot_probabilities, plot_probabilities2
 from Visualization.trajectory_results import position_result_metrics
-from Model_Testing.ResidualDataset import ResidualDataset
-from Model_Testing.ResidualClassifier import ResidualClassifier
-from Risk_Assessment import display_classification_results, analyze_residual_impact, merge_dataset_statistics, display_merged_dataset_statistics
+from Risk_Assessment.RiskManager import RiskAssessmentManager
 from model_config import CONFIG
+
 
 import argparse
 import torch
@@ -149,78 +148,57 @@ def visualize(config):
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 
-def run_fault_detection(config: Dict[str, Any]) -> Tuple[Dict[str, Any], Tuple[Dict[str, Any], Dict[str, Any]], Dict[str, Dict[str, float]]]:
-    """Run fault detection with residual impact analysis."""
+def run_fault_detection(config: Dict[str, Any]) -> None:
+    """Main function to run fault detection analysis"""
     model = load_model(config).to(config['device'])
-    dataset_processor = ResidualDataset(horizon=config['output_seq_len'])
-    classifier = ResidualClassifier(test_size=0.2)
+    manager = RiskAssessmentManager(config)
     
-    # Store datasets and predictions
-    datasets_by_condition = {}
-    predictions_by_condition = {}
+    # Load data and generate predictions once
+    manager.load_data_and_predictions(model)
     
-    for condition in config['conditions']:
-        print(f"\nProcessing condition: {condition}")
-        data_folder = os.path.join(config['test_data_folder'], condition)
-        dataset = TrajectoryDataset(
-            data_folder,
-            position_scaling_factor=config['position_scaling_factor'],
-            velocity_scaling_factor=config['velocity_scaling_factor'],
-            steering_scaling_factor=config['steering_scaling_factor'],
-            acceleration_scaling_factor=config['acceleration_scaling_factor']
-        )
-        
-        predictions = make_predictions(model, dataset, config)
-        
-        # Store for reuse
-        datasets_by_condition[condition] = dataset
-        predictions_by_condition[condition] = predictions
-        
-        dataset_processor.process_sequence(dataset=dataset, predictions=predictions, condition=condition)
+    # Define residual combinations
+    residual_combinations = [
+        ['raw'],
+        ['normalized'],
+        ['kl_divergence'],
+        #['raw', 'normalized'],
+        ['raw', 'kl_divergence'],
+        #['normalized', 'kl_divergence'],
+        ['raw', 'normalized', 'kl_divergence'],
+        ['cusum']
+    ]
     
-    classification_results = classifier.train_and_evaluate(
-        features=dataset_processor.features,
-        labels=dataset_processor.labels,
-    )
+    # Display dataset statistics once using the first combination
+    features, labels = manager.calculate_residuals(residual_combinations[0])
+    manager.display_dataset_statistics(features, labels)
     
-    # Create statistics
-    stats = dataset_processor.get_dataset_statistics()
-    total_features = len(dataset_processor.features)
-    num_features = stats["num_features"] if "num_features" in stats else len(dataset_processor.features[0].keys())
+    # Run classification for all combinations
+    results = manager.run_classification(residual_combinations)
     
-    train_stats = {
-        "total_samples": classification_results['multi_class']['data_split']['train_size'],
-        "num_features": num_features,
-        "label_distribution": {}
-    }
+    # Create performance comparison visualization
+    plot_residual_impact(results)
     
-    test_stats = {
-        "total_samples": classification_results['multi_class']['data_split']['test_size'],
-        "num_features": num_features,
-        "label_distribution": {}
-    }
+def plot_residual_impact(results: Dict[str, Dict[str, float]]):
+    """Create performance comparison plot for different residual combinations"""
+    metrics = ['accuracy', 'f1', 'precision', 'recall']
+    combinations = list(results.keys())
     
-    report_lines = classification_results['multi_class']['test_results']['classification_report'].split('\n')
-    for line in report_lines[1:-5]:
-        if line.strip():
-            parts = line.split()
-            if len(parts) >= 5:
-                label = parts[0]
-                support = int(parts[4])
-                total = train_stats["total_samples"] + test_stats["total_samples"]
-                train_count = int(support * train_stats["total_samples"] / total)
-                test_count = int(support * test_stats["total_samples"] / total)
-                
-                train_stats["label_distribution"][label] = train_count
-                test_stats["label_distribution"][label] = test_count
-
-    residual_impact = analyze_residual_impact(predictions_by_condition, datasets_by_condition, config)
+    plt.figure(figsize=(15, 8))
+    x = np.arange(len(combinations))
+    width = 0.2
     
-    display_merged_dataset_statistics(train_stats, test_stats)
-    display_classification_results(classification_results['multi_class'], "Multi-class")
-    display_classification_results(classification_results['binary'], "Binary")
+    for i, metric in enumerate(metrics):
+        metric_values = [results[combo][metric] for combo in combinations]
+        plt.bar(x + i * width, metric_values, width, label=metric.title())
     
-    return classification_results, (train_stats, test_stats), residual_impact
+    plt.xlabel('Residual Type Combinations')
+    plt.ylabel('Score')
+    plt.title('Impact of Residual Types on Classification Performance')
+    plt.xticks(x + width * 1.5, combinations, rotation=45, ha='right')
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    plt.tight_layout()
+    plt.savefig('predictions/residual_impact_analysis.png', bbox_inches='tight', dpi=300)
+    plt.close()
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
@@ -238,7 +216,7 @@ def main():
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode == 'evaluate':
-       results, stats, residual_impact = run_fault_detection(CONFIG)
+        run_fault_detection(CONFIG)
 
 if __name__ == "__main__":
     main()

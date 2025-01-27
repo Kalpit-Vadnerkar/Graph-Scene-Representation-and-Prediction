@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from scipy.stats import norm
 
-from Model_Testing.FaultDetectionConfig import FEATURE_NAMES, FEATURE_CONFIGS, RESIDUAL_TYPES
-from Model_Testing.Residuals import *
+from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES, FEATURE_CONFIGS, RESIDUAL_TYPES
+from Risk_Assessment.Residuals import *
 
 
 class ResidualOutput(NamedTuple):

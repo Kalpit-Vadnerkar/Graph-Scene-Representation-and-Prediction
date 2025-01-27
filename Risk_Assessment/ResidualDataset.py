@@ -1,6 +1,6 @@
-from Model_Testing.ResidualGenerator import ResidualGenerator, ResidualFeatures
-from Model_Testing.ResidualFeatureExtractor import ResidualFeatureExtractor
-from Model_Testing.FaultDetectionConfig import FEATURE_NAMES
+from Risk_Assessment.ResidualGenerator import ResidualGenerator, ResidualFeatures
+from Risk_Assessment.ResidualFeatureExtractor import ResidualFeatureExtractor
+from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES
 
 from typing import Dict, List, Any
 from torch.utils.data import Dataset, DataLoader
