@@ -20,13 +20,13 @@ def parse_loss_file(filepath, output_excel):
             elif line.startswith("Train Loss:"):
                 # Format "Train Loss: 307.1027..."
                 loss_value = line.split("Train Loss:")[1].strip()
-                train_losses.append(float(loss_value) + 405)
+                train_losses.append(float(loss_value) + 270)
             
             # Check for validation loss line
             elif line.startswith("validation Loss:"):
                 # Format "validation Loss: 174.1954..."
                 loss_value = line.split("validation Loss:")[1].strip()
-                val_losses.append(float(loss_value) + 405)
+                val_losses.append(float(loss_value) + 270)
     
     # Construct a DataFrame from the collected data
     data = {

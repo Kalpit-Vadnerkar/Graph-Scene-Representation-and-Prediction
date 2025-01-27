@@ -14,7 +14,7 @@ CONFIG = {
         'object_distance': 1,
         'traffic_light_detected': 1
     },
-    'num_epochs': 3,
+    'num_epochs': 300,
     'batch_size': 128,
     #'hidden_size': 128, # LSTM
     'hidden_size': 256, # GAT
@@ -29,11 +29,11 @@ CONFIG = {
     'acceleration_scaling_factor': 10,
     'train_data_folder': "Train_Dataset/Sequence_Dataset", 
     'test_data_folder': "Test_Dataset/Sequence_Dataset",
-    'model_path': 'models/graph_attention_network_test.pth', #GAT
+    'model_path': 'models/graph_attention_network_256.pth', #GAT
     #'model_path': 'models/lstm_trajectory_model.pth', #LSTM
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     'num_samples': 50,
     'sample_start_index': 325,
-    'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_IMU', 'Noisy_Lidar']
-    #'conditions': ['Nominal']
+    #'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_IMU', 'Noisy_Lidar']
+    'conditions': ['Nominal']
 }
