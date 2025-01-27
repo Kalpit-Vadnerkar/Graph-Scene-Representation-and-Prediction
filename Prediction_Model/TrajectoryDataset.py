@@ -1,3 +1,5 @@
+from Data_Curator.config import config
+
 import torch
 from torch.utils.data import Dataset
 import pickle
@@ -6,7 +8,7 @@ import networkx as nx
 import numpy as np
 
 class TrajectoryDataset(Dataset):
-    def __init__(self, data_folder, position_scaling_factor=10, velocity_scaling_factor=100, steering_scaling_factor=100, acceleration_scaling_factor=100):
+    def __init__(self, data_folder, position_scaling_factor=10, velocity_scaling_factor=10, steering_scaling_factor=10, acceleration_scaling_factor=10):
         self.data = []
         self.position_scaling_factor = position_scaling_factor
         self.velocity_scaling_factor = velocity_scaling_factor
@@ -77,9 +79,10 @@ class TrajectoryDataset(Dataset):
             
         # Process graph data
         G = sequence['graph']
-        node_features = torch.zeros((150, 4), dtype=torch.float32)
+        node_features = torch.zeros((config.MIN_NODES, config.NODE_FEATURES), dtype=torch.float32)
+        #node_features = torch.zeros((150, 4), dtype=torch.float32)
         for node, data in G.nodes(data=True):
-            if node < 150:  # Ensure we don't exceed 150 nodes
+            if node < config.MIN_NODES:  # Ensure we don't exceed config.MIN_NODES nodes
                 node_features[node] = torch.tensor([
                     data['x'] * self.position_scaling_factor,
                     data['y'] * self.position_scaling_factor,
@@ -89,7 +92,7 @@ class TrajectoryDataset(Dataset):
         
         # Create adjacency matrix
         adj_matrix = nx.to_numpy_array(G)
-        adj_matrix = adj_matrix[:150, :150]  # Ensure we don't exceed 150 nodes
+        adj_matrix = adj_matrix[:config.MIN_NODES, :config.MIN_NODES]  # Ensure we don't exceed config.MIN_NODES nodes
         adj_matrix = torch.tensor(adj_matrix, dtype=torch.float32)
         
         graph_tensor = {

@@ -10,6 +10,7 @@ class Config:
         self.CONNECTION_THRESHOLD = 5
         self.MAX_NODES = 300
         self.MIN_NODES = 256
+        self.NODE_FEATURES = 4
         
         # Sequence processing
         self.PAST_TRAJECTORY = 30
