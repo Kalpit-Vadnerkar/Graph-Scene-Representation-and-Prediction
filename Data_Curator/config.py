@@ -9,7 +9,7 @@ class Config:
         # Graph building
         self.MIN_DIST_BETWEEN_NODE = 5
         self.CONNECTION_THRESHOLD = 5
-        self.MAX_NODES = 300
+        self.MAX_NODES = 150
         self.MIN_NODES = 150
         self.NODE_FEATURES = 4
         

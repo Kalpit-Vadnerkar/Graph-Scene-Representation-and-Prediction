@@ -3,6 +3,8 @@ from autoware_auto_vehicle_msgs.msg import SteeringReport, VelocityReport
 from autoware_auto_control_msgs.msg import AckermannControlCommand
 from autoware_auto_perception_msgs.msg import TrackedObjects, TrafficSignalArray
 
+import rclpy
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from tf2_msgs.msg import TFMessage
 
@@ -85,10 +87,10 @@ class ROSObserver(Node):
         self.get_logger().info(f'Created callback for: {filename}')
         return callback
 
-class StreamObserver(ROSObserver):
-    def __init__(self, output_folder=None):
-        self._callbacks = {}  # Cache callbacks
 
+class StreamObserver(ROSObserver):
+    def __init__(self, output_folder=None, max_buffer_size=200):
+        self._callbacks = {}  # Cache callbacks
         super().__init__(output_folder)
     
         self.current_data = {}
@@ -96,6 +98,8 @@ class StreamObserver(ROSObserver):
         self.message_cleaner = None
         self.estimator = None
         self.digital_twin = None
+        self.max_buffer_size = max_buffer_size
+        self.video_created = False
     
     def set_components(self, cleaner: MessageCleaner, streamer: DataStreamer):
         self.message_cleaner = cleaner
@@ -103,9 +107,17 @@ class StreamObserver(ROSObserver):
 
     def attach(self, estimator: StateEstimator, digital_twin: DigitalTwin):
         self.estimator = estimator   
-        self.digital_twin = digital_twin 
+        self.digital_twin = digital_twin
 
-
+    def create_prediction_video(self, output_path, fps=10):
+        """Create a video of all stored predictions"""
+        if not self.digital_twin:
+            print("Digital twin not initialized!")
+            return
+        
+        self.digital_twin.create_video(output_path, fps)
+        print(f"Video saved to {output_path}")
+        
     def _route_callback(self, msg):
         """Handle route message"""
         route_data = self.data_extractor.ensure_json_serializable(
@@ -116,8 +128,6 @@ class StreamObserver(ROSObserver):
                 if primitive['primitive_type'] == 'lane']
         
         self.estimator.update_route(route)
-        print("Route Updated!")
-    
     
     def _create_callback(self, topic_name, extractor):
         if topic_name in self._callbacks:
@@ -151,3 +161,12 @@ class StreamObserver(ROSObserver):
             return
         
         self.digital_twin.update_state(state)
+        
+        # Check if we should create the video
+        if (len(self.digital_twin.state_history) >= self.max_buffer_size and 
+            not self.video_created):
+            print(f"\nBuffer full ({self.max_buffer_size} states). Creating video...")
+            self.create_prediction_video("trajectory_predictions.mp4")
+            self.video_created = True
+            # Shutdown after video creation
+            rclpy.shutdown()

@@ -11,7 +11,6 @@ from State_Estimator.SequenceProcessor import SequenceProcessor
 from State_Estimator.StateEstimator import StateEstimator, SequenceProcessor
 from Digital_Twin.DigitalTwin import DigitalTwin
 
-
 ####################################################################################
 ########################## OFFLINE MODE ############################################
 
@@ -36,22 +35,28 @@ from Digital_Twin.DigitalTwin import DigitalTwin
 
 def initialize_streaming():
     rclpy.init()
-    config = Config()
     
-    observer = StreamObserver()
+    # Initialize components
+    config = Config()
+    observer = StreamObserver(max_buffer_size=60)  # Adjust buffer size as needed
     cleaner = MessageCleaner(stream_mode=True)
     streamer = DataStreamer(config)
     observer.set_components(cleaner, streamer)
-
+    
+    # Initialize prediction components
     estimator = StateEstimator(config)
-
-
-    digital_twin = DigitalTwin(CONFIG)
-
+    digital_twin = DigitalTwin(CONFIG)  # model_config for NN
     observer.attach(estimator, digital_twin)
     
-    rclpy.spin(observer)
-    observer.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(observer)
+    except KeyboardInterrupt:
+        if not observer.video_created:
+            print("\nCreating video from collected states...")
+            observer.create_prediction_video("trajectory_predictions.mp4")
+    finally:
+        observer.destroy_node()
+        rclpy.shutdown()
 
-initialize_streaming()
+if __name__ == "__main__":
+    initialize_streaming()
