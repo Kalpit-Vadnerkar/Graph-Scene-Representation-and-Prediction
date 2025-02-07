@@ -89,7 +89,7 @@ class ROSObserver(Node):
 
 
 class StreamObserver(ROSObserver):
-    def __init__(self, output_folder=None, max_buffer_size=200):
+    def __init__(self, output_folder=None, max_buffer_size=None, fps=None):
         self._callbacks = {}  # Cache callbacks
         super().__init__(output_folder)
     
@@ -100,6 +100,7 @@ class StreamObserver(ROSObserver):
         self.digital_twin = None
         self.max_buffer_size = max_buffer_size
         self.video_created = False
+        self.fps = fps
     
     def set_components(self, cleaner: MessageCleaner, streamer: DataStreamer):
         self.message_cleaner = cleaner
@@ -109,13 +110,13 @@ class StreamObserver(ROSObserver):
         self.estimator = estimator   
         self.digital_twin = digital_twin
 
-    def create_prediction_video(self, output_path, fps=10):
+    def create_prediction_video(self, output_path):
         """Create a video of all stored predictions"""
         if not self.digital_twin:
             print("Digital twin not initialized!")
             return
         
-        self.digital_twin.create_video(output_path, fps)
+        self.digital_twin.create_video(output_path, self.fps)
         print(f"Video saved to {output_path}")
         
     def _route_callback(self, msg):
@@ -145,7 +146,7 @@ class StreamObserver(ROSObserver):
         return callback
         
     def _process_complete_data(self):
-        if not all([self.data_streamer, self.estimator, self.digital_twin]):
+        if not all([self.data_streamer, self.estimator, self.digital_twin, self.max_buffer_size]):
             return
             
         cleaned_data = self.message_cleaner.clean_data(self.current_data)

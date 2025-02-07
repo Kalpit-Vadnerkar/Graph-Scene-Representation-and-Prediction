@@ -7,15 +7,13 @@ from scipy.stats import multivariate_normal
 import networkx as nx
 import numpy as np
 import torch
-from collections import deque
 from dataclasses import dataclass
 from typing import List, Dict, Optional
-import matplotlib.animation as animation
 import cv2
 from tqdm import tqdm
 import tempfile
 import os
-
+from collections import defaultdict
 
 @dataclass
 class TrajectoryState:
@@ -28,18 +26,22 @@ class TrajectoryState:
     graph_bounds: Optional[List] = None
 
 class DigitalTwin:
-    def __init__(self, model_config, max_history=50):
+    def __init__(self, model_config):
         self.model_config = model_config
         self.model = self.load_model(model_config).to(config.DEVICE)
+
+        # Fixed figure dimensions
+        self.fig_width = 10
+        self.fig_height = 10
+        self.dpi = 100
         
-        # Initialize figure for video creation
-        self.fig = plt.figure(figsize=(10, 10))
+        # Initialize figure with fixed size
+        self.fig = plt.figure(figsize=(self.fig_width, self.fig_height), dpi=self.dpi)
         self.ax = self.fig.add_subplot(111)
-        self.ax.set_xlim(-50, 50)
-        self.ax.set_ylim(-50, 50)
         
-        # Store states instead of visualizing immediately
+        # Store states and timestamps
         self.state_history = []
+        self.timestamps = []
         
         # Scaling factors
         self.scaling_factors = {
@@ -72,18 +74,15 @@ class DigitalTwin:
         return model
 
     def update_state(self, state, future_state=None):
-        """Process state and store it for later visualization"""
-        # Extract and scale features for prediction
+        """Process state and store it with timestamp"""
         past_features = self._prepare_past_features(state)
         graph_data = self._prepare_graph_features(state)
         
-        # Make predictions
         with torch.no_grad():
             predictions = self.model(past_features, graph_data)
             predictions = {k: v.squeeze().cpu().numpy() for k, v in predictions.items()}
         
         if predictions and state['graph_bounds']:
-            # Create trajectory state object
             trajectory_state = TrajectoryState(
                 timestamp=state.get('timestamp', 0),
                 past_positions=np.array([step['position'] for step in state['past']]),
@@ -94,10 +93,55 @@ class DigitalTwin:
                 graph_bounds=state['graph_bounds']
             )
             
-            # Add to history
             self.state_history.append(trajectory_state)
+            self.timestamps.append(state.get('timestamp', 0))
             
         return predictions
+
+    def _normalize_timestamps(self):
+        """Process timestamps to ensure consistent frame timing"""
+        if not self.timestamps:
+            return [], 0
+            
+        # Count states per timestamp
+        timestamp_counts = defaultdict(int)
+        for ts in self.timestamps:
+            timestamp_counts[ts] += 1
+            
+        # Find the mode (most common count) of states per second
+        counts = list(timestamp_counts.values())
+        mode_count = max(set(counts), key=counts.count)
+        target_fps = mode_count  # Use the most frequent state count as target FPS
+        
+        # First, collect all indices for each timestamp
+        timestamp_map = defaultdict(list)
+        for idx, ts in enumerate(self.timestamps):
+            timestamp_map[ts].append(idx)
+            
+        # Then normalize the number of states for each timestamp
+        final_map = defaultdict(list)
+        for ts, indices in timestamp_map.items():
+            current_count = len(indices)
+            
+            if current_count > target_fps:
+                # Downsample
+                selected_indices = np.linspace(0, current_count - 1, target_fps, dtype=int)
+                final_map[ts] = [indices[i] for i in selected_indices]
+            elif current_count < target_fps:
+                # Upsample
+                duplicates_needed = target_fps - current_count
+                if ts == max(timestamp_map.keys()):
+                    # For the last timestamp, extend state_history
+                    self.state_history.extend([self.state_history[indices[-1]]] * duplicates_needed)
+                    new_indices = range(len(self.state_history) - duplicates_needed, len(self.state_history))
+                    final_map[ts] = indices + list(new_indices)
+                else:
+                    # For other timestamps, duplicate the last index
+                    final_map[ts] = indices + [indices[-1]] * duplicates_needed
+            else:
+                final_map[ts] = indices
+                
+        return final_map, target_fps
 
     def _prepare_past_features(self, state):
         past_features = {
@@ -139,27 +183,6 @@ class DigitalTwin:
             'node_features': node_features.unsqueeze(0).to(config.DEVICE),
             'adj_matrix': torch.tensor(adj_matrix, dtype=torch.float32).unsqueeze(0).to(config.DEVICE)
         }
-
-    def _visualize_state(self, trajectory_state: TrajectoryState):
-        """Process a single state for visualization"""
-        self.ax.clear()
-        scaler = GraphBoundsScaler(trajectory_state.graph_bounds)
-        
-        # Draw graph elements
-        self._draw_graph(trajectory_state.graph, scaler)
-        
-        # Draw trajectories
-        self._draw_trajectories(trajectory_state, scaler)
-        
-        # Draw uncertainty ellipses
-        self._draw_uncertainties(trajectory_state, scaler)
-        
-        # Set plot properties
-        self._set_plot_properties()
-        
-        # Update plot limits based on data
-        self.ax.relim()
-        self.ax.autoscale_view()
 
     def _draw_graph(self, G, scaler):
         pos = {node: scaler.restore_position(data['x'] * 10, data['y'] * 10) 
@@ -244,56 +267,134 @@ class DigitalTwin:
         self.ax.legend()
         self.ax.set_aspect('equal')
 
-    def create_video(self, output_path, fps=10):
-        """Create a video from stored states with progress bar"""
+    def _visualize_state(self, trajectory_state: TrajectoryState):
+        """Visualize state with fixed dimensions"""
+        self.ax.clear()
+        scaler = GraphBoundsScaler(trajectory_state.graph_bounds)
+        
+        # Draw components
+        self._draw_graph(trajectory_state.graph, scaler)
+        self._draw_trajectories(trajectory_state, scaler)
+        self._draw_uncertainties(trajectory_state, scaler)
+        
+        # Set fixed plot properties
+        self._set_plot_properties()
+        
+        # Enforce consistent dimensions
+        self.fig.set_size_inches(self.fig_width, self.fig_height)
+        plt.tight_layout()
+
+    def create_video(self, output_path, requested_fps=None):
         if not self.state_history:
             print("No states to visualize!")
             return
-
-        # Create temporary directory for frames
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Save individual frames
-            total_frames = len(self.state_history)
-            frame_files = []
             
-            print("Generating frames...")
-            for i, state in enumerate(tqdm(self.state_history, desc="Creating frames", unit="frame")):
-                self._visualize_state(state)
-                frame_file = os.path.join(temp_dir, f'frame_{i:04d}.png')
-                self.fig.savefig(frame_file, dpi=100, bbox_inches='tight')
-                frame_files.append(frame_file)
-                self.ax.clear()  # Clear figure for next frame
-
-            # Create video from frames
+        # Get normalized timestamps and calculated FPS
+        timestamp_map, calculated_fps = self._normalize_timestamps()
+        fps = requested_fps if requested_fps else calculated_fps
+        print(f"Using frame rate: {fps} fps")
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            frame_files = []
+            frame_count = 0
+            
+            # Generate frames
+            print("\nGenerating frames...")
+            for norm_ts in tqdm(sorted(timestamp_map.keys()), desc="Processing timestamps", unit="timestamp"):
+                indices = timestamp_map[norm_ts]
+                for idx in tqdm(indices, desc=f"Generating frames for timestamp {norm_ts:.2f}", unit="frame", leave=False):
+                    state = self.state_history[idx]
+                    self._visualize_state(state)
+                    
+                    frame_file = os.path.join(temp_dir, f'frame_{frame_count:04d}.png')
+                    self.fig.savefig(frame_file, dpi=self.dpi, bbox_inches='tight')
+                    frame_files.append(frame_file)
+                    frame_count += 1
+                    self.ax.clear()
+            
             if frame_files:
-                print("Combining frames into video...")
+                print("\nCombining frames into video...")
+                # Read first frame to get dimensions
                 frame = cv2.imread(frame_files[0])
-                height, width, _ = frame.shape
+                if frame is None:
+                    raise RuntimeError("Failed to read first frame")
+                    
+                height, width = frame.shape[:2]
+                total_frames = len(frame_files)
+                expected_duration = total_frames / fps
                 
-                # Sort frame files to ensure correct order
-                frame_files.sort()  # Ensure frames are in correct order
+                print(f"\nVideo parameters:")
+                print(f"- Frame size: {width}x{height}")
+                print(f"- Total frames: {total_frames}")
+                print(f"- FPS: {fps}")
+                print(f"- Expected duration: {expected_duration:.1f} seconds")
                 
-                # Use H264 codec for better compatibility
-                fourcc = cv2.VideoWriter_fourcc(*'avc1')
-                video_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+                # Try different codecs
+                codecs = ['avc1', 'mp4v']
+                video_writer = None
                 
-                if not video_writer.isOpened():
-                    print("Failed to open video writer. Trying MP4V codec instead...")
-                    video_writer.release()
-                    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-                    video_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+                for codec in codecs:
+                    try:
+                        fourcc = cv2.VideoWriter_fourcc(*codec)
+                        video_writer = cv2.VideoWriter(
+                            output_path,
+                            fourcc,
+                            float(fps),
+                            (width, height),
+                            isColor=True
+                        )
+                        if video_writer.isOpened():
+                            print(f"Using codec: {codec}")
+                            break
+                        video_writer.release()
+                    except Exception as e:
+                        print(f"Failed with codec {codec}: {str(e)}")
                 
+                if not video_writer or not video_writer.isOpened():
+                    raise RuntimeError("Failed to initialize video writer with any codec")
+                
+                # Write frames
+                print("\nWriting frames to video...")
+                frames_written = 0
                 for frame_file in tqdm(frame_files, desc="Writing video", unit="frame"):
                     frame = cv2.imread(frame_file)
                     if frame is None:
                         print(f"Failed to read frame: {frame_file}")
                         continue
-                    video_writer.write(frame)
+                    
+                    try:
+                        frame_shape = frame.shape
+                        print(f"Frame shape: {frame_shape}")
+                        if frame_shape[0] != height or frame_shape[1] != width:
+                            print(f"Frame size mismatch: Expected {width}x{height}, got {frame_shape[1]}x{frame_shape[0]}")
+                            frame = cv2.resize(frame, (width, height))
+                        success = video_writer.write(frame)
+                        if not success:
+                            print(f"Failed to write frame: {frame_file}")
+                            print(f"Frame properties: dtype={frame.dtype}, shape={frame.shape}")
+                        else:
+                            frames_written += 1
+                    except Exception as e:
+                        print(f"Error writing frame {frame_file}: {str(e)}")
+                        print(f"Frame properties: dtype={frame.dtype}, shape={frame.shape}")
                 
                 video_writer.release()
+                print(f"\nFrames successfully written: {frames_written}/{len(frame_files)}")
                 
-                print(f"\nVideo saved to {output_path} with {len(frame_files)} frames")
-                print(f"First frame: {frame_files[0]}")
-                print(f"Last frame: {frame_files[-1]}")
-            else:
-                print("No frames were generated!")
+                # Verify final video
+                cap = cv2.VideoCapture(output_path)
+                if not cap.isOpened():
+                    print("Warning: Could not verify final video")
+                else:
+                    actual_fps = cap.get(cv2.CAP_PROP_FPS)
+                    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                    actual_duration = frame_count / actual_fps
+                    cap.release()
+                    
+                    print(f"\nFinal video statistics:")
+                    print(f"- Actual FPS: {actual_fps:.1f}")
+                    print(f"- Actual frame count: {frame_count}")
+                    print(f"- Actual duration: {actual_duration:.1f} seconds")
+                    
+                    if abs(actual_duration - expected_duration) > 1.0:
+                        print("\nWarning: Significant difference between expected and actual duration")

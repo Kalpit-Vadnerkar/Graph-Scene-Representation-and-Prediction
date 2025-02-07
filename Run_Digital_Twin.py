@@ -38,7 +38,7 @@ def initialize_streaming():
     
     # Initialize components
     config = Config()
-    observer = StreamObserver(max_buffer_size=60)  # Adjust buffer size as needed
+    observer = StreamObserver(max_buffer_size=300)  # Adjust buffer size as needed
     cleaner = MessageCleaner(stream_mode=True)
     streamer = DataStreamer(config)
     observer.set_components(cleaner, streamer)
