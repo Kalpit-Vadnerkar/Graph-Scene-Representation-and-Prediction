@@ -34,6 +34,6 @@ CONFIG = {
     'device': torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     'num_samples': 50,
     'sample_start_index': 325,
-    #'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_IMU', 'Noisy_Lidar']
-    'conditions': ['Nominal']
+    'conditions': ['Nominal', 'Noisy_Camera', 'Noisy_IMU', 'Noisy_Lidar']
+    #'conditions': ['Nominal']
 }

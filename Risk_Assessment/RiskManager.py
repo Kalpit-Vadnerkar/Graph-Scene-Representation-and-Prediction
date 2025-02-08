@@ -17,7 +17,8 @@ class RiskAssessmentManager:
         self.config = config
         self.datasets_by_condition = {}
         self.predictions_by_condition = {}
-        self.residuals_by_combination = {}
+        self.all_residuals = None  # Will store all calculated residuals
+        self.all_labels = None     # Will store all labels
         self.classification_results = {}
         
     def load_data_and_predictions(self, model):
@@ -37,45 +38,67 @@ class RiskAssessmentManager:
             self.datasets_by_condition[condition] = dataset
             self.predictions_by_condition[condition] = predictions
             
-    def calculate_residuals(self, residual_types: List[str]) -> Tuple[List[Dict[str, float]], List[str]]:
-        """Calculate residuals for a specific combination of residual types"""
-        combo_key = '+'.join(residual_types)
-        
-        if combo_key in self.residuals_by_combination:
-            return self.residuals_by_combination[combo_key]
+    def calculate_all_residuals(self) -> None:
+        """Calculate all possible residuals once and store them"""
+        if self.all_residuals is not None:
+            return  # Residuals already calculated
             
+        # Initialize dataset processor with all possible residual types
         dataset_processor = ResidualDataset(horizon=self.config['output_seq_len'])
-        dataset_processor.residual_generator.residual_types = residual_types
+        all_residual_types = [
+            'raw', 'kl_divergence', 'cusum'
+        ]
+        dataset_processor.residual_generator.residual_types = all_residual_types
         
+        # Initialize all residual calculators
         residual_class_map = {
-            'raw': RawResidual,
-            'normalized': NormalizedResidual,
-            'uncertainty': UncertaintyResidual,
-            'kl_divergence': KLDivergenceResidual,
-            'shewhart': ShewartResidual,
-            'cusum': CUSUMResidual,
-            'sprt': SPRTResidual
+            'raw': RawResidual(),
+            #'normalized': NormalizedResidual(),
+            #'uncertainty': UncertaintyResidual(),
+            'kl_divergence': KLDivergenceResidual(),
+            #'shewhart': ShewartResidual(),
+            'cusum': CUSUMResidual(),
+            #'sprt': SPRTResidual()
         }
+        dataset_processor.residual_generator.residual_calculators = residual_class_map
         
-        dataset_processor.residual_generator.residual_calculators = {
-            residual_type: residual_class_map[residual_type]()
-            for residual_type in residual_types
-            if residual_type in residual_class_map
-        }
-        
+        # Process all sequences
         for condition, dataset in self.datasets_by_condition.items():
             dataset_processor.process_sequence(
                 dataset=dataset,
                 predictions=self.predictions_by_condition[condition],
                 condition=condition
             )
+        
+        # Store all residuals and labels
+        self.all_residuals = dataset_processor.features
+        self.all_labels = dataset_processor.labels
             
-        self.residuals_by_combination[combo_key] = (
-            dataset_processor.features,
-            dataset_processor.labels
+    def filter_features_by_residual_types(self, 
+                                        features: List[Dict[str, float]], 
+                                        residual_types: List[str]) -> List[Dict[str, float]]:
+        """Filter features to only include specified residual types"""
+        filtered_features = []
+        for feature_dict in features:
+            filtered_dict = {}
+            for key, value in feature_dict.items():
+                # Check if any of the requested residual types are in the feature key
+                if any(res_type in key for res_type in residual_types):
+                    filtered_dict[key] = value
+            filtered_features.append(filtered_dict)
+        return filtered_features
+        
+    def get_residual_subset(self, residual_types: List[str]) -> Tuple[List[Dict[str, float]], List[str]]:
+        """Get a subset of pre-calculated residuals for specific residual types"""
+        # Calculate all residuals if not already done
+        self.calculate_all_residuals()
+        
+        # Filter features to only include requested residual types
+        filtered_features = self.filter_features_by_residual_types(
+            self.all_residuals, residual_types
         )
         
-        return self.residuals_by_combination[combo_key]
+        return filtered_features, self.all_labels
         
     def run_classification(self, residual_combinations: List[List[str]]) -> Dict[str, Dict[str, float]]:
         """Run classification for all residual combinations"""
@@ -85,7 +108,7 @@ class RiskAssessmentManager:
         os.makedirs('predictions/confusion_matrices', exist_ok=True)
         
         for residual_types in residual_combinations:
-            features, labels = self.calculate_residuals(residual_types)
+            features, labels = self.get_residual_subset(residual_types)
             classifier = ResidualClassifier(test_size=0.2)
             
             classification_results = classifier.train_and_evaluate(
@@ -127,13 +150,12 @@ class RiskAssessmentManager:
             plt.ylabel('True Label')
             plt.xlabel('Predicted Label')
             
-            # Save with organized naming
             filename = f'predictions/confusion_matrices/{combo_name}_{classification_type}.png'
             plt.savefig(filename, bbox_inches='tight', dpi=300)
             plt.close()
     
     def display_dataset_statistics(self, features: List[Dict[str, float]], labels: List[str]):
-        """Display dataset statistics once"""
+        """Display dataset statistics"""
         train_size = int(0.8 * len(features))
         test_size = len(features) - train_size
         
@@ -154,7 +176,6 @@ class RiskAssessmentManager:
         distribution_data = [[label, count] for label, count in label_counts.items()]
         print(tabulate(distribution_data, headers=["Label", "Count"], tablefmt="grid"))
         
-        # Create distribution pie chart
         plt.figure(figsize=(8, 6))
         plt.pie(label_counts.values(), labels=label_counts.keys(), autopct='%1.1f%%')
         plt.title("Dataset Label Distribution")

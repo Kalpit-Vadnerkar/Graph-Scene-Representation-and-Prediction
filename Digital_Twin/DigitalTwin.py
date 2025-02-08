@@ -314,20 +314,18 @@ class DigitalTwin:
             
             if frame_files:
                 print("\nCombining frames into video...")
-                # Read first frame to get dimensions
+                # Read and standardize first frame
                 frame = cv2.imread(frame_files[0])
                 if frame is None:
                     raise RuntimeError("Failed to read first frame")
                     
-                height, width = frame.shape[:2]
-                total_frames = len(frame_files)
-                expected_duration = total_frames / fps
-                
+                # Standardize dimensions based on the first frame
+                target_height, target_width = frame.shape[:2]
                 print(f"\nVideo parameters:")
-                print(f"- Frame size: {width}x{height}")
-                print(f"- Total frames: {total_frames}")
+                print(f"- Frame size: {target_width}x{target_height}")
+                print(f"- Total frames: {len(frame_files)}")
                 print(f"- FPS: {fps}")
-                print(f"- Expected duration: {expected_duration:.1f} seconds")
+                print(f"- Expected duration: {len(frame_files)/fps:.1f} seconds")
                 
                 # Try different codecs
                 codecs = ['avc1', 'mp4v']
@@ -340,7 +338,7 @@ class DigitalTwin:
                             output_path,
                             fourcc,
                             float(fps),
-                            (width, height),
+                            (target_width, target_height),
                             isColor=True
                         )
                         if video_writer.isOpened():
@@ -357,26 +355,25 @@ class DigitalTwin:
                 print("\nWriting frames to video...")
                 frames_written = 0
                 for frame_file in tqdm(frame_files, desc="Writing video", unit="frame"):
-                    frame = cv2.imread(frame_file)
-                    if frame is None:
-                        print(f"Failed to read frame: {frame_file}")
-                        continue
-                    
                     try:
-                        frame_shape = frame.shape
-                        print(f"Frame shape: {frame_shape}")
-                        if frame_shape[0] != height or frame_shape[1] != width:
-                            print(f"Frame size mismatch: Expected {width}x{height}, got {frame_shape[1]}x{frame_shape[0]}")
-                            frame = cv2.resize(frame, (width, height))
+                        frame = cv2.imread(frame_file)
+                        if frame is None:
+                            print(f"Failed to read frame: {frame_file}")
+                            continue
+                            
+                        # Ensure consistent dimensions
+                        if frame.shape[:2] != (target_height, target_width):
+                            frame = cv2.resize(frame, (target_width, target_height))
+                        
                         success = video_writer.write(frame)
-                        if not success:
-                            print(f"Failed to write frame: {frame_file}")
-                            print(f"Frame properties: dtype={frame.dtype}, shape={frame.shape}")
-                        else:
-                            frames_written += 1
+                        frames_written += 1
+                        #if success:
+                        #    frames_written += 1
+                        #else:
+                        #    print(f"Failed to write frame {frame_file}")
+                        #    print(f"Frame properties: dtype={frame.dtype}, shape={frame.shape}")
                     except Exception as e:
-                        print(f"Error writing frame {frame_file}: {str(e)}")
-                        print(f"Frame properties: dtype={frame.dtype}, shape={frame.shape}")
+                        print(f"Error processing frame {frame_file}: {str(e)}")
                 
                 video_writer.release()
                 print(f"\nFrames successfully written: {frames_written}/{len(frame_files)}")
@@ -396,5 +393,5 @@ class DigitalTwin:
                     print(f"- Actual frame count: {frame_count}")
                     print(f"- Actual duration: {actual_duration:.1f} seconds")
                     
-                    if abs(actual_duration - expected_duration) > 1.0:
+                    if abs(actual_duration - len(frame_files)/fps) > 1.0:
                         print("\nWarning: Significant difference between expected and actual duration")

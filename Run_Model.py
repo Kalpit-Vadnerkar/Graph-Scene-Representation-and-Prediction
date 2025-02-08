@@ -149,35 +149,54 @@ def visualize(config):
 
 
 def run_fault_detection(config: Dict[str, Any]) -> None:
-    """Main function to run fault detection analysis"""
+    """Main function to run fault detection analysis with optimized residual calculation"""
     model = load_model(config).to(config['device'])
     manager = RiskAssessmentManager(config)
     
     # Load data and generate predictions once
     manager.load_data_and_predictions(model)
     
-    # Define residual combinations
+    # Calculate all residuals once at the beginning
+    manager.calculate_all_residuals()
+    
+    # Define residual combinations to test
     residual_combinations = [
         ['raw'],
-        ['normalized'],
+        #['normalized'],
         ['kl_divergence'],
-        #['raw', 'normalized'],
-        ['raw', 'kl_divergence'],
-        #['normalized', 'kl_divergence'],
-        ['raw', 'normalized', 'kl_divergence'],
+        #['raw', 'kl_divergence'],
+        #['raw', 'normalized', 'kl_divergence'],
         ['cusum']
     ]
     
-    # Display dataset statistics once using the first combination
-    features, labels = manager.calculate_residuals(residual_combinations[0])
+    # Display dataset statistics using all available features
+    features, labels = manager.get_residual_subset(['raw', 'kl_divergence', 'cusum'])
     manager.display_dataset_statistics(features, labels)
     
     # Run classification for all combinations
+    print("\nAnalyzing different residual combinations...")
     results = manager.run_classification(residual_combinations)
+    
+    # Create summary table of results
+    print("\nClassification Results Summary:")
+    summary_data = []
+    for combo_name, metrics in results.items():
+        summary_data.append([
+            combo_name,
+            f"{metrics['accuracy']*100:.2f}%",
+            f"{metrics['f1']*100:.2f}%",
+            f"{metrics['precision']*100:.2f}%",
+            f"{metrics['recall']*100:.2f}%"
+        ])
+    
+    headers = ["Residual Types", "Accuracy", "F1-Score", "Precision", "Recall"]
+    print(tabulate(summary_data, headers=headers, tablefmt="grid"))
     
     # Create performance comparison visualization
     plot_residual_impact(results)
     
+    print("\nAnalysis complete! Check the 'predictions' folder for detailed visualizations.")
+
 def plot_residual_impact(results: Dict[str, Dict[str, float]]):
     """Create performance comparison plot for different residual combinations"""
     metrics = ['accuracy', 'f1', 'precision', 'recall']
