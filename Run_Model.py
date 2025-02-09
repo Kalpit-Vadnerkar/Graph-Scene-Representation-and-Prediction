@@ -148,77 +148,6 @@ def visualize(config):
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
 
-def run_fault_detection(config: Dict[str, Any]) -> None:
-    """Main function to run fault detection analysis with optimized residual calculation"""
-    model = load_model(config).to(config['device'])
-    manager = RiskAssessmentManager(config)
-    
-    # Load data and generate predictions once
-    manager.load_data_and_predictions(model)
-    
-    # Calculate all residuals once at the beginning
-    manager.calculate_all_residuals()
-    
-    # Define residual combinations to test
-    residual_combinations = [
-        ['raw'],
-        #['normalized'],
-        ['kl_divergence'],
-        #['raw', 'kl_divergence'],
-        #['raw', 'normalized', 'kl_divergence'],
-        ['cusum']
-    ]
-    
-    # Display dataset statistics using all available features
-    features, labels = manager.get_residual_subset(['raw', 'kl_divergence', 'cusum'])
-    manager.display_dataset_statistics(features, labels)
-    
-    # Run classification for all combinations
-    print("\nAnalyzing different residual combinations...")
-    results = manager.run_classification(residual_combinations)
-    
-    # Create summary table of results
-    print("\nClassification Results Summary:")
-    summary_data = []
-    for combo_name, metrics in results.items():
-        summary_data.append([
-            combo_name,
-            f"{metrics['accuracy']*100:.2f}%",
-            f"{metrics['f1']*100:.2f}%",
-            f"{metrics['precision']*100:.2f}%",
-            f"{metrics['recall']*100:.2f}%"
-        ])
-    
-    headers = ["Residual Types", "Accuracy", "F1-Score", "Precision", "Recall"]
-    print(tabulate(summary_data, headers=headers, tablefmt="grid"))
-    
-    # Create performance comparison visualization
-    plot_residual_impact(results)
-    
-    print("\nAnalysis complete! Check the 'predictions' folder for detailed visualizations.")
-
-def plot_residual_impact(results: Dict[str, Dict[str, float]]):
-    """Create performance comparison plot for different residual combinations"""
-    metrics = ['accuracy', 'f1', 'precision', 'recall']
-    combinations = list(results.keys())
-    
-    plt.figure(figsize=(15, 8))
-    x = np.arange(len(combinations))
-    width = 0.2
-    
-    for i, metric in enumerate(metrics):
-        metric_values = [results[combo][metric] for combo in combinations]
-        plt.bar(x + i * width, metric_values, width, label=metric.title())
-    
-    plt.xlabel('Residual Type Combinations')
-    plt.ylabel('Score')
-    plt.title('Impact of Residual Types on Classification Performance')
-    plt.xticks(x + width * 1.5, combinations, rotation=45, ha='right')
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-    plt.tight_layout()
-    plt.savefig('predictions/residual_impact_analysis.png', bbox_inches='tight', dpi=300)
-    plt.close()
-
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
     parser.add_argument('--mode', type=str, 
@@ -235,7 +164,17 @@ def main():
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode == 'evaluate':
-        run_fault_detection(CONFIG)
+        #run_fault_detection(CONFIG)
+        # Initialize manager
+        manager = RiskAssessmentManager(CONFIG)
+
+        # Load model
+        model = load_model(CONFIG)
+
+        # Run complete pipeline
+        results = manager.run_fault_detection(model)
+
+        print(results)
 
 if __name__ == "__main__":
     main()

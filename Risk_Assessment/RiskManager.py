@@ -1,13 +1,12 @@
-from Risk_Assessment.ResidualClassifier import ResidualClassifier
-from Risk_Assessment.ResidualDataset import ResidualDataset
-from Risk_Assessment.Residuals import *
-from Prediction_Model.TrajectoryDataset import TrajectoryDataset
-from Prediction_Model.model_utils import make_predictions
+from Risk_Assessment.DataLoader import DataLoader
+from Risk_Assessment.ResidualGenerator import ResidualGenerator, ResidualFeatures
+from Risk_Assessment.FeatureExtractor import FeatureExtractor
+from Risk_Assessment.FaultDetector import FaultDetector
+from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES
 
-import os
+from typing import Dict, Any, List
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
-from collections import defaultdict
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
@@ -15,169 +14,212 @@ from tabulate import tabulate
 class RiskAssessmentManager:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.datasets_by_condition = {}
-        self.predictions_by_condition = {}
-        self.all_residuals = None  # Will store all calculated residuals
-        self.all_labels = None     # Will store all labels
-        self.classification_results = {}
+        self.data_loader = DataLoader(config)
+        self.residual_generator = ResidualGenerator(horizon=config['output_seq_len'])
+        self.feature_extractor = FeatureExtractor()
+        self.fault_detector = FaultDetector()
         
-    def load_data_and_predictions(self, model):
-        """Load all datasets and generate predictions once"""
+        self.features_by_condition = {}
+        self.labels_by_condition = {}
+    
+    def process_condition(self, model, condition: str):
+        """Process a single condition"""
+        # Load data
+        loaded_data = self.data_loader.load_data_and_predictions(model, condition)
+        
+        # Generate residuals and extract features
+        features = []
+        labels = []
+        
+        for t in range(len(loaded_data.dataset)):
+            past, future, _, _ = loaded_data.dataset[t]
+            if t < len(loaded_data.predictions):
+                residual_output = self.residual_generator.compute_residuals(
+                    loaded_data.predictions[t],
+                    future,
+                    t
+                )
+                
+                residual_features = ResidualFeatures(
+                    time=t,
+                    condition=condition,
+                    residuals=residual_output.residuals
+                )
+                
+                feature_dict = self.feature_extractor.extract_features(residual_features)
+                features.append(feature_dict)
+                labels.append(condition)
+        
+        self.features_by_condition[condition] = features
+        self.labels_by_condition[condition] = labels
+    
+    def plot_confusion_matrix(self, results: Dict[str, Any], save_path: str = 'Results/confusion_matrix.png'):
+        """
+        Plot and save confusion matrix visualization.
+        
+        Args:
+            results: Dictionary containing classification results
+            save_path: Path where to save the confusion matrix plot
+        """
+        import os
+        
+        # Create Results directory if it doesn't exist
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        
+        # Get confusion matrix and labels
+        conf_matrix = results['confusion_matrix']
+        report_lines = results['classification_report'].split('\n')
+        class_labels = [line.split()[0] for line in report_lines[1:-5] if line.strip()]
+        
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(conf_matrix, 
+                   annot=True, 
+                   fmt='d', 
+                   cmap='Blues',
+                   xticklabels=class_labels,
+                   yticklabels=class_labels)
+        
+        plt.title('Confusion Matrix')
+        plt.ylabel('True Label')
+        plt.xlabel('Predicted Label')
+        
+        plt.savefig(save_path, bbox_inches='tight', dpi=300)
+        plt.close()
+        
+        print(f"Confusion matrix plot saved to {save_path}")
+
+    def get_feature_importance(self) -> pd.DataFrame:
+        """
+        Extract and format feature importance from the random forest classifier.
+        
+        Returns:
+            pd.DataFrame: DataFrame containing feature names and their importance scores
+        """
+        # Get feature names and importance scores
+        feature_names = list(self.features_by_condition[self.config['conditions'][0]][0].keys())
+        importance_scores = self.fault_detector.pipeline.named_steps['classifier'].feature_importances_
+        
+        # Create DataFrame
+        importance_df = pd.DataFrame({
+            'Feature': feature_names,
+            'Importance': importance_scores
+        })
+        
+        # Sort by importance
+        importance_df = importance_df.sort_values('Importance', ascending=False)
+        
+        return importance_df
+
+    def print_feature_importance(self):
+        """Print feature importance in a formatted table."""
+        importance_df = self.get_feature_importance()
+        
+        # Format the table
+        table_data = []
+        for _, row in importance_df.iterrows():
+            table_data.append([
+                row['Feature'],
+                f"{row['Importance']:.4f}"
+            ])
+        
+        # Print using tabulate
+        print("\nFeature Importance:")
+        print(tabulate(table_data, 
+                      headers=['Feature', 'Importance Score'],
+                      tablefmt='grid'))
+
+    def run_fault_detection(self, model):
+        """Run complete fault detection pipeline"""
+        # Process all conditions
         for condition in self.config['conditions']:
-            data_folder = os.path.join(self.config['test_data_folder'], condition)
-            dataset = TrajectoryDataset(
-                data_folder,
-                position_scaling_factor=self.config['position_scaling_factor'],
-                velocity_scaling_factor=self.config['velocity_scaling_factor'],
-                steering_scaling_factor=self.config['steering_scaling_factor'],
-                acceleration_scaling_factor=self.config['acceleration_scaling_factor']
-            )
-            
-            predictions = make_predictions(model, dataset, self.config)
-            
-            self.datasets_by_condition[condition] = dataset
-            self.predictions_by_condition[condition] = predictions
-            
-    def calculate_all_residuals(self) -> None:
-        """Calculate all possible residuals once and store them"""
-        if self.all_residuals is not None:
-            return  # Residuals already calculated
-            
-        # Initialize dataset processor with all possible residual types
-        dataset_processor = ResidualDataset(horizon=self.config['output_seq_len'])
-        all_residual_types = [
-            'raw', 'kl_divergence', 'cusum'
-        ]
-        dataset_processor.residual_generator.residual_types = all_residual_types
+            self.process_condition(model, condition)
         
-        # Initialize all residual calculators
-        residual_class_map = {
-            'raw': RawResidual(),
-            #'normalized': NormalizedResidual(),
-            #'uncertainty': UncertaintyResidual(),
-            'kl_divergence': KLDivergenceResidual(),
-            #'shewhart': ShewartResidual(),
-            'cusum': CUSUMResidual(),
-            #'sprt': SPRTResidual()
-        }
-        dataset_processor.residual_generator.residual_calculators = residual_class_map
+        # Combine all features and labels
+        all_features = []
+        all_labels = []
+        for condition in self.config['conditions']:
+            all_features.extend(self.features_by_condition[condition])
+            all_labels.extend(self.labels_by_condition[condition])
         
-        # Process all sequences
-        for condition, dataset in self.datasets_by_condition.items():
-            dataset_processor.process_sequence(
-                dataset=dataset,
-                predictions=self.predictions_by_condition[condition],
-                condition=condition
-            )
+        # Run fault detection
+        results = self.fault_detector.train_and_evaluate(all_features, all_labels)
         
-        # Store all residuals and labels
-        self.all_residuals = dataset_processor.features
-        self.all_labels = dataset_processor.labels
-            
-    def filter_features_by_residual_types(self, 
-                                        features: List[Dict[str, float]], 
-                                        residual_types: List[str]) -> List[Dict[str, float]]:
-        """Filter features to only include specified residual types"""
-        filtered_features = []
-        for feature_dict in features:
-            filtered_dict = {}
-            for key, value in feature_dict.items():
-                # Check if any of the requested residual types are in the feature key
-                if any(res_type in key for res_type in residual_types):
-                    filtered_dict[key] = value
-            filtered_features.append(filtered_dict)
-        return filtered_features
+        # Plot confusion matrix
+        self.plot_confusion_matrix(results)
         
-    def get_residual_subset(self, residual_types: List[str]) -> Tuple[List[Dict[str, float]], List[str]]:
-        """Get a subset of pre-calculated residuals for specific residual types"""
-        # Calculate all residuals if not already done
-        self.calculate_all_residuals()
+        # Print feature importance
+        self.print_feature_importance()
         
-        # Filter features to only include requested residual types
-        filtered_features = self.filter_features_by_residual_types(
-            self.all_residuals, residual_types
-        )
-        
-        return filtered_features, self.all_labels
-        
-    def run_classification(self, residual_combinations: List[List[str]]) -> Dict[str, Dict[str, float]]:
-        """Run classification for all residual combinations"""
-        results = {}
-        
-        # Create directory for confusion matrices
-        os.makedirs('predictions/confusion_matrices', exist_ok=True)
-        
-        for residual_types in residual_combinations:
-            features, labels = self.get_residual_subset(residual_types)
-            classifier = ResidualClassifier(test_size=0.2)
-            
-            classification_results = classifier.train_and_evaluate(
-                features=features,
-                labels=labels
-            )
-            
-            combo_name = '+'.join(residual_types)
-            self.classification_results[combo_name] = classification_results
-            
-            # Save confusion matrices
-            self._save_confusion_matrices(combo_name, classification_results)
-            
-            results[combo_name] = {
-                'accuracy': classification_results['multi_class']['cv_results']['mean_accuracy'],
-                'f1': classification_results['multi_class']['cv_results']['mean_f1'],
-                'precision': classification_results['multi_class']['cv_results']['mean_precision'],
-                'recall': classification_results['multi_class']['cv_results']['mean_recall']
-            }
-            
         return results
     
-    def _save_confusion_matrices(self, combo_name: str, results: Dict[str, Any]):
-        """Save confusion matrices for both multi-class and binary classification"""
-        for classification_type in ['multi_class', 'binary']:
-            confusion_mat = results[classification_type]['test_results']['confusion_matrix']
-            
-            # Get class labels
-            report_lines = results[classification_type]['test_results']['classification_report'].split('\n')
-            class_labels = [line.split()[0] for line in report_lines[1:-5] if line.strip()]
-            
-            # Create visualization
-            plt.figure(figsize=(10, 8))
-            sns.heatmap(confusion_mat, annot=True, fmt='d', cmap='Blues',
-                       xticklabels=class_labels,
-                       yticklabels=class_labels)
-            
-            plt.title(f'{classification_type.title()} Classification\nResidual Types: {combo_name}')
-            plt.ylabel('True Label')
-            plt.xlabel('Predicted Label')
-            
-            filename = f'predictions/confusion_matrices/{combo_name}_{classification_type}.png'
-            plt.savefig(filename, bbox_inches='tight', dpi=300)
-            plt.close()
     
-    def display_dataset_statistics(self, features: List[Dict[str, float]], labels: List[str]):
-        """Display dataset statistics"""
-        train_size = int(0.8 * len(features))
-        test_size = len(features) - train_size
+    def process_run(self,
+                        dataset: Any,
+                        predictions: List[Dict[str, np.ndarray]],
+                        condition: str) -> None:
+        """
+        Process a run to generate time-step-based residual features.
+        This approach looks at all the H' predictions made for timestep t.
+        The implementation is unoptimized and may require debugging.
         
-        label_counts = defaultdict(int)
-        for label in labels:
-            label_counts[label] += 1
+        Args:
+            dataset: Dataset containing ground truth values
+            predictions: List of model predictions
+            condition: Condition label for the sequence
+        """
+        start_idx = 0
+        end_idx = len(dataset)
+        
+        for t in range(start_idx, end_idx - self.horizon):
+            window_residuals = []
             
-        print("\n=== Dataset Statistics ===")
-        basic_stats = [
-            ["Total Samples", len(features)],
-            ["Training Samples", train_size],
-            ["Test Samples", test_size],
-            ["Number of Features", len(features[0])]
-        ]
-        print(tabulate(basic_stats, headers=["Metric", "Value"], tablefmt="grid"))
-        
-        print("\nLabel Distribution:")
-        distribution_data = [[label, count] for label, count in label_counts.items()]
-        print(tabulate(distribution_data, headers=["Label", "Count"], tablefmt="grid"))
-        
-        plt.figure(figsize=(8, 6))
-        plt.pie(label_counts.values(), labels=label_counts.keys(), autopct='%1.1f%%')
-        plt.title("Dataset Label Distribution")
-        plt.savefig('predictions/dataset_distribution.png')
-        plt.close()
+            try:
+                # Look at past horizon steps for feature extraction
+                for h in range(-self.horizon + 1, 1):
+                    if t + h < start_idx or t + h >= end_idx:
+                        continue
+                        
+                    past, future, _, _ = dataset[t + h]
+                    pred_idx = t + h - start_idx
+                    
+                    if 0 <= pred_idx < len(predictions):
+                        pred = predictions[pred_idx]
+                        # Only use past data for residual computation
+                        truth = past
+                        
+                        residual_output = self.residual_generator.compute_residuals(
+                            pred, truth, t+h
+                        )
+                        window_residuals.append(residual_output.residuals)
+                
+                if len(window_residuals) == self.horizon:
+                    # Create a nested dictionary to store all residuals for the window
+                    # Structure: {feature -> residual_type -> timestep -> values}
+                    residuals_dict = {}
+                    
+                    for feature in FEATURE_NAMES:
+                        residuals_dict[feature] = {}
+                        
+                        # Initialize dictionary for each residual type
+                        for residual_type in self.residual_generator.residual_types:
+                            # Collect values across timesteps for this feature and residual type
+                            values = [r[feature][residual_type] for r in window_residuals]
+                            residuals_dict[feature][residual_type] = np.array(values)
+                    
+                    # Create ResidualFeatures object with the collected data
+                    features = ResidualFeatures.create_from_data(
+                        time=t,
+                        condition=condition,
+                        residuals=residuals_dict
+                    )
+                    
+                    # Extract features using the feature extractor
+                    feature_dict = self.feature_extractor.extract_features(features)
+                    
+                    # Store the features and label
+                    self.features.append(feature_dict)
+                    self.labels.append(condition)
+                    
+            except Exception as e:
+                print(f"Error processing sequence at time {t}: {str(e)}")
+                continue

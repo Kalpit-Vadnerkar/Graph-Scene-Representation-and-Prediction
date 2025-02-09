@@ -1,28 +1,21 @@
 from Risk_Assessment.ResidualGenerator import ResidualFeatures
-from Risk_Assessment.FaultDetectionConfig import (
-    FEATURE_COMPONENTS,
-    STATISTICAL_METRICS,
-    RESIDUAL_TYPES
-)
+from Risk_Assessment.FaultDetectionConfig import FEATURE_COMPONENTS
 
-from dataclasses import dataclass
-from typing import Dict, List, Any
+from typing import Dict, Any
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix
-from scipy import stats
 
-class ResidualFeatureExtractor:
+class FeatureExtractor:
     @staticmethod
     def compute_statistical_features(values: np.ndarray, prefix: str) -> Dict[str, float]:
-        """Compute statistical features for a given array of values"""
         if len(values) == 0:
             return {}
             
         flat_values = values.reshape(-1)
-        
         features = {}
+        
         try:
-            for metric in STATISTICAL_METRICS:
+            metrics = ['mean', 'std', 'max', 'range']
+            for metric in metrics:
                 if metric == 'mean':
                     features[f'{prefix}_mean'] = float(np.mean(flat_values))
                 elif metric == 'std':
@@ -38,21 +31,17 @@ class ResidualFeatureExtractor:
         return features
     
     def extract_features(self, residuals: ResidualFeatures) -> Dict[str, Any]:
-        """Extract features from all residual types for each feature component"""
         features = {}
         
-        # Process each feature and its components
         for feature, components in FEATURE_COMPONENTS.items():
             feature_residuals = residuals.residuals[feature]
             
             if len(components) == 1:
-                # Single component feature (e.g., steering)
                 for residual_type in feature_residuals:
                     prefix = f"{components[0]}_{residual_type}"
                     values = feature_residuals[residual_type].squeeze()
                     features.update(self.compute_statistical_features(values, prefix))
             else:
-                # Multi-component feature (e.g., position with x,y)
                 for idx, component in enumerate(components):
                     for residual_type in feature_residuals:
                         prefix = f"{component}_{residual_type}"
