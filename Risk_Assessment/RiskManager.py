@@ -15,7 +15,8 @@ class RiskAssessmentManager:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.data_loader = DataLoader(config)
-        self.residual_generator = ResidualGenerator(horizon=config['output_seq_len'])
+        self.horizon = config['output_seq_len']
+        self.residual_generator = ResidualGenerator(horizon=self.horizon)
         self.feature_extractor = FeatureExtractor()
         self.fault_detector = FaultDetector()
         
@@ -132,7 +133,8 @@ class RiskAssessmentManager:
         """Run complete fault detection pipeline"""
         # Process all conditions
         for condition in self.config['conditions']:
-            self.process_condition(model, condition)
+            #self.process_condition(model, condition)
+            self.process_condition_aligned(model, condition)
         
         # Combine all features and labels
         all_features = []
@@ -153,73 +155,180 @@ class RiskAssessmentManager:
         return results
     
     
-    def process_run(self,
-                        dataset: Any,
-                        predictions: List[Dict[str, np.ndarray]],
-                        condition: str) -> None:
+    def process_condition_aligned(self, model, condition: str):
         """
-        Process a run to generate time-step-based residual features.
-        This approach looks at all the H' predictions made for timestep t.
-        The implementation is unoptimized and may require debugging.
+        Process a single condition with aligned observations and predictions
+        This approach aligns predictions made at different times but targeting the same future timestamp
+        """
+        # Load data
+        loaded_data = self.data_loader.load_data_and_predictions(model, condition)
         
-        Args:
-            dataset: Dataset containing ground truth values
-            predictions: List of model predictions
-            condition: Condition label for the sequence
-        """
+        # Generate residuals and extract features
+        features = []
+        labels = []
+        
+        # Calculate valid range based on horizon
+        horizon = self.config['output_seq_len']
         start_idx = 0
-        end_idx = len(dataset)
+        end_idx = len(loaded_data.dataset)
         
-        for t in range(start_idx, end_idx - self.horizon):
-            window_residuals = []
+        # For each target timestamp
+        for target_t in range(start_idx + horizon, end_idx):
+            # Dictionaries to collect all predictions and observations for this target timestamp
+            predictions_for_t = {
+                'position': [], 'position_mean': [], 'position_var': [],
+                'velocity': [], 'velocity_mean': [], 'velocity_var': [],
+                'steering': [], 'steering_mean': [], 'steering_var': [],
+                'acceleration': [], 'acceleration_mean': [], 'acceleration_var': [],
+                'object_distance': [], 'traffic_light_detected': []
+            }
             
-            try:
-                # Look at past horizon steps for feature extraction
-                for h in range(-self.horizon + 1, 1):
-                    if t + h < start_idx or t + h >= end_idx:
-                        continue
-                        
-                    past, future, _, _ = dataset[t + h]
-                    pred_idx = t + h - start_idx
+            observations_for_t = {
+                'position': [],
+                'velocity': [],
+                'steering': [],
+                'acceleration': [],
+                'object_distance': [],
+                'traffic_light_detected': []
+            }
+            
+            valid_predictions = 0
+            
+            # Collect predictions made at different times for the same target time
+            for origin_t in range(target_t - horizon, target_t):
+                if origin_t < 0 or origin_t >= len(loaded_data.predictions):
+                    continue
                     
-                    if 0 <= pred_idx < len(predictions):
-                        pred = predictions[pred_idx]
-                        # Only use past data for residual computation
-                        truth = past
-                        
-                        residual_output = self.residual_generator.compute_residuals(
-                            pred, truth, t+h
-                        )
-                        window_residuals.append(residual_output.residuals)
+                # Calculate which prediction step corresponds to target_t
+                pred_offset = target_t - origin_t - 1  # -1 because prediction starts from next step
                 
-                if len(window_residuals) == self.horizon:
-                    # Create a nested dictionary to store all residuals for the window
-                    # Structure: {feature -> residual_type -> timestep -> values}
-                    residuals_dict = {}
+                # Only process if the offset is within the horizon
+                if pred_offset < 0 or pred_offset >= horizon:
+                    continue
+                
+                # Get actual observation at target_t
+                past, future, _, _ = loaded_data.dataset[target_t]
+                
+                # Get prediction made at origin_t for target_t
+                prediction = loaded_data.predictions[origin_t]
+                
+                # Check if we have valid prediction data
+                if prediction is None or len(prediction) == 0:
+                    continue
                     
-                    for feature in FEATURE_NAMES:
-                        residuals_dict[feature] = {}
-                        
-                        # Initialize dictionary for each residual type
-                        for residual_type in self.residual_generator.residual_types:
-                            # Collect values across timesteps for this feature and residual type
-                            values = [r[feature][residual_type] for r in window_residuals]
-                            residuals_dict[feature][residual_type] = np.array(values)
+                valid_predictions += 1
+                
+                # Add observation at target_t
+                for feature in observations_for_t.keys():
+                    # Ensure the feature exists in the future data
+                    if feature in future:
+                        # Get the actual observation - we need all the values, not just at an offset
+                        # because future contains the ground truth for all future steps
+                        observations_for_t[feature].append(future[feature])
+                
+                # Add prediction for target_t made at origin_t
+                for feature in ['position', 'velocity', 'steering', 'acceleration']:
+                    # Regular features have mean and variance
+                    mean_key = f'{feature}_mean'
+                    var_key = f'{feature}_var'
                     
-                    # Create ResidualFeatures object with the collected data
-                    features = ResidualFeatures.create_from_data(
-                        time=t,
-                        condition=condition,
-                        residuals=residuals_dict
+                    if mean_key in prediction and var_key in prediction:
+                        # Extract the specific prediction step (pred_offset)
+                        # Based on DLModels.py, prediction[mean_key] shape is [batch, seq_len, dims]
+                        # or [batch, seq_len] depending on the feature
+                        try:
+                            # For position and velocity (2D features)
+                            if feature in ['position', 'velocity'] and prediction[mean_key].ndim > 2:
+                                if pred_offset < prediction[mean_key].shape[0]:
+                                    predictions_for_t[mean_key].append(prediction[mean_key][pred_offset])
+                                    predictions_for_t[var_key].append(prediction[var_key][pred_offset])
+                            # For steering and acceleration (1D features)
+                            elif pred_offset < prediction[mean_key].shape[0]:
+                                predictions_for_t[mean_key].append(prediction[mean_key][pred_offset])
+                                predictions_for_t[var_key].append(prediction[var_key][pred_offset])
+                        except Exception as e:
+                            print(f"Error extracting {feature} at offset {pred_offset}: {str(e)}")
+                            print(f"Shape: {prediction[mean_key].shape}")
+                
+                # Special case for object_distance and traffic_light_detected (no variance)
+                for feature in ['object_distance', 'traffic_light_detected']:
+                    if feature in prediction:
+                        try:
+                            if pred_offset < prediction[feature].shape[0]:
+                                predictions_for_t[feature].append(prediction[feature][pred_offset])
+                        except Exception as e:
+                            print(f"Error extracting {feature} at offset {pred_offset}: {str(e)}")
+                            print(f"Shape: {prediction[feature].shape}")
+            
+            # Only process if we have collected valid predictions
+            if valid_predictions > 0:
+                # Convert lists to tensors/arrays for compute_residuals
+                processed_predictions = {}
+                processed_observations = {}
+                
+                # Process predictions
+                for key, values in predictions_for_t.items():
+                    if values:
+                        # Convert list of tensors to single array/tensor
+                        if key.endswith('_mean') or key.endswith('_var'):
+                            feature = key.split('_')[0]
+                            # Handle the main feature keys to match what compute_residuals expects
+                            if feature in ['position', 'velocity', 'steering', 'acceleration']:
+                                # For these we need both mean and var
+                                if len(values) > 0:
+                                    try:
+                                        import torch
+                                        import numpy as np
+                                        # Stack tensors if they're torch tensors
+                                        if isinstance(values[0], torch.Tensor):
+                                            processed_predictions[key] = torch.stack(values).detach().cpu().numpy()
+                                        else:
+                                            # Convert to numpy arrays if not already
+                                            processed_predictions[key] = np.array(values)
+                                    except Exception as e:
+                                        print(f"Error processing {key}: {str(e)}")
+                        else:
+                            # Direct features (object_distance, traffic_light_detected)
+                            if len(values) > 0:
+                                try:
+                                    import torch
+                                    import numpy as np
+                                    if isinstance(values[0], torch.Tensor):
+                                        processed_predictions[key] = torch.stack(values).detach().cpu().numpy()
+                                    else:
+                                        processed_predictions[key] = np.array(values)
+                                except Exception as e:
+                                    print(f"Error processing {key}: {str(e)}")
+                
+                # Process observations
+                for key, values in observations_for_t.items():
+                    if values:
+                        try:
+                            import torch
+                            # Stack tensors
+                            processed_observations[key] = torch.stack(values)
+                        except Exception as e:
+                            print(f"Error processing observation {key}: {str(e)}")
+                
+                # Generate residuals if we have both predictions and observations
+                if processed_predictions and processed_observations:
+                    residual_output = self.residual_generator.compute_residuals(
+                        processed_predictions,
+                        processed_observations,
+                        target_t
                     )
                     
-                    # Extract features using the feature extractor
-                    feature_dict = self.feature_extractor.extract_features(features)
+                    residual_features = ResidualFeatures(
+                        time=target_t,
+                        condition=condition,
+                        residuals=residual_output.residuals
+                    )
                     
-                    # Store the features and label
-                    self.features.append(feature_dict)
-                    self.labels.append(condition)
-                    
-            except Exception as e:
-                print(f"Error processing sequence at time {t}: {str(e)}")
-                continue
+                    feature_dict = self.feature_extractor.extract_features(residual_features)
+                    features.append(feature_dict)
+                    labels.append(condition)
+        
+        self.features_by_condition[condition] = features
+        self.labels_by_condition[condition] = labels
+        
+        return features, labels

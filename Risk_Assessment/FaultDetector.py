@@ -17,10 +17,10 @@ class FaultDetector:
             #('variance_selector', VarianceThreshold(threshold=0.1)),
             ('scaler', RobustScaler()),
             ('classifier', RandomForestClassifier(
-                n_estimators=1000,
+                n_estimators=100,
                 random_state=random_state,
                 max_features='sqrt',
-                min_samples_leaf=250
+                min_samples_leaf=200
             ))
         ])
         

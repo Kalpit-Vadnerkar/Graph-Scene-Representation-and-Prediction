@@ -235,7 +235,7 @@ class SPRTResidual(BaseResidual):
 
 
 class CUSUMResidual(BaseResidual):
-    def __init__(self, k: float = 0.2, h: float = 5.0, target: float = 0.0):
+    def __init__(self, k: float = 3.0, h: float = 5.0, target: float = 0.0):
         """
         Initialize CUSUM control chart parameters.
         
