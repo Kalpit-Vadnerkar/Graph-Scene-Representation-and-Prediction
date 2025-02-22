@@ -1,6 +1,6 @@
 from Risk_Assessment.DataLoader import DataLoader
 from Risk_Assessment.ResidualGenerator import ResidualGenerator, ResidualFeatures
-from Risk_Assessment.FeatureExtractor import FeatureExtractor
+from Risk_Assessment.FeatureExtractor import DimensionReductionFeatureExtractor
 from Risk_Assessment.FaultDetector import FaultDetector
 from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES
 
@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
+import torch
 
 class RiskAssessmentManager:
     def __init__(self, config: Dict[str, Any]):
@@ -17,21 +18,24 @@ class RiskAssessmentManager:
         self.data_loader = DataLoader(config)
         self.horizon = config['output_seq_len']
         self.residual_generator = ResidualGenerator(horizon=self.horizon)
-        self.feature_extractor = FeatureExtractor()
+        self.feature_extractor = None # Will be initialized with specific n_components
         self.fault_detector = FaultDetector()
         
         self.features_by_condition = {}
         self.labels_by_condition = {}
+        self.all_residuals = []  # Store all residuals for fitting PCA
     
-    def process_condition(self, model, condition: str):
-        """Process a single condition"""
-        # Load data
-        loaded_data = self.data_loader.load_data_and_predictions(model, condition)
+    def generate_all_residuals(self, loaded_data_dict):
+        """Generate residuals for all conditions using pre-loaded data."""
+        self.all_residuals = []  # Reset residuals list
         
-        # Generate residuals and extract features
-        features = []
-        labels = []
-        
+        # Process all conditions using pre-loaded data
+        for condition in self.config['conditions']:
+            loaded_data = loaded_data_dict[condition]
+            #self.process_condition(loaded_data, condition)
+            self.process_condition_aligned(loaded_data, condition)
+
+    def process_condition(self, loaded_data, condition: str):
         for t in range(len(loaded_data.dataset)):
             past, future, _, _ = loaded_data.dataset[t]
             if t < len(loaded_data.predictions):
@@ -46,22 +50,10 @@ class RiskAssessmentManager:
                     condition=condition,
                     residuals=residual_output.residuals
                 )
-                
-                feature_dict = self.feature_extractor.extract_features(residual_features)
-                features.append(feature_dict)
-                labels.append(condition)
-        
-        self.features_by_condition[condition] = features
-        self.labels_by_condition[condition] = labels
+                self.all_residuals.append(residual_features)
     
     def plot_confusion_matrix(self, results: Dict[str, Any], save_path: str = 'Results/confusion_matrix.png'):
-        """
-        Plot and save confusion matrix visualization.
-        
-        Args:
-            results: Dictionary containing classification results
-            save_path: Path where to save the confusion matrix plot
-        """
+        """Plot and save confusion matrix visualization."""
         import os
         
         # Create Results directory if it doesn't exist
@@ -89,246 +81,262 @@ class RiskAssessmentManager:
         
         print(f"Confusion matrix plot saved to {save_path}")
 
-    def get_feature_importance(self) -> pd.DataFrame:
-        """
-        Extract and format feature importance from the random forest classifier.
+    def plot_explained_variance(self, save_path: str = 'Results/explained_variance.png'):
+        """Plot cumulative explained variance for each feature-residual type."""
+        if not self.feature_extractor or not self.feature_extractor.is_fitted:
+            raise ValueError("Feature extractor not fitted yet.")
         
-        Returns:
-            pd.DataFrame: DataFrame containing feature names and their importance scores
-        """
-        # Get feature names and importance scores
-        feature_names = list(self.features_by_condition[self.config['conditions'][0]][0].keys())
-        importance_scores = self.fault_detector.pipeline.named_steps['classifier'].feature_importances_
+        cumulative_variance = self.feature_extractor.get_cumulative_explained_variance()
+        
+        plt.figure(figsize=(15, 10))
+        for key, variance in cumulative_variance.items():
+            plt.plot(range(1, len(variance) + 1), variance, marker='o', label=key)
+        
+        plt.xlabel('Number of Components')
+        plt.ylabel('Cumulative Explained Variance Ratio')
+        plt.title('Explained Variance Ratio vs Number of Components')
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(save_path)
+        plt.close()
+    
+    def plot_feature_importance(self, results: Dict[str, Any], save_path: str = 'Results/feature_importance.png'):
+        """Plot feature importance by PCA component."""
+        if not self.feature_extractor:
+            raise ValueError("Feature extractor not initialized.")
+        
+        importance_by_component = self.feature_extractor.get_feature_importance_by_component(
+            self.fault_detector.pipeline.named_steps['classifier']
+        )
+        
+        # Prepare data for plotting
+        features = []
+        components = []
+        importance_scores = []
+        
+        for feature, component_scores in importance_by_component.items():
+            for component, score in component_scores.items():
+                features.append(feature)
+                components.append(f"PC{component}")
+                importance_scores.append(score)
         
         # Create DataFrame
-        importance_df = pd.DataFrame({
-            'Feature': feature_names,
+        df = pd.DataFrame({
+            'Feature': features,
+            'Component': components,
             'Importance': importance_scores
         })
         
-        # Sort by importance
-        importance_df = importance_df.sort_values('Importance', ascending=False)
-        
-        return importance_df
+        # Plot
+        plt.figure(figsize=(15, 10))
+        sns.barplot(data=df, x='Feature', y='Importance', hue='Component')
+        plt.xticks(rotation=45, ha='right')
+        plt.title('Feature Importance by PCA Component')
+        plt.tight_layout()
+        plt.savefig(save_path)
+        plt.close()
 
-    def print_feature_importance(self):
-        """Print feature importance in a formatted table."""
-        importance_df = self.get_feature_importance()
+    def print_feature_importance_by_component(self):
+        """Print detailed feature importance breakdown by PCA component."""
+        if not self.feature_extractor:
+            raise ValueError("Feature extractor not initialized.")
+            
+        importance_by_component = self.feature_extractor.get_feature_importance_by_component(
+            self.fault_detector.pipeline.named_steps['classifier']
+        )
         
-        # Format the table
+        # Prepare table data
         table_data = []
-        for _, row in importance_df.iterrows():
-            table_data.append([
-                row['Feature'],
-                f"{row['Importance']:.4f}"
-            ])
+        for feature, component_scores in importance_by_component.items():
+            for component, score in component_scores.items():
+                table_data.append([
+                    feature,
+                    f"PC{component}",
+                    f"{score:.4f}"
+                ])
+        
+        # Sort by importance score
+        table_data.sort(key=lambda x: float(x[2]), reverse=True)
         
         # Print using tabulate
-        print("\nFeature Importance:")
+        print("\nFeature Importance by PCA Component:")
         print(tabulate(table_data, 
-                      headers=['Feature', 'Importance Score'],
+                      headers=['Feature', 'Component', 'Importance Score'],
                       tablefmt='grid'))
 
-    def run_fault_detection(self, model):
-        """Run complete fault detection pipeline"""
-        # Process all conditions
-        for condition in self.config['conditions']:
-            #self.process_condition(model, condition)
-            self.process_condition_aligned(model, condition)
+    def run_fault_detection(self, loaded_data_dict, n_components=None):
+        """Run complete fault detection pipeline with dimension reduction"""
+        # Initialize feature extractor with specified number of components
+        self.feature_extractor = DimensionReductionFeatureExtractor(n_components=n_components)
         
-        # Combine all features and labels
-        all_features = []
-        all_labels = []
-        for condition in self.config['conditions']:
-            all_features.extend(self.features_by_condition[condition])
-            all_labels.extend(self.labels_by_condition[condition])
+        # Generate residuals
+        self.generate_all_residuals(loaded_data_dict)
+        
+        # Fit PCA and transform all residuals
+        transformed_features = self.feature_extractor.fit_transform(self.all_residuals)
+        
+        # Prepare labels
+        labels = [res.condition for res in self.all_residuals]
         
         # Run fault detection
-        results = self.fault_detector.train_and_evaluate(all_features, all_labels)
+        results = self.fault_detector.train_and_evaluate(transformed_features, labels)
         
-        # Plot confusion matrix
+        # Plot results
+        # Generate visualizations
         self.plot_confusion_matrix(results)
+        self.plot_explained_variance()
+        self.plot_feature_importance(results)
         
-        # Print feature importance
-        self.print_feature_importance()
+        # Print feature importance details
+        self.print_feature_importance_by_component()
         
         return results
     
+    def run_dimensionality_analysis(self, loaded_data_dict, max_components=None):
+        """
+        Run fault detection with different numbers of PCA components to analyze impact.
+        
+        Args:
+            model: Trained prediction model
+            loaded_data_dict: Dictionary mapping conditions to their loaded data
+            max_components: Maximum number of components to try (default: None = use all)
+        """
+        results = []
+        
+        # If max_components not specified, use sequence length
+        if max_components is None:
+            max_components = self.horizon
+            
+        # Generate residuals once - we'll reuse these for each component count
+        self.generate_all_residuals(loaded_data_dict)
+        
+        component_range = range(1, max_components + 1)
+        
+        for n_components in component_range:
+            print(f"\nTesting with {n_components} components:")
+            test_results = self.run_fault_detection(loaded_data_dict, n_components=n_components)
+            results.append({
+                'n_components': n_components,
+                'accuracy': test_results['accuracy']
+            })
+        
+        # Plot accuracy vs number of components
+        plt.figure(figsize=(10, 6))
+        accuracies = [r['accuracy'] for r in results]
+        plt.plot(component_range, accuracies, marker='o')
+        plt.xlabel('Number of PCA Components')
+        plt.ylabel('Classification Accuracy')
+        plt.title('Classification Accuracy vs Number of PCA Components')
+        plt.grid(True)
+        plt.savefig('Results/accuracy_vs_components.png')
+        plt.close()
+        
+        # Print results table
+        table_data = [[r['n_components'], f"{r['accuracy']:.4f}"] for r in results]
+        print("\nAccuracy vs Number of Components:")
+        print(tabulate(table_data,
+                      headers=['Number of Components', 'Accuracy'],
+                      tablefmt='grid'))
     
-    def process_condition_aligned(self, model, condition: str):
+    def process_condition_aligned(self, loaded_data, condition: str):
         """
-        Process a single condition with aligned observations and predictions
-        This approach aligns predictions made at different times but targeting the same future timestamp
+        Process a single condition following the progressive validation algorithm.
+        For each target time t, compute residuals from predictions made at different origin times.
         """
-        # Load data
-        loaded_data = self.data_loader.load_data_and_predictions(model, condition)
-        
-        # Generate residuals and extract features
-        features = []
-        labels = []
-        
-        # Calculate valid range based on horizon
-        horizon = self.config['output_seq_len']
-        start_idx = 0
+        horizon = self.horizon  # This is H' in the algorithm
+        start_idx = horizon  # Need enough history for first prediction
         end_idx = len(loaded_data.dataset)
         
-        # For each target timestamp
-        for target_t in range(start_idx + horizon, end_idx):
-            # Dictionaries to collect all predictions and observations for this target timestamp
-            predictions_for_t = {
-                'position': [], 'position_mean': [], 'position_var': [],
-                'velocity': [], 'velocity_mean': [], 'velocity_var': [],
-                'steering': [], 'steering_mean': [], 'steering_var': [],
-                'acceleration': [], 'acceleration_mean': [], 'acceleration_var': [],
-                'object_distance': [], 'traffic_light_detected': []
-            }
+        for target_t in range(start_idx, end_idx):
+            # Step 1: Get the target observation
+            _, target_obs, _, _ = loaded_data.dataset[target_t]
             
-            observations_for_t = {
-                'position': [],
-                'velocity': [],
-                'steering': [],
-                'acceleration': [],
-                'object_distance': [],
-                'traffic_light_detected': []
-            }
+            # Step 2: Set origin time (t - 1 - H')
+            origin_t = target_t - 1 - horizon
             
-            valid_predictions = 0
+            # Skip if we don't have enough history
+            if origin_t < 0:
+                continue
+                
+            # Initialize residuals collector for this target time
+            residuals_collector = {feature: {
+                residual_type: [] for residual_type in ['raw', 'kl_divergence', 'cusum']
+            } for feature in FEATURE_NAMES}
             
-            # Collect predictions made at different times for the same target time
-            for origin_t in range(target_t - horizon, target_t):
-                if origin_t < 0 or origin_t >= len(loaded_data.predictions):
+            # Step 3: Loop through prediction times
+            for i in range(horizon):
+                pred_t = origin_t + i  # prediction time
+                offset = horizon - i    # offset into prediction
+                
+                # Skip if prediction time is out of range
+                if pred_t >= len(loaded_data.predictions) or pred_t < 0:
                     continue
                     
-                # Calculate which prediction step corresponds to target_t
-                pred_offset = target_t - origin_t - 1  # -1 because prediction starts from next step
-                
-                # Only process if the offset is within the horizon
-                if pred_offset < 0 or pred_offset >= horizon:
-                    continue
-                
-                # Get actual observation at target_t
-                past, future, _, _ = loaded_data.dataset[target_t]
-                
-                # Get prediction made at origin_t for target_t
-                prediction = loaded_data.predictions[origin_t]
-                
-                # Check if we have valid prediction data
+                prediction = loaded_data.predictions[pred_t]
                 if prediction is None or len(prediction) == 0:
                     continue
                     
-                valid_predictions += 1
-                
-                # Add observation at target_t
-                for feature in observations_for_t.keys():
-                    # Ensure the feature exists in the future data
-                    if feature in future:
-                        # Get the actual observation - we need all the values, not just at an offset
-                        # because future contains the ground truth for all future steps
-                        observations_for_t[feature].append(future[feature])
-                
-                # Add prediction for target_t made at origin_t
-                for feature in ['position', 'velocity', 'steering', 'acceleration']:
-                    # Regular features have mean and variance
-                    mean_key = f'{feature}_mean'
-                    var_key = f'{feature}_var'
+                # Get the relevant prediction for the target time
+                if offset > 0 and offset <= prediction['position_mean'].shape[0]:
+                    current_prediction = {}
                     
-                    if mean_key in prediction and var_key in prediction:
-                        # Extract the specific prediction step (pred_offset)
-                        # Based on DLModels.py, prediction[mean_key] shape is [batch, seq_len, dims]
-                        # or [batch, seq_len] depending on the feature
-                        try:
-                            # For position and velocity (2D features)
-                            if feature in ['position', 'velocity'] and prediction[mean_key].ndim > 2:
-                                if pred_offset < prediction[mean_key].shape[0]:
-                                    predictions_for_t[mean_key].append(prediction[mean_key][pred_offset])
-                                    predictions_for_t[var_key].append(prediction[var_key][pred_offset])
-                            # For steering and acceleration (1D features)
-                            elif pred_offset < prediction[mean_key].shape[0]:
-                                predictions_for_t[mean_key].append(prediction[mean_key][pred_offset])
-                                predictions_for_t[var_key].append(prediction[var_key][pred_offset])
-                        except Exception as e:
-                            print(f"Error extracting {feature} at offset {pred_offset}: {str(e)}")
-                            print(f"Shape: {prediction[mean_key].shape}")
-                
-                # Special case for object_distance and traffic_light_detected (no variance)
-                for feature in ['object_distance', 'traffic_light_detected']:
-                    if feature in prediction:
-                        try:
-                            if pred_offset < prediction[feature].shape[0]:
-                                predictions_for_t[feature].append(prediction[feature][pred_offset])
-                        except Exception as e:
-                            print(f"Error extracting {feature} at offset {pred_offset}: {str(e)}")
-                            print(f"Shape: {prediction[feature].shape}")
+                    # Extract predictions for each feature
+                    for feature in ['position', 'velocity', 'steering', 'acceleration']:
+                        mean_key = f'{feature}_mean'
+                        var_key = f'{feature}_var'
+                        
+                        if mean_key in prediction and var_key in prediction:
+                            current_prediction[mean_key] = prediction[mean_key][offset-1:offset]
+                            current_prediction[var_key] = prediction[var_key][offset-1:offset]
+                    
+                    # Handle special features
+                    for feature in ['object_distance', 'traffic_light_detected']:
+                        if feature in prediction:
+                            current_prediction[feature] = prediction[feature][offset-1:offset]
+                    
+                    # Compute residuals for this prediction
+                    try:
+                        residual_output = self.residual_generator.compute_residuals(
+                            current_prediction,
+                            target_obs,
+                            target_t
+                        )
+                        
+                        # Store residuals from this prediction time
+                        for feature in FEATURE_NAMES:
+                            for residual_type in residual_output.residuals[feature]:
+                                residuals_collector[feature][residual_type].append(
+                                    residual_output.residuals[feature][residual_type]
+                                )
+                                
+                    except Exception as e:
+                        print(f"Error computing residuals for target {target_t}, prediction {pred_t}: {str(e)}")
             
-            # Only process if we have collected valid predictions
-            if valid_predictions > 0:
-                # Convert lists to tensors/arrays for compute_residuals
-                processed_predictions = {}
-                processed_observations = {}
+            # After collecting all residuals for this target time, combine them
+            if any(any(len(r) > 0 for r in feature_residuals.values()) 
+                for feature_residuals in residuals_collector.values()):
                 
-                # Process predictions
-                for key, values in predictions_for_t.items():
-                    if values:
-                        # Convert list of tensors to single array/tensor
-                        if key.endswith('_mean') or key.endswith('_var'):
-                            feature = key.split('_')[0]
-                            # Handle the main feature keys to match what compute_residuals expects
-                            if feature in ['position', 'velocity', 'steering', 'acceleration']:
-                                # For these we need both mean and var
-                                if len(values) > 0:
-                                    try:
-                                        import torch
-                                        import numpy as np
-                                        # Stack tensors if they're torch tensors
-                                        if isinstance(values[0], torch.Tensor):
-                                            processed_predictions[key] = torch.stack(values).detach().cpu().numpy()
-                                        else:
-                                            # Convert to numpy arrays if not already
-                                            processed_predictions[key] = np.array(values)
-                                    except Exception as e:
-                                        print(f"Error processing {key}: {str(e)}")
+                # Stack residuals for each feature and type
+                combined_residuals = {}
+                for feature in FEATURE_NAMES:
+                    combined_residuals[feature] = {}
+                    for residual_type in residuals_collector[feature]:
+                        if residuals_collector[feature][residual_type]:
+                            # Stack along a new axis to preserve the sequence of residuals
+                            combined_residuals[feature][residual_type] = np.stack(
+                                residuals_collector[feature][residual_type], 
+                                axis=0  # This creates a new dimension for the sequence
+                            )
                         else:
-                            # Direct features (object_distance, traffic_light_detected)
-                            if len(values) > 0:
-                                try:
-                                    import torch
-                                    import numpy as np
-                                    if isinstance(values[0], torch.Tensor):
-                                        processed_predictions[key] = torch.stack(values).detach().cpu().numpy()
-                                    else:
-                                        processed_predictions[key] = np.array(values)
-                                except Exception as e:
-                                    print(f"Error processing {key}: {str(e)}")
+                            # Handle case where no residuals were collected
+                            combined_residuals[feature][residual_type] = np.array([])
                 
-                # Process observations
-                for key, values in observations_for_t.items():
-                    if values:
-                        try:
-                            import torch
-                            # Stack tensors
-                            processed_observations[key] = torch.stack(values)
-                        except Exception as e:
-                            print(f"Error processing observation {key}: {str(e)}")
+                # Create ResidualFeatures object for this target time
+                residual_features = ResidualFeatures(
+                    time=target_t,
+                    condition=condition,
+                    residuals=combined_residuals
+                )
                 
-                # Generate residuals if we have both predictions and observations
-                if processed_predictions and processed_observations:
-                    residual_output = self.residual_generator.compute_residuals(
-                        processed_predictions,
-                        processed_observations,
-                        target_t
-                    )
-                    
-                    residual_features = ResidualFeatures(
-                        time=target_t,
-                        condition=condition,
-                        residuals=residual_output.residuals
-                    )
-                    
-                    feature_dict = self.feature_extractor.extract_features(residual_features)
-                    features.append(feature_dict)
-                    labels.append(condition)
-        
-        self.features_by_condition[condition] = features
-        self.labels_by_condition[condition] = labels
-        
-        return features, labels
+                self.all_residuals.append(residual_features)

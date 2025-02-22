@@ -151,9 +151,11 @@ def visualize(config):
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
     parser.add_argument('--mode', type=str, 
-                       choices=['train', 'visualize', 'evaluate', 'summary'], 
+                       choices=['train', 'visualize', 'evaluate', 'summary', 'dim_analysis'], 
                        required=True,
-                       help='Mode of operation: train, visualize, evaluate, or show model summary')
+                       help='Mode of operation: train, visualize, evaluate, dim_analysis, or show model summary')
+    parser.add_argument('--components', type=int, default=None,
+                       help='Number of PCA components to use (default: None = use all)')
     args = parser.parse_args()
 
     if args.mode == 'summary':
@@ -163,18 +165,25 @@ def main():
         train(CONFIG)
     elif args.mode == 'visualize':
         visualize(CONFIG)
-    elif args.mode == 'evaluate':
-        #run_fault_detection(CONFIG)
-        # Initialize manager
+    elif args.mode in ['evaluate', 'dim_analysis']:
+        # Initialize enhanced manager
         manager = RiskAssessmentManager(CONFIG)
 
         # Load model
         model = load_model(CONFIG)
 
-        # Run complete pipeline
-        results = manager.run_fault_detection(model)
+        # Load data for all conditions once
+        loaded_data_dict = {}
+        for condition in CONFIG['conditions']:
+            loaded_data_dict[condition] = manager.data_loader.load_data_and_predictions(model, condition)
 
-        print(results)
+        if args.mode == 'evaluate':
+            # Run complete pipeline
+            results = manager.run_fault_detection(loaded_data_dict, n_components=args.components)
+            print(results)
+        else:  # dim_analysis
+            # Run dimensionality analysis
+            manager.run_dimensionality_analysis(loaded_data_dict, max_components=args.components)
 
 if __name__ == "__main__":
     main()
