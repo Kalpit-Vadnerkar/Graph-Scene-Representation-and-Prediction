@@ -1,17 +1,18 @@
 from Risk_Assessment.DataLoader import DataLoader
 from Risk_Assessment.ResidualGenerator import ResidualGenerator, ResidualFeatures
-from Risk_Assessment.FeatureExtractor import DimensionReductionFeatureExtractor, TemporalFeatureExtractor
+from Risk_Assessment.FeatureExtractor import TemporalFeatureExtractor
 from Risk_Assessment.FaultDetector import FaultDetector
 from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES
 
 from collections import defaultdict
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
 import torch
+import os
 
 class RiskAssessmentManager:
     def __init__(self, config: Dict[str, Any]):
@@ -206,7 +207,6 @@ class RiskAssessmentManager:
 
     def plot_confusion_matrix(self, results: Dict[str, Any]):
         """Plot and save confusion matrix visualization."""
-        import os
         save_path = f'Results/{self.approach}/confusion_matrix.png'
         # Create Results directory if it doesn't exist
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -233,39 +233,131 @@ class RiskAssessmentManager:
         
         print(f"Confusion matrix plot saved to {save_path}")
 
-    def plot_explained_variance(self):
-        """Plot cumulative explained variance for each feature-residual type combination."""
-        save_path = f'Results/{self.approach}/explained_variance.png'
+    def plot_explained_variance(self, threshold: float = 0.95) -> int:
+        """
+        Plot cumulative explained variance for each feature-residual type combination,
+        as well as a simplified plot per feature. Calculate and return the optimal 
+        number of components based on the given threshold.
+        
+        Args:
+            threshold: Variance threshold to determine optimal number of components (default: 0.95)
+            
+        Returns:
+            int: Recommended number of components to use based on threshold
+        """
+        # Create Results directory if it doesn't exist
+        os.makedirs(f'Results/{self.approach}', exist_ok=True)
         
         if not self.feature_extractor or not self.feature_extractor.is_fitted:
             raise ValueError("Feature extractor not fitted yet.")
         
         cumulative_variance = self.feature_extractor.get_cumulative_explained_variance()
         
-        plt.figure(figsize=(15, 10))
+        # Calculate recommended components for each feature-residual combination
+        feature_component_counts = {}
+        max_components = 0
         
-        line_styles = ['-', '--', ':', '-.']
-        colors = plt.cm.tab10(np.linspace(0, 1, len(cumulative_variance)))
+        for feature, residual_dict in cumulative_variance.items():
+            feature_component_counts[feature] = {}
+            
+            for residual_type, variance in residual_dict.items():
+                # Track maximum component count
+                max_components = max(max_components, len(variance))
+                
+                # Calculate recommended components based on threshold
+                recommended_components = np.argmax(variance >= threshold) + 1
+                if recommended_components > len(variance) or np.all(variance < threshold):
+                    # In case threshold never reached
+                    recommended_components = len(variance)
+                    
+                feature_component_counts[feature][residual_type] = recommended_components
         
+        # Calculate the global recommended component count 
+        # (take max across all feature-residual combinations)
+        recommended_components = max(
+            max(counts.values()) for counts in feature_component_counts.values()
+        )
+        
+        # Create a larger figure to accommodate the bigger legend
+        plt.figure(figsize=(20, 14))
+        
+        # Use a more distinct and colorblind-friendly color palette
+        colors = plt.cm.viridis(np.linspace(0, 1, len(cumulative_variance)))
+        
+        # Set better fonts and sizes
+        plt.rcParams.update({
+            'font.size': 14,
+            'axes.titlesize': 20,
+            'axes.labelsize': 16,
+            'xtick.labelsize': 14,
+            'ytick.labelsize': 14,
+            'legend.fontsize': 16,  # Increased legend font size
+            'legend.title_fontsize': 18  # Added larger legend title font size
+        })
+        
+        # Define distinct markers for different residual types
+        markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h']
+        line_styles = ['-', '--', '-.', ':']
+        
+        # Plot each feature-residual combination
         for feature_idx, (feature, residual_dict) in enumerate(cumulative_variance.items()):
             for residual_idx, (residual_type, variance) in enumerate(residual_dict.items()):
+                # Plot the curve
                 label = f"{feature}-{residual_type}"
                 style = line_styles[residual_idx % len(line_styles)]
                 color = colors[feature_idx]
+                marker = markers[residual_idx % len(markers)]
                 
                 plt.plot(range(1, len(variance) + 1), variance, 
-                        marker='o', linestyle=style, color=color, label=label)
+                        marker=marker, linestyle=style, color=color, label=label,
+                        linewidth=2, markersize=8)
+                
+                # Highlight recommended component count
+                rec_comp = feature_component_counts[feature][residual_type]
+                plt.plot(rec_comp, variance[rec_comp-1], 
+                        marker='D', color=color, markersize=12, markeredgecolor='black')
         
-        plt.xlabel('Number of Components')
-        plt.ylabel('Cumulative Explained Variance Ratio')
-        plt.title('Explained Variance Ratio vs Number of Components')
-        plt.grid(True)
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., ncol=1)
+        # Add threshold line - Make it darker and thicker
+        plt.axhline(y=threshold, color='darkred', linestyle='-', alpha=0.7, linewidth=3,
+                    label=f'Threshold ({threshold})')
+        
+        # Add only one vertical line for the final recommended component count
+        plt.axvline(x=recommended_components, color='black', linestyle='-', alpha=0.7, linewidth=3,
+                    label=f'Recommended Components ({recommended_components})')
+        
+        plt.xlabel('Number of Components', fontweight='bold')
+        plt.ylabel('Cumulative Explained Variance Ratio', fontweight='bold')
+        plt.title('Explained Variance Ratio by Feature and Residual Type', fontweight='bold', pad=20)
+        
+        # Improve legend with larger size
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., 
+                frameon=True, edgecolor='black', fancybox=False,
+                markerscale=2.0,  # Makes the legend markers larger
+                handlelength=3.0,  # Makes the line segments in the legend longer
+                handleheight=1.5,  # Makes the legend lines thicker
+                labelspacing=1.0,  # Adds space between legend entries
+                title='Feature-Residual Type Combinations',  # Add a title to the legend
+                title_fontsize=18)  # Make the legend title larger
+        
+        # Add grid for better readability
+        plt.grid(True, linestyle='--', alpha=0.7)
+        
+        # Ensure axis starts at 0
+        plt.ylim(0.4, 1.05)
+        plt.xlim(0, max_components + 1)
+        
+        # Add text annotation for the recommended components
+        plt.text(recommended_components + 0.2, 0.5, 
+                f'Recommended: {recommended_components}',
+                rotation=90, verticalalignment='center', fontsize=14, fontweight='bold')
+        
         plt.tight_layout()
-        plt.savefig(save_path, bbox_inches='tight', dpi=300)
+        plt.savefig(f'Results/{self.approach}/explained_variance_detailed.png', bbox_inches='tight', dpi=300)
         plt.close()
         
-        print(f"Explained variance plot saved to {save_path}")
+        print(f"Recommended number of components based on {threshold} variance threshold: {recommended_components}")
+        
+        return recommended_components
 
     def plot_feature_importance(self, results: Dict[str, Any]):
         """Plot feature importance by PCA component and residual type."""
@@ -281,60 +373,87 @@ class RiskAssessmentManager:
         # First, create a complete matrix of all possible combinations
         all_features = list(importance_by_component.keys())
         all_residual_types = set()
-        max_components = {}
         
-        # Find all residual types and max components for each feature
+        # Find all residual types
         for feature, residual_dict in importance_by_component.items():
             for residual_type in residual_dict.keys():
                 all_residual_types.add(residual_type)
-            for residual_type, component_dict in residual_dict.items():
-                if feature not in max_components:
-                    max_components[feature] = 0
-                max_components[feature] = max(max_components[feature], max(component_dict.keys()))
         
         all_residual_types = list(all_residual_types)
         
+        # Set larger font sizes
+        plt.rcParams.update({
+            'font.size': 16,
+            'axes.titlesize': 24,
+            'axes.labelsize': 20,
+            'xtick.labelsize': 18,
+            'ytick.labelsize': 18,
+            'legend.fontsize': 18,
+            'legend.title_fontsize': 20
+        })
+        
         # Create figure with adjusted size
-        plt.figure(figsize=(max(15, len(all_features) * 3), 10))
+        plt.figure(figsize=(max(16, len(all_features) * 3.5), 12))
         
         # Set up the bar positions
         n_features = len(all_features)
         n_residuals = len(all_residual_types)
-        bar_width = 0.15  # Adjust this to change bar width
+        bar_width = 0.25  # Wider bars
         
-        # Create color map for residual types
-        colors = plt.cm.Set3(np.linspace(0, 1, n_residuals))
+        # Calculate total importance for percentage scaling
+        total_importance = 0
+        for feature, residual_dict in importance_by_component.items():
+            for residual_type, component_dict in residual_dict.items():
+                total_importance += sum(component_dict.values())
+        
+        # Create color map for residual types - use a more distinct colormap
+        colors = plt.cm.viridis(np.linspace(0, 1, n_residuals))
         
         # Plot each residual type
         for i, residual_type in enumerate(all_residual_types):
             positions = []
             values = []
-            labels = []
             
             for j, feature in enumerate(all_features):
                 if residual_type in importance_by_component[feature]:
                     component_scores = importance_by_component[feature][residual_type]
-                    for component, score in component_scores.items():
-                        # Calculate x position for this bar
-                        x_pos = j + (i - n_residuals/2) * bar_width
-                        positions.append(x_pos)
-                        values.append(score)
-                        labels.append(f"PC{component}")
+                    # Combine all component scores for this feature/residual type
+                    total_score = sum(component_scores.values())
+                    # Convert to percentage if total_importance is not zero
+                    if total_importance > 0:
+                        total_score = (total_score / total_importance) * 100
+                    
+                    x_pos = j + (i - n_residuals/2) * bar_width
+                    positions.append(x_pos)
+                    values.append(total_score)
             
             if positions:  # Only plot if we have data for this residual type
                 plt.bar(positions, values, bar_width, 
-                    label=residual_type, color=colors[i], alpha=0.8)
+                    label=residual_type, color=colors[i], alpha=0.9,
+                    edgecolor='black', linewidth=0.5)  # Add border for better definition
         
         # Customize plot
-        plt.xlabel('Feature')
-        plt.ylabel('Importance Score')
-        plt.title('Feature Importance by Residual Type and PCA Component')
+        plt.xlabel('Feature', fontweight='bold')
+        plt.ylabel('Importance Score (%)', fontweight='bold')
+        plt.title('Feature Importance by Residual Types', 
+                fontweight='bold', pad=20)
         
-        # Set x-ticks at feature positions
-        plt.xticks(range(len(all_features)), all_features, rotation=45, ha='right')
+        # Set x-ticks at feature positions - no rotation
+        plt.xticks(range(len(all_features)), all_features, rotation=0, ha='center')
         
-        # Add legend
-        plt.legend(title='Residual Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+        # Add grid for better readability
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        
+        # Add legend with improved styling
+        plt.legend(title='Residual Type', 
+                bbox_to_anchor=(1.05, 1), 
+                loc='upper left',
+                frameon=True,
+                fancybox=True,
+                shadow=True,
+                markerscale=2.0,
+                handlelength=3.0,
+                borderaxespad=0.5)
         
         # Adjust layout
         plt.tight_layout()
@@ -406,119 +525,238 @@ class RiskAssessmentManager:
                     headers=['Residual Type', 'Total Importance'],
                     tablefmt='grid'))
 
-    def _print_metrics_table(self, metrics: dict):
-        """Print a formatted table of metrics."""
-        from tabulate import tabulate
+    def run_fault_detection(self, loaded_data_dict, n_components=None, variance_threshold=0.95):
+        """
+        Run complete fault detection pipeline with dimension reduction and evaluate 
+        model performance with different n_estimators values.
         
-        # Prepare table data
-        table_data = []
-        for i in range(len(metrics['n_components'])):
-            row = [
-                metrics['n_components'][i],
-                f"{metrics['accuracy'][i]:.4f}",
-                f"{metrics['precision_macro'][i]:.4f}",
-                f"{metrics['recall_macro'][i]:.4f}",
-                f"{metrics['f1_macro'][i]:.4f}",
-                f"{metrics['execution_time'][i]:.2f}"
-            ]
-            table_data.append(row)
-        
-        # Print table
-        print("\nMetrics by Number of Components:")
-        print(tabulate(table_data,
-                    headers=['Components', 'Accuracy', 'Precision', 'Recall', 'F1', 'Time (s)'],
-                    tablefmt='grid'))
-
-    def run_fault_detection(self, loaded_data_dict, n_components=None):
-        """Run complete fault detection pipeline with dimension reduction"""
+        Args:
+            loaded_data_dict: Dictionary with loaded data for each condition
+            n_components: Number of components to use (if None, will be determined automatically)
+            variance_threshold: Threshold for explained variance when determining optimal components
+            
+        Returns:
+            Dictionary with classification results for different n_estimators values
+        """
         # Initialize feature extractor with specified number of components
-        #self.feature_extractor = DimensionReductionFeatureExtractor(n_components=n_components)
         self.feature_extractor = TemporalFeatureExtractor(n_components=n_components)
         
+        # Create results directory if it doesn't exist
+        os.makedirs(f'Results/{self.approach}', exist_ok=True)
+        
         # Generate residuals
+        print("Generating residuals...")
         self.generate_all_residuals(loaded_data_dict)
         
-        # Fit PCA and transform all residuals
-        transformed_features = self.feature_extractor.fit_transform(self.all_residuals)
+        # Fit feature extractor without transform to analyze explained variance
+        print("Fitting feature extractor for variance analysis...")
+        self.feature_extractor.fit(self.all_residuals)
+        
+        # Plot explained variance and get recommended component count
+        print("Analyzing explained variance...")
+        recommended_components = self.plot_explained_variance(threshold=variance_threshold)
+        
+        # If n_components is None, use the recommended count
+        if n_components is None:
+            print(f"Using recommended component count: {recommended_components}")
+            self.feature_extractor.n_components = recommended_components
+            
+            # Refit with proper component count if needed
+            if recommended_components != self.feature_extractor.n_components:
+                self.feature_extractor.fit(self.all_residuals)
+        
+        # Transform all residuals using the fitted extractor
+        print("Transforming features...")
+        transformed_features = self.feature_extractor.transform_all(self.all_residuals)
         
         # Prepare labels
         labels = [res.condition for res in self.all_residuals]
         
-        # Run fault detection
-        results = self.fault_detector.train_and_evaluate(transformed_features, labels)
+        # Define n_estimators values to evaluate
+        n_estimators_values = [1, 10]
+        n_estimators_values.extend(list(range(25,301,25)))
         
-        # Plot results
-        # Generate visualizations
-        self.plot_confusion_matrix(results)
-        self.plot_explained_variance()
-        self.plot_feature_importance(results)
+        # Dictionary to store results for each n_estimators value
+        all_results = {}
+        best_accuracy = 0
+        best_n_estimators = 0
+        best_results = None
         
-        # Print feature importance details
-        self.print_feature_importance_by_component()
+        print("\n===== Evaluating Different n_estimators Values =====")
+        print(f"{'n_estimators':<12} {'Test Acc':<10} {'Train Acc':<10} {'CV Acc':<10} {'Time (s)':<10}")
+        print("-" * 60)
         
-        return results
-    
-    def run_dimensionality_analysis(self, loaded_data_dict, max_components=None):
-        """
-        Run fault detection with different numbers of PCA components to analyze impact.
-        
-        Args:
-            loaded_data_dict: Dictionary mapping conditions to their loaded data
-            max_components: Maximum number of components to try (default: None = use all)
-        """
-        results = []
-        
-        # If max_components not specified, use sequence length
-        if max_components is None:
-            max_components = self.horizon
+        # Run fault detection with different n_estimators values
+        for n_est in n_estimators_values:
+            print(f"Training model with n_estimators={n_est}...")
             
-        # Generate residuals once - we'll reuse these for each component count
-        self.generate_all_residuals(loaded_data_dict)
+            # Create new fault detector with current n_estimators
+            self.fault_detector = FaultDetector(
+                test_size=0.2, 
+                random_state=47,
+                n_estimators=n_est
+            )
+            
+            # Train and evaluate
+            results = self.fault_detector.train_and_evaluate(transformed_features, labels)
+            
+            # Store results
+            all_results[n_est] = results
+            
+            # Print summary results
+            print(f"{n_est:<12} {results['test_accuracy']:.4f}     {results['train_accuracy']:.4f}     {results['cv_test_accuracy']:.4f}     {results['train_time_seconds']:.2f}")
+            
+            # Track best model based on CV accuracy
+            if results['cv_test_accuracy'] > best_accuracy:
+                best_accuracy = results['cv_test_accuracy']
+                best_n_estimators = n_est
+                best_results = results
         
-        component_range = range(1, max_components + 1)
+        print("\n===== Best Model =====")
+        print(f"Best n_estimators: {best_n_estimators} (CV Accuracy: {best_accuracy:.4f})")
         
-        # Initialize metrics storage
-        metrics_by_component = {
-            'n_components': [],
-            'accuracy': [],
-            'precision_macro': [],
-            'recall_macro': [],
-            'f1_macro': [],
-            'precision_weighted': [],
-            'recall_weighted': [],
-            'f1_weighted': [],
-            'execution_time': []
+        # Generate visualizations for the best model
+        print("\nGenerating visualizations for the best model...")
+        self.plot_confusion_matrix(best_results)
+        self.plot_feature_importance(best_results)
+        
+        # Print feature importance details for the best model
+        #self.print_feature_importance_by_component()
+        
+        # Create a summary DataFrame of all results
+        print("\n===== Detailed Results Summary =====")
+        summary_data = []
+        for n_est, results in all_results.items():
+            summary_data.append({
+                'n_estimators': n_est,
+                'test_accuracy': results['test_accuracy'],
+                'test_precision': results['test_precision'],
+                'test_recall': results['test_recall'],
+                'train_accuracy': results['train_accuracy'],
+                'train_precision': results['train_precision'],
+                'train_recall': results['train_recall'],
+                'cv_accuracy': results['cv_test_accuracy'],
+                'prediction_time_seconds': results['prediction_time_seconds'],
+                'avg_prediction_time_per_sample': results['avg_prediction_time_per_sample']
+            })
+        
+        summary_df = pd.DataFrame(summary_data)
+        print(summary_df.to_string(index=False))
+        
+        # Save results summary to CSV
+        results_path = f'Results/{self.approach}/n_estimators_comparison.csv'
+        summary_df.to_csv(results_path, index=False)
+        print(f"\nResults summary saved to {results_path}")
+        
+        # Plot accuracy vs. n_estimators
+        self._plot_n_estimators_comparison(summary_df)
+        
+        return {
+            'all_results': all_results,
+            'best_results': best_results,
+            'best_n_estimators': best_n_estimators,
+            'summary_df': summary_df
+        }
+    
+    def _plot_n_estimators_comparison(self, summary_df):
+        """Plot comparison of metrics across different n_estimators values"""
+        # Check which columns are available in the DataFrame
+        available_columns = set(summary_df.columns)
+        required_columns = {
+            'n_estimators', 
+            'test_accuracy', 'train_accuracy', 'cv_accuracy',
+            'test_precision', 'train_precision', 
+            'test_recall', 'train_recall',
+            'prediction_time_seconds', 'avg_prediction_time_per_sample'
         }
         
-        import time
-        from sklearn.metrics import precision_score, recall_score, f1_score
+        print(f"Available columns in summary DataFrame: {available_columns}")
         
-        for n_components in component_range:
-            print(f"\nTesting with {n_components} components:")
+        # Plot accuracy metrics if available
+        if 'test_accuracy' in available_columns:
+            plt.figure(figsize=(10, 6))
+            plt.plot(summary_df['n_estimators'], summary_df['test_accuracy'], 'o-', label='Test Accuracy', color='#1f77b4')
             
-            # Time the execution
-            start_time = time.time()
-            test_results = self.run_fault_detection(loaded_data_dict, n_components=n_components)
-            execution_time = time.time() - start_time
+            if 'train_accuracy' in available_columns:
+                plt.plot(summary_df['n_estimators'], summary_df['train_accuracy'], 's-', label='Train Accuracy', color='#ff7f0e')
             
-            # Extract true and predicted labels from confusion matrix
-            true_labels = []
-            pred_labels = []
-            for i in range(len(test_results['confusion_matrix'])):
-                for j in range(len(test_results['confusion_matrix'])):
-                    true_labels.extend([i] * test_results['confusion_matrix'][i][j])
-                    pred_labels.extend([j] * test_results['confusion_matrix'][i][j])
+            if 'cv_accuracy' in available_columns:
+                plt.plot(summary_df['n_estimators'], summary_df['cv_accuracy'], '^-', label='CV Accuracy', color='#2ca02c')
             
-            # Store all metrics
-            metrics_by_component['n_components'].append(n_components)
-            metrics_by_component['accuracy'].append(test_results['accuracy'])
-            metrics_by_component['precision_macro'].append(precision_score(true_labels, pred_labels, average='macro'))
-            metrics_by_component['recall_macro'].append(recall_score(true_labels, pred_labels, average='macro'))
-            metrics_by_component['f1_macro'].append(f1_score(true_labels, pred_labels, average='macro'))
-            metrics_by_component['precision_weighted'].append(precision_score(true_labels, pred_labels, average='weighted'))
-            metrics_by_component['recall_weighted'].append(recall_score(true_labels, pred_labels, average='weighted'))
-            metrics_by_component['f1_weighted'].append(f1_score(true_labels, pred_labels, average='weighted'))
-            metrics_by_component['execution_time'].append(execution_time)
+            plt.title('Accuracy vs. Estimators')
+            plt.xlabel('Number of Trees (Estimators)')
+            plt.ylabel('Accuracy')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_accuracy.png', bbox_inches='tight', dpi=300)
+            plt.close()
         
-        # Print results table
-        self._print_metrics_table(metrics_by_component)
+        # Plot precision metrics if available
+        if 'test_precision' in available_columns:
+            plt.figure(figsize=(10, 6))
+            plt.plot(summary_df['n_estimators'], summary_df['test_precision'], 'o-', label='Test Precision', color='#1f77b4')
+            
+            if 'train_precision' in available_columns:
+                plt.plot(summary_df['n_estimators'], summary_df['train_precision'], 's-', label='Train Precision', color='#ff7f0e')
+            
+            plt.title('Precision vs. Estimators')
+            plt.xlabel('Number of Trees (Estimators)')
+            plt.ylabel('Precision (weighted)')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_precision.png', bbox_inches='tight', dpi=300)
+            plt.close()
+        
+        # Plot recall metrics if available
+        if 'test_recall' in available_columns:
+            plt.figure(figsize=(10, 6))
+            plt.plot(summary_df['n_estimators'], summary_df['test_recall'], 'o-', label='Test Recall', color='#1f77b4')
+            
+            if 'train_recall' in available_columns:
+                plt.plot(summary_df['n_estimators'], summary_df['train_recall'], 's-', label='Train Recall', color='#ff7f0e')
+            
+            plt.title('Recall vs. Estimators')
+            plt.xlabel('Number of Trees (Estimators)')
+            plt.ylabel('Recall (weighted)')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_recall.png', bbox_inches='tight', dpi=300)
+            plt.close()
+        
+        # Plot all test metrics together for comparison if available
+        test_metrics_available = all(metric in available_columns for metric in ['test_accuracy', 'test_precision', 'test_recall'])
+        if test_metrics_available:
+            plt.figure(figsize=(10, 6))
+            plt.plot(summary_df['n_estimators'], summary_df['test_accuracy'], 'o-', label='Test Accuracy', color='#1f77b4')
+            plt.plot(summary_df['n_estimators'], summary_df['test_precision'], 's-', label='Test Precision', color='#ff7f0e')
+            #plt.plot(summary_df['n_estimators'], summary_df['test_recall'], '^-', label='Test Recall', color='#2ca02c')
+            plt.title('Test Performance Metrics vs. Estimators')
+            plt.xlabel('Number of Trees (Estimators)')
+            plt.ylabel('Score')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_test_metrics.png', bbox_inches='tight', dpi=300)
+            plt.close()
+        
+        # Plot prediction time metrics if available
+        if all(metric in available_columns for metric in ['prediction_time_seconds', 'avg_prediction_time_per_sample']):
+            plt.figure(figsize=(10, 6))
+            #plt.plot(summary_df['n_estimators'], summary_df['prediction_time_seconds'], 'o-', 
+            #        label='Total Prediction Time', color='#d62728')
+            
+            # Convert to milliseconds for better visibility
+            plt.plot(summary_df['n_estimators'], summary_df['avg_prediction_time_per_sample'] * 1000, 's-', 
+                    label='Average Time per Sample (ms)', color='#9467bd')
+            
+            plt.title('Prediction Time vs. Estimators')
+            plt.xlabel('Number of Trees (estimators)')
+            plt.ylabel('Time')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_prediction_time.png', bbox_inches='tight', dpi=300)
+            plt.close()

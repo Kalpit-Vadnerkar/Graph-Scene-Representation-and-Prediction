@@ -2,22 +2,25 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, LabelEncoder, RobustScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_validate, StratifiedKFold, train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, precision_score, recall_score, accuracy_score
 from sklearn.feature_selection import VarianceThreshold
 from typing import List, Dict
 import pandas as pd
+import numpy as np
+import time
 
 
 class FaultDetector:
-    def __init__(self, test_size: float = 0.2, random_state: int = 47):
+    def __init__(self, test_size: float = 0.2, random_state: int = 47, n_estimators: int = 100):
         self.test_size = test_size
         self.random_state = random_state
+        self.n_estimators = n_estimators
         
         self.pipeline = Pipeline([
             #('variance_selector', VarianceThreshold(threshold=0.1)),
             ('scaler', RobustScaler()),
             ('classifier', RandomForestClassifier(
-                n_estimators=100,
+                n_estimators=n_estimators,
                 random_state=random_state,
                 max_features='sqrt',
                 min_samples_leaf=200
@@ -38,9 +41,56 @@ class FaultDetector:
             stratify=y_multi
         )
         
-        # Train and evaluate
+        # Measure training time
+        train_start_time = time.time()
         self.pipeline.fit(X_train, y_train)
+        train_time = time.time() - train_start_time
+        
+        # Measure prediction time on test set
+        predict_start_time = time.time()
         y_pred = self.pipeline.predict(X_test)
+        prediction_time = time.time() - predict_start_time
+        
+        # Get training set predictions for training metrics
+        y_train_pred = self.pipeline.predict(X_train)
+        
+        # Calculate metrics
+        # Test metrics
+        test_accuracy = accuracy_score(y_test, y_pred)
+        test_precision = precision_score(y_test, y_pred, average='weighted')
+        test_recall = recall_score(y_test, y_pred, average='weighted')
+        
+        # Training metrics
+        train_accuracy = accuracy_score(y_train, y_train_pred)
+        train_precision = precision_score(y_train, y_train_pred, average='weighted')
+        train_recall = recall_score(y_train, y_train_pred, average='weighted')
+        
+        # Class-specific metrics
+        class_names = self.label_encoder.inverse_transform(np.unique(y_multi))
+        per_class_metrics = {}
+        
+        for i, class_name in enumerate(class_names):
+            class_test_indices = (y_test == i)
+            class_train_indices = (y_train == i)
+            
+            if np.any(class_test_indices):
+                per_class_metrics[class_name] = {
+                    'test_precision': precision_score(y_test == i, y_pred == i, zero_division=0),
+                    'test_recall': recall_score(y_test == i, y_pred == i, zero_division=0),
+                    'test_samples': np.sum(class_test_indices),
+                    'train_precision': precision_score(y_train == i, y_train_pred == i, zero_division=0),
+                    'train_recall': recall_score(y_train == i, y_train_pred == i, zero_division=0),
+                    'train_samples': np.sum(class_train_indices)
+                }
+                
+        # Cross-validation metrics
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=self.random_state)
+        cv_results = cross_validate(
+            self.pipeline, X, y_multi, 
+            cv=cv,
+            scoring=['accuracy', 'precision_weighted', 'recall_weighted'],
+            return_train_score=True
+        )
         
         return {
             'classification_report': classification_report(
@@ -48,5 +98,35 @@ class FaultDetector:
                 self.label_encoder.inverse_transform(y_pred)
             ),
             'confusion_matrix': confusion_matrix(y_test, y_pred),
-            'accuracy': (y_test == y_pred).mean()
+            
+            # Test metrics
+            'test_accuracy': test_accuracy,
+            'test_precision': test_precision,
+            'test_recall': test_recall,
+            
+            # Training metrics
+            'train_accuracy': train_accuracy,
+            'train_precision': train_precision,
+            'train_recall': train_recall,
+            
+            # Timing metrics
+            'train_time_seconds': train_time,
+            'prediction_time_seconds': prediction_time,
+            'avg_prediction_time_per_sample': prediction_time / len(y_test) if len(y_test) > 0 else 0,
+            
+            # Dataset info
+            'train_samples': len(y_train),
+            'test_samples': len(y_test),
+            'feature_count': X.shape[1],
+            
+            # Cross-validation metrics
+            'cv_test_accuracy': np.mean(cv_results['test_accuracy']),
+            'cv_test_precision': np.mean(cv_results['test_precision_weighted']),
+            'cv_test_recall': np.mean(cv_results['test_recall_weighted']),
+            'cv_train_accuracy': np.mean(cv_results['train_accuracy']),
+            'cv_train_precision': np.mean(cv_results['train_precision_weighted']),
+            'cv_train_recall': np.mean(cv_results['train_recall_weighted']),
+            
+            # Per-class metrics
+            'per_class_metrics': per_class_metrics
         }

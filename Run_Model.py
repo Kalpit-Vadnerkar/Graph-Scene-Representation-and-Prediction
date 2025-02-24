@@ -180,7 +180,7 @@ def main():
         if args.mode == 'evaluate':
             # Run complete pipeline
             results = manager.run_fault_detection(loaded_data_dict, n_components=args.components)
-            print(results)
+            #print(results)
         else:  # dim_analysis
             # Run dimensionality analysis
             manager.run_dimensionality_analysis(loaded_data_dict, max_components=args.components)
