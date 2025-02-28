@@ -13,6 +13,7 @@ import seaborn as sns
 from tabulate import tabulate
 import torch
 import os
+import time 
 
 class RiskAssessmentManager:
     def __init__(self, config: Dict[str, Any]):
@@ -27,27 +28,42 @@ class RiskAssessmentManager:
         self.features_by_condition = {}
         self.labels_by_condition = {}
         self.all_residuals = []  # Store all residuals for fitting PCA
+
+        # Tracking for residual generation time
+        self.total_residual_generation_time = 0.0
+        self.total_residual_samples = 0
     
     def generate_all_residuals(self, loaded_data_dict):
         """Generate residuals for all conditions using pre-loaded data."""
         self.all_residuals = []  # Reset residuals list
+        
+        # Reset timing metrics
+        self.total_residual_generation_time = 0.0
+        self.total_residual_samples = 0
         
         # Process all conditions using pre-loaded data
         for condition in self.config['conditions']:
             loaded_data = loaded_data_dict[condition]
             self.approach = 'Approach1'
             self.process_condition(loaded_data, condition)
-            #self.process_condition_aligned(loaded_data, condition)
 
-    def process_condition(self, loaded_data, condition: str):
+    def process_condition(self, loaded_data, condition: str):        
         for t in range(len(loaded_data.dataset)):
             past, future, _, _ = loaded_data.dataset[t]
             if t < len(loaded_data.predictions):
+                # Measure residual generation time
+                start_time = time.time()
+                
                 residual_output = self.residual_generator.compute_residuals(
                     loaded_data.predictions[t],
                     future,
                     t
                 )
+                
+                # Calculate and accumulate time
+                residual_time = time.time() - start_time
+                self.total_residual_generation_time += residual_time
+                self.total_residual_samples += 1
                 
                 residual_features = ResidualFeatures(
                     time=t,
@@ -186,13 +202,20 @@ class RiskAssessmentManager:
                         final_predictions[feature] = predictions_dict[feature]
                 
                 try:
+                    # Measure residual generation time
+                    start_time = time.time()
+
                     # Compute residuals using the collected sequence
                     residual_output = self.residual_generator.compute_residuals(
                         final_predictions,
                         observations_dict,  # Now using collected observations
                         target_t
                     )
-                    
+                    # Calculate and accumulate time
+                    residual_time = time.time() - start_time
+                    self.total_residual_generation_time += residual_time
+                    self.total_residual_samples += 1
+
                     # Store the residual features
                     residual_features = ResidualFeatures(
                         time=target_t,
@@ -206,7 +229,7 @@ class RiskAssessmentManager:
                     print(f"Error computing residuals for target {target_t}: {str(e)}")
 
     def plot_confusion_matrix(self, results: Dict[str, Any]):
-        """Plot and save confusion matrix visualization."""
+        """Plot and save confusion matrix visualization with custom labels."""
         save_path = f'Results/{self.approach}/confusion_matrix.png'
         # Create Results directory if it doesn't exist
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -216,13 +239,25 @@ class RiskAssessmentManager:
         report_lines = results['classification_report'].split('\n')
         class_labels = [line.split()[0] for line in report_lines[1:-5] if line.strip()]
         
+        # Define custom labels mapping
+        custom_labels = {
+            'Normal': 'Normal',
+            'Noisy_Camera': 'Camera Fault',
+            'Noisy_Lidar': 'LiDAR Fault',
+            'Noisy_IMU': 'IMU Fault'
+            # Add more mappings as needed for other conditions
+        }
+        
+        # Map original labels to custom labels
+        display_labels = [custom_labels.get(label, label) for label in class_labels]
+        
         plt.figure(figsize=(10, 8))
         sns.heatmap(conf_matrix, 
-                   annot=True, 
-                   fmt='d', 
-                   cmap='Blues',
-                   xticklabels=class_labels,
-                   yticklabels=class_labels)
+                annot=True, 
+                fmt='d', 
+                cmap='Blues',
+                xticklabels=display_labels,
+                yticklabels=display_labels)
         
         plt.title('Confusion Matrix')
         plt.ylabel('True Label')
@@ -302,8 +337,19 @@ class RiskAssessmentManager:
         # Plot each feature-residual combination
         for feature_idx, (feature, residual_dict) in enumerate(cumulative_variance.items()):
             for residual_idx, (residual_type, variance) in enumerate(residual_dict.items()):
-                # Plot the curve
-                label = f"{feature}-{residual_type}"
+                # Plot the curve with formatted labels
+                # Capitalize feature name and format residual type
+                feature_display = feature.capitalize()
+                # Rename specific features
+                if feature == "object_distance":
+                    feature_display = "Object Detection Flag"
+                elif feature == "traffic_light_detected":
+                    feature_display = "Traffic Light Status Flag"
+                    
+                # Format residual type with spaces
+                residual_display = residual_type.replace("_", " ")
+                
+                label = f"{feature_display} - {residual_display}"
                 style = line_styles[residual_idx % len(line_styles)]
                 color = colors[feature_idx]
                 marker = markers[residual_idx % len(markers)]
@@ -329,20 +375,25 @@ class RiskAssessmentManager:
         plt.ylabel('Cumulative Explained Variance Ratio', fontweight='bold')
         plt.title('Explained Variance Ratio by Feature and Residual Type', fontweight='bold', pad=20)
         
-        # Improve legend with larger size
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., 
-                frameon=True, edgecolor='black', fancybox=False,
-                markerscale=2.0,  # Makes the legend markers larger
-                handlelength=3.0,  # Makes the line segments in the legend longer
-                handleheight=1.5,  # Makes the legend lines thicker
-                labelspacing=1.0,  # Adds space between legend entries
-                title='Feature-Residual Type Combinations',  # Add a title to the legend
-                title_fontsize=18)  # Make the legend title larger
+        # MODIFIED: Move legend to the bottom right inside the plot
+        plt.legend(
+            loc='lower right',  # Position in bottom right corner
+            frameon=True,
+            edgecolor='black',
+            fancybox=False,
+            markerscale=1.5,  # Slightly smaller markers to fit inside
+            handlelength=2.5,  # Slightly shorter line segments
+            handleheight=1.5,  # Keep legend lines thick
+            labelspacing=0.7,  # Slightly tighter spacing to save space
+            title='Feature-Residual Type Combinations',
+            title_fontsize=18,
+            ncol=2  # Organize legend in 2 columns for better readability
+        )
         
         # Add grid for better readability
         plt.grid(True, linestyle='--', alpha=0.7)
         
-        # Ensure axis starts at 0
+        # Ensure axis starts at 0.4
         plt.ylim(0.4, 1.05)
         plt.xlim(0, max_components + 1)
         
@@ -362,6 +413,7 @@ class RiskAssessmentManager:
     def plot_feature_importance(self, results: Dict[str, Any]):
         """Plot feature importance by PCA component and residual type."""
         save_path = f'Results/{self.approach}/feature_importance.png'
+        features_save_path = f'Results/{self.approach}/feature_importance_by_features.png'
         
         if not self.feature_extractor:
             raise ValueError("Feature extractor not initialized.")
@@ -379,7 +431,27 @@ class RiskAssessmentManager:
             for residual_type in residual_dict.keys():
                 all_residual_types.add(residual_type)
         
-        all_residual_types = list(all_residual_types)
+        # Define the specific order and pretty labels for residual types
+        residual_order = ['raw', 'kl_divergence', 'cusum']
+        residual_labels = {
+            'raw': 'Raw',
+            'kl_divergence': 'KL Divergence',
+            'cusum': 'CUSUM'
+        }
+        
+        # Filter residual types to only include those in our desired order and that exist in the data
+        ordered_residual_types = [rt for rt in residual_order if rt in all_residual_types]
+        
+        # Define pretty labels for features
+        feature_labels = {}
+        for feature in all_features:
+            if feature == 'object_distance':
+                feature_labels[feature] = 'Object Detection Flag'
+            elif feature == 'traffic_light_detected':
+                feature_labels[feature] = 'Traffic Light Status Flag'
+            else:
+                # Capitalize the first letter of each feature
+                feature_labels[feature] = feature.capitalize()
         
         # Set larger font sizes
         plt.rcParams.update({
@@ -388,8 +460,8 @@ class RiskAssessmentManager:
             'axes.labelsize': 20,
             'xtick.labelsize': 18,
             'ytick.labelsize': 18,
-            'legend.fontsize': 18,
-            'legend.title_fontsize': 20
+            'legend.fontsize': 22,  # Increased from 18
+            'legend.title_fontsize': 24  # Increased from 20
         })
         
         # Create figure with adjusted size
@@ -397,7 +469,7 @@ class RiskAssessmentManager:
         
         # Set up the bar positions
         n_features = len(all_features)
-        n_residuals = len(all_residual_types)
+        n_residuals = len(ordered_residual_types)
         bar_width = 0.25  # Wider bars
         
         # Calculate total importance for percentage scaling
@@ -410,7 +482,7 @@ class RiskAssessmentManager:
         colors = plt.cm.viridis(np.linspace(0, 1, n_residuals))
         
         # Plot each residual type
-        for i, residual_type in enumerate(all_residual_types):
+        for i, residual_type in enumerate(ordered_residual_types):
             positions = []
             values = []
             
@@ -429,7 +501,7 @@ class RiskAssessmentManager:
             
             if positions:  # Only plot if we have data for this residual type
                 plt.bar(positions, values, bar_width, 
-                    label=residual_type, color=colors[i], alpha=0.9,
+                    label=residual_labels[residual_type], color=colors[i], alpha=0.9,
                     edgecolor='black', linewidth=0.5)  # Add border for better definition
         
         # Customize plot
@@ -438,22 +510,21 @@ class RiskAssessmentManager:
         plt.title('Feature Importance by Residual Types', 
                 fontweight='bold', pad=20)
         
-        # Set x-ticks at feature positions - no rotation
-        plt.xticks(range(len(all_features)), all_features, rotation=0, ha='center')
+        # Set x-ticks at feature positions with pretty labels
+        pretty_feature_labels = [feature_labels[feature] for feature in all_features]
+        plt.xticks(range(len(all_features)), pretty_feature_labels, rotation=0, ha='center')
         
         # Add grid for better readability
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
-        # Add legend with improved styling
+        # Add legend with improved styling - now inside the plot at top left
         plt.legend(title='Residual Type', 
-                bbox_to_anchor=(1.05, 1), 
-                loc='upper left',
+                loc='upper left',  # Changed from outside to inside
                 frameon=True,
                 fancybox=True,
                 shadow=True,
                 markerscale=2.0,
-                handlelength=3.0,
-                borderaxespad=0.5)
+                handlelength=3.0)
         
         # Adjust layout
         plt.tight_layout()
@@ -463,6 +534,58 @@ class RiskAssessmentManager:
         plt.close()
         
         print(f"Feature importance plot saved to {save_path}")
+        
+        # Create a plot showing overall importance by features
+        plt.figure(figsize=(max(12, len(all_features) * 2.5), 10))
+        
+        # Calculate total importance for each feature across all residual types
+        feature_importance = {}
+        for feature in all_features:
+            feature_importance[feature] = 0
+            for residual_type in all_residual_types:
+                if residual_type in importance_by_component[feature]:
+                    component_scores = importance_by_component[feature][residual_type]
+                    feature_importance[feature] += sum(component_scores.values())
+        
+        # Convert to percentages
+        if total_importance > 0:
+            for feature in feature_importance:
+                feature_importance[feature] = (feature_importance[feature] / total_importance) * 100
+        
+        # Sort features by importance
+        sorted_features = sorted(all_features, key=lambda x: feature_importance[x], reverse=True)
+        sorted_values = [feature_importance[feature] for feature in sorted_features]
+        sorted_labels = [feature_labels[feature] for feature in sorted_features]
+        
+        # Plot bars with a blue color palette
+        bar_colors = plt.cm.Blues(np.linspace(0.6, 0.9, len(sorted_features)))
+        
+        plt.bar(range(len(sorted_features)), sorted_values, color=bar_colors, 
+                alpha=0.9, edgecolor='black', linewidth=0.5)
+        
+        # Add value labels on top of bars
+        for i, v in enumerate(sorted_values):
+            plt.text(i, v + 0.5, f"{v:.1f}%", ha='center', fontsize=14, fontweight='bold')
+        
+        # Customize plot
+        plt.xlabel('Feature', fontweight='bold')
+        plt.ylabel('Total Importance Score (%)', fontweight='bold')
+        plt.title('Overall Feature Importance', fontweight='bold', pad=20)
+        
+        # Set x-ticks with sorted feature labels
+        plt.xticks(range(len(sorted_features)), sorted_labels, rotation=30, ha='right')
+        
+        # Add grid for better readability
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        
+        # Adjust layout
+        plt.tight_layout()
+        
+        # Save feature importance plot
+        plt.savefig(features_save_path, bbox_inches='tight', dpi=300)
+        plt.close()
+        
+        print(f"Feature importance by features plot saved to {features_save_path}")
 
     def print_feature_importance_by_component(self):
         """Print detailed feature importance breakdown by PCA component."""
@@ -525,6 +648,277 @@ class RiskAssessmentManager:
                     headers=['Residual Type', 'Total Importance'],
                     tablefmt='grid'))
 
+    def _plot_timing_breakdown(self, summary_df):
+        """Create a stacked bar chart showing the breakdown of prediction time components"""
+        if not all(col in summary_df.columns for col in 
+                ['avg_feature_extraction_time_per_sample', 
+                'avg_classifier_prediction_time_per_sample',
+                'avg_residual_generation_time_per_sample']):
+            # Skip if we don't have all the detailed timing metrics
+            return
+        
+        # Create Results directory if it doesn't exist
+        os.makedirs(f'Results/{self.approach}', exist_ok=True)
+        
+        # Convert all times to milliseconds
+        fe_time_ms = summary_df['avg_feature_extraction_time_per_sample'] * 1000
+        clf_time_ms = summary_df['avg_classifier_prediction_time_per_sample'] * 1000
+        res_gen_time_ms = summary_df['avg_residual_generation_time_per_sample'] * 1000
+        
+        # Find best n_estimators based on CV accuracy
+        best_est = summary_df.loc[summary_df['test_accuracy'].idxmax(), 'n_estimators']
+        
+        # Create a bar chart for a few selected n_estimators values
+        # Choose a representative sample of n_estimators values
+        if len(summary_df) > 10:
+            indices = np.linspace(0, len(summary_df)-1, 10, dtype=int)
+            selected_df = summary_df.iloc[indices].copy()
+        else:
+            selected_df = summary_df.copy()
+        
+        # Ensure the best n_estimators value is included
+        if best_est not in selected_df['n_estimators'].values:
+            best_row = summary_df[summary_df['n_estimators'] == best_est]
+            if not best_row.empty:
+                selected_df = pd.concat([selected_df, best_row])
+                selected_df = selected_df.sort_values('n_estimators')
+        
+        # Extract timing data for the selected n_estimators values
+        n_estimators = selected_df['n_estimators']
+        fe_selected = selected_df['avg_feature_extraction_time_per_sample'] * 1000
+        clf_selected = selected_df['avg_classifier_prediction_time_per_sample'] * 1000
+        res_selected = selected_df['avg_residual_generation_time_per_sample'] * 1000
+        
+        # Create figure
+        plt.figure(figsize=(12, 7))
+        
+        # Create stacked bar chart
+        width = 0.7
+        bottom_vals = np.zeros(len(n_estimators))
+        
+        # First bar (residual generation time)
+        p1 = plt.bar(n_estimators, res_selected, width, label='Residual Generation', 
+                    color='#1f77b4', edgecolor='black', linewidth=0.5)
+        bottom_vals += res_selected
+        
+        # Second bar (feature extraction time)
+        p2 = plt.bar(n_estimators, fe_selected, width, bottom=bottom_vals, 
+                    label='Feature Extraction', color='#ff7f0e', 
+                    edgecolor='black', linewidth=0.5)
+        bottom_vals += fe_selected
+        
+        # Third bar (classifier prediction time)
+        p3 = plt.bar(n_estimators, clf_selected, width, bottom=bottom_vals, 
+                    label='Classifier Prediction', color='#2ca02c', 
+                    edgecolor='black', linewidth=0.5)
+        
+        # Highlight the best n_estimators bar
+        if best_est in n_estimators.values:
+            # Find the position of best_est in the selected dataframe
+            best_idx = n_estimators.values.tolist().index(best_est)
+            
+            # Draw an outline around the best bar
+            plt.axvline(x=best_est, color='red', linestyle='--', alpha=0.7)
+            plt.text(best_est, bottom_vals[best_idx] + 1, f'Best\n{best_est}', 
+                    ha='center', va='bottom', color='red', fontweight='bold')
+        else:
+            print(f"Warning: Best n_estimators ({best_est}) not found in selected subset")
+                
+        # Add total time labels on top of each bar
+        for i, (n_est, total) in enumerate(zip(n_estimators, bottom_vals)):
+            plt.text(n_est, total + 0.5, f'{total:.1f} ms', ha='center', va='bottom')
+        
+        # Add percentage labels within each segment
+        for i, (n_est, res, fe, clf) in enumerate(zip(n_estimators, res_selected, fe_selected, clf_selected)):
+            total = res + fe + clf
+            
+            # Only show percentages if the segment is large enough
+            if res/total > 0.05:  # Only show if > 5%
+                plt.text(n_est, res/2, f'{res/total*100:.0f}%', 
+                        ha='center', va='center', color='black', fontweight='bold')
+            
+            if fe/total > 0.05:
+                plt.text(n_est, res + fe/2, f'{fe/total*100:.0f}%', 
+                        ha='center', va='center', color='black', fontweight='bold')
+            
+            if clf/total > 0.05:
+                plt.text(n_est, res + fe + clf/2, f'{clf/total*100:.0f}%', 
+                        ha='center', va='center', color='black', fontweight='bold')
+        
+        # Add labels and title
+        plt.xlabel('Number of Trees (Estimators)', fontweight='bold')
+        plt.ylabel('Time per Sample (milliseconds)', fontweight='bold')
+        plt.title('Breakdown of Prediction Time Components', fontweight='bold')
+        plt.legend(loc='upper left')
+        plt.grid(axis='y', linestyle='--', alpha=0.3)
+        
+        # Adjust layout
+        plt.tight_layout()
+        
+        # Save the plot
+        plt.savefig(f'Results/{self.approach}/timing_breakdown.png', 
+                    bbox_inches='tight', dpi=300)
+        plt.close()
+    
+    def _plot_n_estimators_comparison(self, summary_df):
+        """Plot comparison of metrics across different n_estimators values"""
+        # Check which columns are available in the DataFrame
+        available_columns = set(summary_df.columns)
+        
+        # Create Results directory if it doesn't exist
+        os.makedirs(f'Results/{self.approach}', exist_ok=True)
+        
+        # Plot accuracy metrics if available
+        if 'test_accuracy' in available_columns:
+            plt.figure(figsize=(10, 6))
+            plt.plot(summary_df['n_estimators'], summary_df['test_accuracy'], 'o-', label='Test Accuracy', color='#1f77b4')
+            
+            if 'train_accuracy' in available_columns:
+                plt.plot(summary_df['n_estimators'], summary_df['train_accuracy'], 's-', label='Train Accuracy', color='#ff7f0e')
+            
+            if 'cv_accuracy' in available_columns:
+                plt.plot(summary_df['n_estimators'], summary_df['cv_accuracy'], '^-', label='CV Accuracy', color='#2ca02c')
+            
+            # Find best n_estimators based on CV accuracy
+            best_est = summary_df.loc[summary_df['test_accuracy'].idxmax(), 'n_estimators']
+            best_acc = summary_df.loc[summary_df['test_accuracy'].idxmax(), 'test_accuracy']
+            
+            # Add vertical line and annotation for best n_estimators
+            plt.axvline(x=best_est, color='green', linestyle='--', alpha=0.7,
+                    label=f'Best #Estimators = {best_est}')
+            plt.scatter([best_est], [best_acc], color='green', s=100, zorder=5)
+            plt.annotate(f'Best: {best_acc:.4f}', 
+                        (best_est, best_acc),
+                        xytext=(10, -30),
+                        textcoords='offset points',
+                        arrowprops=dict(arrowstyle='->', color='green'))
+            
+            plt.title('Accuracy vs. Number of Trees')
+            plt.xlabel('Number of Trees (Estimators)')
+            plt.ylabel('Accuracy')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_accuracy.png', bbox_inches='tight', dpi=300)
+            plt.close()
+        
+        # Plot prediction timing metrics separately - with combined times for feature extraction and classification
+        if 'avg_prediction_time_per_sample' in available_columns:
+            # Determine if we have detailed timing metrics
+            has_detailed_timing = all(col in available_columns for col in 
+                                    ['avg_feature_extraction_time_per_sample', 
+                                    'avg_classifier_prediction_time_per_sample',
+                                    'avg_residual_generation_time_per_sample'])
+            
+            # Create more compact figure
+            plt.figure(figsize=(10, 5))
+            
+            # Convert time to milliseconds for better readability
+            per_sample_time_ms = summary_df['avg_prediction_time_per_sample'] * 1000
+            
+            # Calculate combined feature extraction and classifier time (excluding residual generation)
+            if has_detailed_timing:
+                fe_time_ms = summary_df['avg_feature_extraction_time_per_sample'] * 1000
+                clf_time_ms = summary_df['avg_classifier_prediction_time_per_sample'] * 1000
+                res_gen_time_ms = summary_df['avg_residual_generation_time_per_sample'] * 1000
+                combined_time_ms = fe_time_ms + clf_time_ms + res_gen_time_ms
+                
+                # Plot the combined timing metric (excluding residual generation)
+                plt.plot(summary_df['n_estimators'], combined_time_ms, 'o-',
+                        label='Total Time per Sample', color='#9467bd', linewidth=2)
+            else:
+                # If detailed metrics not available, just plot total time
+                plt.plot(summary_df['n_estimators'], per_sample_time_ms, 'o-',
+                        label='Total Time per Sample', color='#9467bd', linewidth=2)
+            
+            # Find best n_estimators (from cv_accuracy)
+            best_est = summary_df.loc[summary_df['test_accuracy'].idxmax(), 'n_estimators']
+            
+            # Get corresponding timing for best n_estimators
+            best_row = summary_df[summary_df['n_estimators'] == best_est]
+            if not best_row.empty and has_detailed_timing:
+                best_row = best_row.iloc[0]
+                best_fe_time_ms = best_row['avg_feature_extraction_time_per_sample'] * 1000
+                best_clf_time_ms = best_row['avg_classifier_prediction_time_per_sample'] * 1000
+                best_res_gen_time_ms = best_row['avg_residual_generation_time_per_sample'] * 1000
+                best_combined_time_ms = best_fe_time_ms + best_clf_time_ms + best_res_gen_time_ms
+                
+                # Add vertical line at best n_estimators
+                plt.axvline(x=best_est, color='green', linestyle='--', alpha=0.7,
+                        label=f'Best #Estimators = {best_est}')
+                
+                # Add annotation for time at best n_estimators
+                plt.scatter([best_est], [best_combined_time_ms], color='green', s=80, zorder=5)
+                plt.annotate(f'{best_combined_time_ms:.2f} ms', 
+                            (best_est, best_combined_time_ms),
+                            xytext=(10, 10),
+                            textcoords='offset points',
+                            arrowprops=dict(arrowstyle='->', color='green'))
+            
+            plt.title('Risk Assessment Time per Sample vs. Classifier Size')
+            plt.xlabel('Number of Trees (Estimators)')
+            plt.ylabel('Time (milliseconds)')
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(f'Results/{self.approach}/n_estimators_prediction_time.png', 
+                    bbox_inches='tight', dpi=300)
+            plt.close()
+            
+            # Plot Time vs Accuracy tradeoff
+            if 'test_accuracy' in available_columns and has_detailed_timing:
+                plt.figure(figsize=(10, 5))
+                
+                # Use combined timing without residual generation for the tradeoff plot
+                combined_time_ms = fe_time_ms + clf_time_ms + res_gen_time_ms
+                
+                # Create scatter plot with n_estimators as size
+                sizes = summary_df['n_estimators'] / 3 + 20  # Scale for visibility
+                
+                # Add color gradient based on n_estimators
+                norm = plt.Normalize(summary_df['n_estimators'].min(), 
+                                summary_df['n_estimators'].max())
+                colors = plt.cm.viridis(norm(summary_df['n_estimators']))
+                
+                scatter = plt.scatter(combined_time_ms, 
+                                summary_df['test_accuracy'], 
+                                s=sizes, 
+                                c=summary_df['n_estimators'],
+                                cmap='viridis',
+                                alpha=0.7)
+                
+                # Add colorbar
+                cbar = plt.colorbar(scatter)
+                cbar.set_label('Number of Trees')
+                
+                # Find best n_estimators again
+                best_idx = summary_df['test_accuracy'].idxmax()
+                best_est = summary_df.loc[best_idx, 'n_estimators']
+                best_fe_time_ms = summary_df.loc[best_idx, 'avg_feature_extraction_time_per_sample'] * 1000
+                best_clf_time_ms = summary_df.loc[best_idx, 'avg_classifier_prediction_time_per_sample'] * 1000
+                best_combined_time_ms = best_fe_time_ms + best_clf_time_ms + best_res_gen_time_ms
+                best_acc = summary_df.loc[best_idx, 'test_accuracy']
+                
+                # Highlight the best point
+                plt.scatter([best_combined_time_ms], [best_acc], 
+                        s=200, edgecolor='red', facecolor='none', 
+                        linewidth=2, zorder=10)
+                
+                plt.annotate(f'Best: n={best_est}\n{best_acc:.4f}, {best_combined_time_ms:.2f}ms', 
+                            (best_combined_time_ms, best_acc),
+                            xytext=(20, -50),
+                            textcoords='offset points',
+                            arrowprops=dict(arrowstyle='->', color='red'))
+                
+                plt.title('Accuracy vs. Risk Assessment Time Tradeoff')
+                plt.xlabel('Total Time per Sample (ms)')
+                plt.ylabel('Accuracy')
+                plt.grid(True, linestyle='--', alpha=0.5)
+                plt.tight_layout()
+                plt.savefig(f'Results/{self.approach}/accuracy_vs_time_tradeoff.png', 
+                        bbox_inches='tight', dpi=300)
+                plt.close()
+    
     def run_fault_detection(self, loaded_data_dict, n_components=None, variance_threshold=0.95):
         """
         Run complete fault detection pipeline with dimension reduction and evaluate 
@@ -547,6 +941,13 @@ class RiskAssessmentManager:
         # Generate residuals
         print("Generating residuals...")
         self.generate_all_residuals(loaded_data_dict)
+
+        # Calculate average residual generation time per sample
+        avg_residual_time_per_sample = 0.0
+        if self.total_residual_samples > 0:
+            avg_residual_time_per_sample = self.total_residual_generation_time / self.total_residual_samples
+    
+        print(f"Average residual generation time per sample: {avg_residual_time_per_sample*1000:.2f} ms")
         
         # Fit feature extractor without transform to analyze explained variance
         print("Fitting feature extractor for variance analysis...")
@@ -573,8 +974,8 @@ class RiskAssessmentManager:
         labels = [res.condition for res in self.all_residuals]
         
         # Define n_estimators values to evaluate
-        n_estimators_values = [1, 10]
-        n_estimators_values.extend(list(range(25,301,25)))
+        n_estimators_values = list(range(1,25,5))
+        n_estimators_values.extend(list(range(50,501,50)))
         
         # Dictionary to store results for each n_estimators value
         all_results = {}
@@ -598,7 +999,11 @@ class RiskAssessmentManager:
             )
             
             # Train and evaluate
-            results = self.fault_detector.train_and_evaluate(transformed_features, labels)
+            results = self.fault_detector.train_and_evaluate(
+                transformed_features, 
+                labels, 
+                avg_residual_time_per_sample
+            )
             
             # Store results
             all_results[n_est] = results
@@ -607,13 +1012,13 @@ class RiskAssessmentManager:
             print(f"{n_est:<12} {results['test_accuracy']:.4f}     {results['train_accuracy']:.4f}     {results['cv_test_accuracy']:.4f}     {results['train_time_seconds']:.2f}")
             
             # Track best model based on CV accuracy
-            if results['cv_test_accuracy'] > best_accuracy:
-                best_accuracy = results['cv_test_accuracy']
+            if results['test_accuracy'] > best_accuracy:
+                best_accuracy = results['test_accuracy']
                 best_n_estimators = n_est
                 best_results = results
         
         print("\n===== Best Model =====")
-        print(f"Best n_estimators: {best_n_estimators} (CV Accuracy: {best_accuracy:.4f})")
+        print(f"Best n_estimators: {best_n_estimators} (Test Accuracy: {best_accuracy:.4f})")
         
         # Generate visualizations for the best model
         print("\nGenerating visualizations for the best model...")
@@ -637,7 +1042,10 @@ class RiskAssessmentManager:
                 'train_recall': results['train_recall'],
                 'cv_accuracy': results['cv_test_accuracy'],
                 'prediction_time_seconds': results['prediction_time_seconds'],
-                'avg_prediction_time_per_sample': results['avg_prediction_time_per_sample']
+                'avg_prediction_time_per_sample': results['avg_prediction_time_per_sample'],
+                'avg_feature_extraction_time_per_sample': results['avg_feature_extraction_time_per_sample'],
+                'avg_classifier_prediction_time_per_sample': results['avg_classifier_prediction_time_per_sample'],
+                'avg_residual_generation_time_per_sample': results['avg_residual_generation_time_per_sample']
             })
         
         summary_df = pd.DataFrame(summary_data)
@@ -650,6 +1058,8 @@ class RiskAssessmentManager:
         
         # Plot accuracy vs. n_estimators
         self._plot_n_estimators_comparison(summary_df)
+
+        #self._plot_timing_breakdown(summary_df)
         
         return {
             'all_results': all_results,
@@ -658,105 +1068,4 @@ class RiskAssessmentManager:
             'summary_df': summary_df
         }
     
-    def _plot_n_estimators_comparison(self, summary_df):
-        """Plot comparison of metrics across different n_estimators values"""
-        # Check which columns are available in the DataFrame
-        available_columns = set(summary_df.columns)
-        required_columns = {
-            'n_estimators', 
-            'test_accuracy', 'train_accuracy', 'cv_accuracy',
-            'test_precision', 'train_precision', 
-            'test_recall', 'train_recall',
-            'prediction_time_seconds', 'avg_prediction_time_per_sample'
-        }
-        
-        print(f"Available columns in summary DataFrame: {available_columns}")
-        
-        # Plot accuracy metrics if available
-        if 'test_accuracy' in available_columns:
-            plt.figure(figsize=(10, 6))
-            plt.plot(summary_df['n_estimators'], summary_df['test_accuracy'], 'o-', label='Test Accuracy', color='#1f77b4')
-            
-            if 'train_accuracy' in available_columns:
-                plt.plot(summary_df['n_estimators'], summary_df['train_accuracy'], 's-', label='Train Accuracy', color='#ff7f0e')
-            
-            if 'cv_accuracy' in available_columns:
-                plt.plot(summary_df['n_estimators'], summary_df['cv_accuracy'], '^-', label='CV Accuracy', color='#2ca02c')
-            
-            plt.title('Accuracy vs. Estimators')
-            plt.xlabel('Number of Trees (Estimators)')
-            plt.ylabel('Accuracy')
-            plt.grid(True, linestyle='--', alpha=0.7)
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig(f'Results/{self.approach}/n_estimators_accuracy.png', bbox_inches='tight', dpi=300)
-            plt.close()
-        
-        # Plot precision metrics if available
-        if 'test_precision' in available_columns:
-            plt.figure(figsize=(10, 6))
-            plt.plot(summary_df['n_estimators'], summary_df['test_precision'], 'o-', label='Test Precision', color='#1f77b4')
-            
-            if 'train_precision' in available_columns:
-                plt.plot(summary_df['n_estimators'], summary_df['train_precision'], 's-', label='Train Precision', color='#ff7f0e')
-            
-            plt.title('Precision vs. Estimators')
-            plt.xlabel('Number of Trees (Estimators)')
-            plt.ylabel('Precision (weighted)')
-            plt.grid(True, linestyle='--', alpha=0.7)
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig(f'Results/{self.approach}/n_estimators_precision.png', bbox_inches='tight', dpi=300)
-            plt.close()
-        
-        # Plot recall metrics if available
-        if 'test_recall' in available_columns:
-            plt.figure(figsize=(10, 6))
-            plt.plot(summary_df['n_estimators'], summary_df['test_recall'], 'o-', label='Test Recall', color='#1f77b4')
-            
-            if 'train_recall' in available_columns:
-                plt.plot(summary_df['n_estimators'], summary_df['train_recall'], 's-', label='Train Recall', color='#ff7f0e')
-            
-            plt.title('Recall vs. Estimators')
-            plt.xlabel('Number of Trees (Estimators)')
-            plt.ylabel('Recall (weighted)')
-            plt.grid(True, linestyle='--', alpha=0.7)
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig(f'Results/{self.approach}/n_estimators_recall.png', bbox_inches='tight', dpi=300)
-            plt.close()
-        
-        # Plot all test metrics together for comparison if available
-        test_metrics_available = all(metric in available_columns for metric in ['test_accuracy', 'test_precision', 'test_recall'])
-        if test_metrics_available:
-            plt.figure(figsize=(10, 6))
-            plt.plot(summary_df['n_estimators'], summary_df['test_accuracy'], 'o-', label='Test Accuracy', color='#1f77b4')
-            plt.plot(summary_df['n_estimators'], summary_df['test_precision'], 's-', label='Test Precision', color='#ff7f0e')
-            #plt.plot(summary_df['n_estimators'], summary_df['test_recall'], '^-', label='Test Recall', color='#2ca02c')
-            plt.title('Test Performance Metrics vs. Estimators')
-            plt.xlabel('Number of Trees (Estimators)')
-            plt.ylabel('Score')
-            plt.grid(True, linestyle='--', alpha=0.7)
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig(f'Results/{self.approach}/n_estimators_test_metrics.png', bbox_inches='tight', dpi=300)
-            plt.close()
-        
-        # Plot prediction time metrics if available
-        if all(metric in available_columns for metric in ['prediction_time_seconds', 'avg_prediction_time_per_sample']):
-            plt.figure(figsize=(10, 6))
-            #plt.plot(summary_df['n_estimators'], summary_df['prediction_time_seconds'], 'o-', 
-            #        label='Total Prediction Time', color='#d62728')
-            
-            # Convert to milliseconds for better visibility
-            plt.plot(summary_df['n_estimators'], summary_df['avg_prediction_time_per_sample'] * 1000, 's-', 
-                    label='Average Time per Sample (ms)', color='#9467bd')
-            
-            plt.title('Prediction Time vs. Estimators')
-            plt.xlabel('Number of Trees (estimators)')
-            plt.ylabel('Time')
-            plt.grid(True, linestyle='--', alpha=0.7)
-            plt.legend()
-            plt.tight_layout()
-            plt.savefig(f'Results/{self.approach}/n_estimators_prediction_time.png', bbox_inches='tight', dpi=300)
-            plt.close()
+    

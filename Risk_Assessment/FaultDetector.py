@@ -28,8 +28,21 @@ class FaultDetector:
         ])
         
         self.label_encoder = LabelEncoder()
-    
-    def train_and_evaluate(self, features: List[Dict[str, float]], labels: List[str]):
+
+    def train_and_evaluate(self, features: List[Dict[str, float]], labels: List[str], 
+                        residual_gen_time_per_sample: float = 0.0):
+        """
+        Train and evaluate the fault detection model.
+        
+        Args:
+            features: List of feature dictionaries
+            labels: List of condition labels
+            residual_gen_time_per_sample: Average time to generate residuals per sample (seconds)
+        
+        Returns:
+            Dict containing evaluation metrics
+        """
+        # Convert features to DataFrame
         X = pd.DataFrame(features).values
         y_multi = self.label_encoder.fit_transform(labels)
         
@@ -41,19 +54,46 @@ class FaultDetector:
             stratify=y_multi
         )
         
-        # Measure training time
-        train_start_time = time.time()
-        self.pipeline.fit(X_train, y_train)
-        train_time = time.time() - train_start_time
+        # Isolate feature extraction steps from classifier
+        feature_extraction_pipeline = Pipeline([
+            step for step in self.pipeline.steps 
+            if step[0] != 'classifier'
+        ])
         
-        # Measure prediction time on test set
+        # Measure feature extraction time (training)
+        fe_train_start_time = time.time()
+        X_train_transformed = feature_extraction_pipeline.fit_transform(X_train)
+        fe_train_time = time.time() - fe_train_start_time
+        
+        # Measure feature extraction time (inference)
+        fe_inference_start_time = time.time()
+        X_test_transformed = feature_extraction_pipeline.transform(X_test)
+        fe_inference_time = time.time() - fe_inference_start_time
+        
+        # Get classifier from pipeline
+        classifier = self.pipeline.named_steps['classifier']
+        
+        # Measure training time (classifier only)
+        train_start_time = time.time()
+        classifier.fit(X_train_transformed, y_train)
+        classifier_train_time = time.time() - train_start_time
+        
+        # Total training time
+        train_time = fe_train_time + classifier_train_time
+        
+        # Measure prediction time on test set (classifier only)
         predict_start_time = time.time()
-        y_pred = self.pipeline.predict(X_test)
-        prediction_time = time.time() - predict_start_time
+        y_pred = classifier.predict(X_test_transformed)
+        classifier_prediction_time = time.time() - predict_start_time
+        
+        # Total prediction time including feature extraction and residual generation
+        # This is the key change - we add residual generation time to the total
+        prediction_time = fe_inference_time + classifier_prediction_time
+        total_prediction_time = prediction_time + (residual_gen_time_per_sample * len(y_test))
         
         # Get training set predictions for training metrics
-        y_train_pred = self.pipeline.predict(X_train)
-        
+        y_train_pred = classifier.predict(X_train_transformed)
+
         # Calculate metrics
         # Test metrics
         test_accuracy = accuracy_score(y_test, y_pred)
@@ -110,9 +150,18 @@ class FaultDetector:
             'train_recall': train_recall,
             
             # Timing metrics
+            'feature_extraction_train_time': fe_train_time,
+            'feature_extraction_inference_time': fe_inference_time,
+            'classifier_train_time': classifier_train_time,
+            'classifier_prediction_time': classifier_prediction_time,
+            'avg_feature_extraction_time_per_sample': fe_inference_time / len(y_test) if len(y_test) > 0 else 0,
+            'avg_classifier_prediction_time_per_sample': classifier_prediction_time / len(y_test) if len(y_test) > 0 else 0,
+            'avg_residual_generation_time_per_sample': residual_gen_time_per_sample,  # Add this new metric
+            
+            # Total metrics
             'train_time_seconds': train_time,
-            'prediction_time_seconds': prediction_time,
-            'avg_prediction_time_per_sample': prediction_time / len(y_test) if len(y_test) > 0 else 0,
+            'prediction_time_seconds': total_prediction_time,  # Use the new total time that includes residual generation
+            'avg_prediction_time_per_sample': total_prediction_time / len(y_test) if len(y_test) > 0 else 0,
             
             # Dataset info
             'train_samples': len(y_train),
