@@ -3,7 +3,7 @@ from typing import Dict, NamedTuple
 import numpy as np
 import torch
 
-from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES, FEATURE_CONFIGS, RESIDUAL_TYPES
+from Risk_Assessment.FaultDetectionConfig import FEATURE_NAMES, FEATURE_CONFIGS, RESIDUAL_TYPES, DELTA_VALUES
 from Risk_Assessment.Residuals import RawResidual, KLDivergenceResidual, CUSUMResidual
 
 
@@ -49,6 +49,8 @@ class ResidualGenerator:
             pred_var = self._ensure_consistent_shape(pred_var, FEATURE_CONFIGS[feature].dimensions)
             
             for residual_type, calculator in self.residual_calculators.items():
+                if residual_type == 'cusum':
+                    calculator.set_delta(DELTA_VALUES[feature])
                 residuals[feature][residual_type] = calculator.calculate(
                     truth_np, pred_mean, pred_var
                 )

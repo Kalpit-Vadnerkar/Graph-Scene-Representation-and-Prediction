@@ -16,9 +16,7 @@ import os
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
 from tabulate import tabulate
-import matplotlib.pyplot as plt
-from collections import defaultdict
-import seaborn as sns
+import random
 
 #import warnings
 
@@ -54,6 +52,17 @@ def collate_fn(batch):
     
     return past_batch, future_batch, graph_batch
 
+def set_seed(seed_value):
+    """Set seed for reproducibility."""
+    random.seed(seed_value)
+    np.random.seed(seed_value)
+    torch.manual_seed(seed_value)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_value)
+        torch.cuda.manual_seed_all(seed_value)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
 def train(config):
     """Train the model."""
     device = config['device']
@@ -82,6 +91,55 @@ def train(config):
     
     torch.save(trained_model.state_dict(), config['model_path'])
     print(f"Model saved to {config['model_path']}")
+
+def train_ensemble(config, num_models=5):
+    """Train an ensemble of models with different random initializations."""
+    device = config['device']
+    
+    # Create directory for ensemble models if it doesn't exist
+    ensemble_dir = os.path.join(os.path.dirname(config['model_path']), 'ensemble')
+    os.makedirs(ensemble_dir, exist_ok=True)
+    
+    print(f"Training ensemble of {num_models} models...")
+    
+    # Load dataset once
+    dataset = TrajectoryDataset(config['train_data_folder'], 
+                               position_scaling_factor=config['position_scaling_factor'], 
+                               velocity_scaling_factor=config['velocity_scaling_factor'], 
+                               steering_scaling_factor=config['steering_scaling_factor'], 
+                               acceleration_scaling_factor=config['acceleration_scaling_factor'])
+    
+    train_loader, test_loader = create_data_loaders(dataset, config['batch_size'])
+    
+    print(f"Train set size: {len(train_loader.dataset)}")
+    print(f"Test set size: {len(test_loader.dataset)}")
+    
+    # Train ensemble of models
+    for i in range(num_models):
+        # Set a different seed for each model to ensure different initializations
+        seed = 42 + i
+        set_seed(seed)
+        
+        print(f"\n=======================================")
+        print(f"Training model {i+1}/{num_models} with seed {seed}")
+        print(f"=======================================\n")
+        
+        # Create a new model with different random initialization
+        model = GraphAttentionLSTM(config).to(device)
+        
+        # Create a trainer instance
+        trainer = Trainer(model, train_loader, test_loader, config['learning_rate'], device)
+        
+        # Train the model
+        trained_model = trainer.train(config['num_epochs'], seed=seed)
+        
+        # Save the model with a unique name
+        ensemble_model_path = os.path.join(ensemble_dir, f'ensemble_model_{i+1}.pth')
+        torch.save(trained_model.state_dict(), ensemble_model_path)
+        print(f"Model {i+1} saved to {ensemble_model_path}")
+    
+    print(f"\nEnsemble training complete. All models saved to {ensemble_dir}.")
+
 
 def visualize(config):
     """Visualize predictions from a trained model."""
@@ -126,7 +184,7 @@ def visualize(config):
 
         predictions, sampled_indices = make_limited_predictions(model, dataset, config)
 
-        #visualize_predictions(dataset, config['position_scaling_factor'], predictions, sampled_indices, condition)
+        visualize_predictions(dataset, config['position_scaling_factor'], predictions, sampled_indices, condition)
         
         predictions = make_predictions(model, dataset, config)
 
@@ -147,15 +205,37 @@ def visualize(config):
 
         print(f"Visualization complete for {condition}. Check the 'predictions' folder for output.")
 
+def evaluate(config):
+    # Initialize enhanced manager
+    manager = RiskAssessmentManager(config)
+
+    # Load single model (with out ensemble)
+    manager.approach = 'single'
+    model = load_model(config)
+    #manager.approach = 'ensemble'
+    #model = None
+
+    # Load data for all conditions once
+    loaded_data_dict = {}
+    
+    for condition in config['conditions']:
+        loaded_data_dict[condition] = manager.data_loader.load_data_and_predictions(model, condition)
+    
+    # Run complete pipeline
+    results = manager.run_fault_detection(loaded_data_dict, n_components=None)
+        
+
 
 def main():
     parser = argparse.ArgumentParser(description="Train or visualize trajectory prediction model")
     parser.add_argument('--mode', type=str, 
-                       choices=['train', 'visualize', 'evaluate', 'summary', 'dim_analysis'], 
+                       choices=['train', 'train_ensemble', 'visualize', 'evaluate', 'summary', 'dim_analysis'], 
                        required=True,
-                       help='Mode of operation: train, visualize, evaluate, dim_analysis, or show model summary')
+                       help='Mode of operation: train, train_ensemble, visualize, evaluate, dim_analysis, or show model summary')
     parser.add_argument('--components', type=int, default=None,
                        help='Number of PCA components to use (default: None = use all)')
+    parser.add_argument('--num_models', type=int, default=10,
+                       help='Number of models in the ensemble (default: 5)')
     args = parser.parse_args()
 
     if args.mode == 'summary':
@@ -163,27 +243,12 @@ def main():
         print_model_summary(model, CONFIG)
     elif args.mode == 'train':
         train(CONFIG)
+    elif args.mode == 'train_ensemble':
+        train_ensemble(CONFIG, num_models=args.num_models)
     elif args.mode == 'visualize':
         visualize(CONFIG)
     elif args.mode in ['evaluate', 'dim_analysis']:
-        # Initialize enhanced manager
-        manager = RiskAssessmentManager(CONFIG)
-
-        # Load model
-        model = load_model(CONFIG)
-
-        # Load data for all conditions once
-        loaded_data_dict = {}
-        for condition in CONFIG['conditions']:
-            loaded_data_dict[condition] = manager.data_loader.load_data_and_predictions(model, condition)
-
-        if args.mode == 'evaluate':
-            # Run complete pipeline
-            results = manager.run_fault_detection(loaded_data_dict, n_components=args.components)
-            #print(results)
-        else:  # dim_analysis
-            # Run dimensionality analysis
-            manager.run_dimensionality_analysis(loaded_data_dict, max_components=args.components)
+        evaluate(CONFIG)
 
 if __name__ == "__main__":
     main()

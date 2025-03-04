@@ -38,11 +38,20 @@ STATISTICAL_METRICS: List[str] = [
 
 # Types of residual analysis
 RESIDUAL_TYPES: List[str] = [
-    #'raw',           # Raw residuals
-    #'normalized',    # Previously called standardized
-    #'uncertainty',   # Uncertainty values
+    'raw',           # Raw residuals
+    'normalized',    # Previously called standardized
+    'uncertainty',   # Uncertainty values
     'kl_divergence',  # KL divergence between predicted and empirical distributions
-    #'shewhart',
-    #'cusum', 
-    #'sprt'
+    'shewhart',
+    'cusum', 
+    'sprt'
 ]
+
+DELTA_VALUES: Dict[str, float] = {
+    'position': 0.6760,
+    'velocity': 6.1190,
+    'steering': 3.3958,
+    'acceleration': 6.2496,
+    'object_distance': 0.1618,
+    'traffic_light_detected': 0.1528
+}

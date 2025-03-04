@@ -44,7 +44,7 @@ class RiskAssessmentManager:
         # Process all conditions using pre-loaded data
         for condition in self.config['conditions']:
             loaded_data = loaded_data_dict[condition]
-            self.approach = 'Approach1'
+            #self.approach = 'Approach1'
             self.process_condition(loaded_data, condition)
 
     def process_condition(self, loaded_data, condition: str):        
@@ -974,8 +974,9 @@ class RiskAssessmentManager:
         labels = [res.condition for res in self.all_residuals]
         
         # Define n_estimators values to evaluate
-        n_estimators_values = list(range(1,25,5))
-        n_estimators_values.extend(list(range(50,501,50)))
+        n_estimators_values = [1]
+        n_estimators_values.extend(list(range(5,26,5)))
+        n_estimators_values.extend(list(range(50,351,50)))
         
         # Dictionary to store results for each n_estimators value
         all_results = {}

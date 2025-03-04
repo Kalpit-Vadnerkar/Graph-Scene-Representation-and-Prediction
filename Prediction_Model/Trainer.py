@@ -2,6 +2,7 @@ import torch
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import os
+import pandas as pd
 from Prediction_Model.LossFunctions import CombinedLoss
 
 class Trainer:
@@ -61,7 +62,7 @@ class Trainer:
         
         return val_losses
 
-    def train(self, num_epochs):
+    def train(self, num_epochs, seed=None):
         for epoch in range(num_epochs):
             train_losses = self.train_epoch()
             val_losses = self.validate()
@@ -81,12 +82,21 @@ class Trainer:
             
             self.scheduler.step(val_losses['total_loss'])
         
-        self.plot_losses()
+        self.plot_losses(seed)
         return self.model
 
-    def plot_losses(self):
-        os.makedirs('Model_Training_Results', exist_ok=True)
+    def plot_losses(self, seed):
+        os.makedirs(f'Model_Training_Results/model_seed_{seed}', exist_ok=True)
         
+        # Convert train and validation losses to DataFrames
+        train_losses_df = pd.DataFrame(self.train_losses)
+        val_losses_df   = pd.DataFrame(self.val_losses)
+        
+        # Save each as CSV
+        train_losses_df.to_csv(f'Model_Training_Results/model_seed_{seed}/train_losses.csv', index=False)
+        val_losses_df.to_csv(f'Model_Training_Results/model_seed_{seed}/val_losses.csv', index=False)
+    
+    # Plot total loss
         # Plot total loss
         plt.figure(figsize=(10, 6))
         plt.plot([losses['total_loss'] for losses in self.train_losses], label='Train')
@@ -95,7 +105,7 @@ class Trainer:
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.legend()
-        plt.savefig('Model_Training_Results/total_loss.png')
+        plt.savefig(f'Model_Training_Results/model_seed_{seed}/total_loss.png')
         plt.close()
 
         # Plot individual losses
@@ -108,5 +118,5 @@ class Trainer:
             plt.xlabel('Epoch')
             plt.ylabel('Loss')
             plt.legend()
-            plt.savefig(f'Model_Training_Results/{key}_loss.png')
+            plt.savefig(f'Model_Training_Results/model_seed_{seed}/{key}_loss.png')
             plt.close()

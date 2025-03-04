@@ -23,7 +23,7 @@ class FaultDetector:
                 n_estimators=n_estimators,
                 random_state=random_state,
                 max_features='sqrt',
-                min_samples_leaf=200
+                min_samples_leaf=75
             ))
         ])
         

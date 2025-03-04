@@ -235,7 +235,7 @@ class SPRTResidual(BaseResidual):
 
 
 class CUSUMResidual(BaseResidual):
-    def __init__(self, k: float = 0.25, h: float = 5.0, target: float = 0.0):
+    def __init__(self, k: float = 0.5, h: float = 5.0, target: float = 0.0):
         """
         Initialize CUSUM control chart parameters.
         
@@ -252,6 +252,9 @@ class CUSUMResidual(BaseResidual):
         self.Cp = 0.0  # Upper CUSUM
         self.Cn = 0.0  # Lower CUSUM
     
+    def set_delta(self, value):
+        self.k - value
+
     def reset_statistics(self):
         """Reset CUSUM statistics when a significant shift is detected."""
         self.Cp = 0.0

@@ -63,6 +63,7 @@ def load_model(config):
     #model = GraphTrajectoryLSTM(config)
     
     model.load_state_dict(torch.load(config['model_path'], map_location=config['device'], weights_only=True))
+    
     model.to(config['device'])
     model.eval()
     return model
